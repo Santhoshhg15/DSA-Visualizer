@@ -13,28 +13,28 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve the static HTML frontend from root (for stack-visualizer, index, etc.)
-app.use(express.static(__dirname));
+// Serve the static HTML frontend from public (for stack-visualizer, index, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve String Pattern Visualizer static files at /pattern prefix
-app.use('/pattern', express.static(path.join(__dirname, 'string-pattern-visualizer', 'dist')));
+app.use('/pattern', express.static(path.join(__dirname, 'public', 'pattern')));
 
 // Serve index at root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Serve Stack Visualizer app at /stack and legacy /visualizer path
 app.get('/stack', (req, res) => {
-  res.sendFile(path.join(__dirname, 'stack-visualizer.html'));
+  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
 });
 app.get('/visualizer', (req, res) => {
-  res.sendFile(path.join(__dirname, 'stack-visualizer.html'));
+  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
 });
 
 // Fallback for String Pattern Visualizer SPA router paths
 app.get('/pattern/*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'string-pattern-visualizer', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'pattern', 'index.html'));
 });
 
 // Translation API Endpoint

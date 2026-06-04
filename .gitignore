@@ -15,5 +15,4 @@ logs/
 Thumbs.db
 
 # Build output
-pattern/
-
+public/pattern/
