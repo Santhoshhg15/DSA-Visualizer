@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/stack", "destination": "/stack-visualizer.html" },
+    { "source": "/pattern", "destination": "/pattern/index.html" },
+    { "source": "/pattern/(.*)", "destination": "/pattern/index.html" }
+  ]
+}

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "cd string-pattern-visualizer && npm install && npm run build && cd .. && mkdir -p pattern && cp -R string-pattern-visualizer/dist/* pattern/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

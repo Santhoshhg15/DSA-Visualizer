@@ -13,3 +13,7 @@ logs/
 # OS Metadata
 .DS_Store
 Thumbs.db
+
+# Build output
+pattern/
+
