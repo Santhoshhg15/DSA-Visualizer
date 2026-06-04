@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+
+:root {
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Outfit', sans-serif;
+
+  /* Theme variables - DARK (Default) */
+  --bg-gradient-1: #0c091d;
+  --bg-gradient-2: #070b19;
+  --bg-gradient-3: #05060f;
+  --panel-bg: rgba(19, 18, 38, 0.45);
+  --border-color: rgba(43, 41, 77, 0.6);
+  --border-hover: rgba(58, 56, 107, 0.85);
+  --text-color: #e6edf3;
+  --muted-color: #8b94b0;
+  --input-bg: rgba(22, 27, 48, 0.5);
+
+  /* CharCell States - DARK */
+  --cell-default-bg: rgba(22, 27, 48, 0.3);
+  --cell-default-border: rgba(48, 54, 77, 0.6);
+  --cell-default-text: #8b94b0;
+  --cell-window-bg: rgba(29, 39, 63, 0.65);
+  --cell-window-border: #388bfd;
+  --cell-window-text: #ffffff;
+  --cell-active-bg: rgba(28, 58, 94, 0.7);
+  --cell-active-border: #58a6ff;
+  --cell-active-text: #e1f0ff;
+  --cell-match-bg: rgba(18, 54, 27, 0.8);
+  --cell-match-border: #26a644;
+  --cell-match-text: #bbf7c2;
+  --cell-mismatch-bg: rgba(61, 22, 26, 0.8);
+  --cell-mismatch-border: #ea4e5d;
+  --cell-mismatch-text: #ffc6c8;
+  --cell-found-bg: rgba(74, 58, 16, 0.85);
+  --cell-found-border: #f5c242;
+  --cell-found-text: #ffffff;
+  --cell-path-bg: rgba(37, 27, 71, 0.7);
+  --cell-path-border: #a371f7;
+  --cell-path-text: #e5d5ff;
+
+  /* Controls Overlay Pill - DARK */
+  --pill-bg: rgba(19, 18, 38, 0.95);
+  --pill-btn-bg: #161b2d;
+  --pill-btn-border: #30364d;
+  --pill-btn-hover: #21263d;
+}
+
+body.light {
+  /* Theme variables - LIGHT */
+  --bg-gradient-1: #eef2f7;
+  --bg-gradient-2: #f3f4f6;
+  --bg-gradient-3: #e5e7eb;
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --border-color: rgba(209, 213, 219, 0.8);
+  --border-hover: rgba(156, 163, 175, 0.85);
+  --text-color: #1f2937;
+  --muted-color: #555c6d;
+  --input-bg: rgba(255, 255, 255, 0.9);
+
+  /* CharCell States - LIGHT */
+  --cell-default-bg: rgba(243, 244, 246, 0.7);
+  --cell-default-border: rgba(209, 213, 219, 0.8);
+  --cell-default-text: #4b5563;
+  --cell-window-bg: rgba(219, 234, 254, 0.85);
+  --cell-window-border: #2563eb;
+  --cell-window-text: #1e3a8a;
+  --cell-active-bg: rgba(239, 246, 255, 0.9);
+  --cell-active-border: #3b82f6;
+  --cell-active-text: #1d4ed8;
+  --cell-match-bg: rgba(209, 250, 229, 0.95);
+  --cell-match-border: #10b981;
+  --cell-match-text: #065f46;
+  --cell-mismatch-bg: rgba(254, 226, 226, 0.95);
+  --cell-mismatch-border: #ef4444;
+  --cell-mismatch-text: #991b1b;
+  --cell-found-bg: rgba(254, 243, 199, 0.95);
+  --cell-found-border: #d97706;
+  --cell-found-text: #78350f;
+  --cell-path-bg: rgba(243, 232, 255, 0.95);
+  --cell-path-border: #8b5cf6;
+  --cell-path-text: #581c87;
+
+  /* Controls Overlay Pill - LIGHT */
+  --pill-bg: rgba(255, 255, 255, 0.95);
+  --pill-btn-bg: #f3f4f6;
+  --pill-btn-border: #d1d5db;
+  --pill-btn-hover: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+body { 
+  font-family: var(--font-sans); 
+  background-color: var(--bg-gradient-2); 
+  color: var(--text-color); 
+  margin: 0; 
+  transition: background-color 0.3s, color 0.3s;
+}
