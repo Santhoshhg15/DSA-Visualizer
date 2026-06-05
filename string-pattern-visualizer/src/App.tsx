@@ -11,6 +11,7 @@ import { TrieTreeCanvas } from './components/TrieTreeCanvas';
 import { TriePseudocode } from './components/TriePseudocode';
 import { TrieExplanation } from './components/TrieExplanation';
 import { Pseudocode } from './components/Pseudocode';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const ALGO_INFO: Record<string, { title: string; complexity: string; idea: string; color: string }> = {
   naive: {
@@ -59,6 +60,9 @@ export default function App() {
   const step = steps[cur];
   const info = ALGO_INFO[algo];
 
+  // For triePlayground: use the step's trieNodes during animation, otherwise the persistent store nodes
+  const trieCanvasNodes = (algo === 'triePlayground' && step?.trieNodes) ? step.trieNodes : trieNodes;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--bg-gradient-1)] via-[var(--bg-gradient-2)] to-[var(--bg-gradient-3)] text-[var(--text-color)] relative overflow-hidden flex flex-col transition-all duration-300">
       {/* Dynamic Background glows (Only visible in dark mode for visual balance) */}
@@ -87,9 +91,9 @@ export default function App() {
             </span>
           </div>
 
-          {/* Playback Controls (Header toolbar for Trie only) */}
-          {steps.length > 0 && (algo === 'trie' || algo === 'triePlayground') && (
-            <div className="hidden md:block">
+          {/* Playback Controls — ONLY in header for triePlayground (no floating duplicate) */}
+          {steps.length > 0 && algo === 'triePlayground' && (
+            <div className="flex-1 flex justify-center">
               <Controls variant="header" />
             </div>
           )}
@@ -103,7 +107,7 @@ export default function App() {
               {darkMode ? '☀️ Light' : '🌙 Dark'}
             </button>
 
-            {steps.length > 0 && (
+            {steps.length > 0 && algo !== 'triePlayground' && (
               <button
                 onClick={() => setLogsOpen(!logsOpen)}
                 className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 ${
@@ -162,24 +166,30 @@ export default function App() {
               <div className="animate-fadeIn grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full py-8">
                 {/* Main Visualizer Area */}
                 <div className="lg:col-span-2">
-                  <TrieTreeCanvas
-                    nodes={step?.trieNodes || trieNodes}
-                    activeNodeId={step?.activeNodeId}
-                    activeOperation={step?.activeOperation}
-                  />
+                  <ErrorBoundary>
+                    <TrieTreeCanvas
+                      nodes={trieCanvasNodes}
+                      activeNodeId={step?.activeNodeId ?? null}
+                      activeOperation={step?.activeOperation}
+                    />
+                  </ErrorBoundary>
                 </div>
 
                 {/* Right Operation Explanation Panel */}
                 <div className="lg:col-span-1 space-y-6 h-fit">
-                  <TrieExplanation
-                    step={step}
-                    curStepIndex={cur}
-                    totalSteps={steps.length}
-                  />
-                  <TriePseudocode
-                    activeOperation={step?.activeOperation}
-                    highlightLine={step?.highlightCodeLine}
-                  />
+                  <ErrorBoundary>
+                    <TrieExplanation
+                      step={step}
+                      curStepIndex={cur}
+                      totalSteps={steps.length}
+                    />
+                  </ErrorBoundary>
+                  <ErrorBoundary>
+                    <TriePseudocode
+                      activeOperation={step?.activeOperation}
+                      highlightLine={step?.highlightCodeLine}
+                    />
+                  </ErrorBoundary>
                 </div>
               </div>
             ) : steps.length > 0 ? (
@@ -214,8 +224,8 @@ export default function App() {
             )}
           </div>
 
-          {/* Playback Controls (Floating bottom for standard algorithms) */}
-          {steps.length > 0 && algo !== 'trie' && algo !== 'triePlayground' && (
+          {/* Floating Controls — only for NON-triePlayground algos (triePlayground uses header controls) */}
+          {steps.length > 0 && algo !== 'triePlayground' && (
             <Controls variant="floating" />
           )}
         </main>

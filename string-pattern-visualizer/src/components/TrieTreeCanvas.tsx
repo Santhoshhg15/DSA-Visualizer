@@ -19,15 +19,21 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
     if (!nodes) return slots;
     
     function countSlots(nodeId: string): number {
+      if (!nodeId) return 1;
       const node = nodes[nodeId];
-      if (!node || !node.children || Object.keys(node.children).length === 0) {
+      if (!node || !node.children || typeof node.children !== 'object' || Object.keys(node.children).length === 0) {
         slots[nodeId] = 1;
         return 1;
       }
       let sum = 0;
       const childKeys = Object.keys(node.children).sort();
       for (const key of childKeys) {
-        sum += countSlots(node.children[key]);
+        const childId = node.children[key];
+        if (childId) {
+          sum += countSlots(childId);
+        } else {
+          sum += 1;
+        }
       }
       slots[nodeId] = sum;
       return sum;
@@ -47,11 +53,12 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
     const slotWidth = Math.max(MIN_SLOT_WIDTH, 800 / rootSlots);
 
     function assignPos(nodeId: string, depth: number, offset: number) {
+      if (!nodeId) return;
       const node = nodes[nodeId];
       if (!node) return;
 
       const y = depth * LEVEL_HEIGHT + PADDING;
-      const childKeys = node.children ? Object.keys(node.children).sort() : [];
+      const childKeys = node.children && typeof node.children === 'object' ? Object.keys(node.children).sort() : [];
 
       let x = 0;
       if (childKeys.length === 0) {
@@ -61,12 +68,14 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
         const childXs: number[] = [];
         for (const key of childKeys) {
           const childId = node.children[key];
-          const childSlots = subtreeSlots[childId] || 1;
-          assignPos(childId, depth + 1, curOffset);
-          if (positions[childId]) {
-            childXs.push(positions[childId].x);
+          if (childId) {
+            const childSlots = subtreeSlots[childId] || 1;
+            assignPos(childId, depth + 1, curOffset);
+            if (positions[childId]) {
+              childXs.push(positions[childId].x);
+            }
+            curOffset += childSlots * slotWidth;
           }
-          curOffset += childSlots * slotWidth;
         }
         if (childXs.length > 0) {
           x = (childXs[0] + childXs[childXs.length - 1]) / 2;
@@ -111,10 +120,12 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
     if (!nodes) return arr;
     for (const parentId in nodes) {
       const node = nodes[parentId];
-      if (node && node.children) {
+      if (node && node.children && typeof node.children === 'object') {
         for (const char in node.children) {
           const childId = node.children[char];
-          arr.push({ from: parentId, to: childId, char });
+          if (childId) {
+            arr.push({ from: parentId, to: childId, char });
+          }
         }
       }
     }
@@ -232,6 +243,7 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
         {/* 2. Draw Nodes with smooth transitions */}
         {Object.keys(nodes).map(nodeId => {
           const node = nodes[nodeId];
+          if (!node) return null;
           const pos = layout[nodeId];
           if (!pos) return null;
 

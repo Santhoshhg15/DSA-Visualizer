@@ -10,19 +10,33 @@ export function Controls({ variant = 'floating' }: ControlsProps) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (playing) {
-      timerRef.current = setInterval(() => {
-        useStore.setState(s => {
-          if (s.cur < s.steps.length - 1) return { cur: s.cur + 1 };
-          clearInterval(timerRef.current!);
-          return { playing: false };
-        });
-      }, Math.round(1000 / speed));
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+    // Clear any existing interval first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [playing, speed]);
+
+    if (playing && steps.length > 0) {
+      timerRef.current = setInterval(() => {
+        // Read live state to avoid stale closure
+        const state = useStore.getState();
+        if (state.cur < state.steps.length - 1) {
+          useStore.setState({ cur: state.cur + 1 });
+        } else {
+          clearInterval(timerRef.current!);
+          timerRef.current = null;
+          useStore.setState({ playing: false });
+        }
+      }, Math.round(1000 / speed));
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [playing, speed, steps.length]);
 
   if (!steps.length) return null;
 

@@ -24,8 +24,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Serve Stack Visualizer app at /stack and legacy /visualizer path
+// Serve Stack Visualizer app at /stack, /stack-visualizer, and legacy /visualizer path
 app.get('/stack', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
+});
+app.get('/stack-visualizer', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
 });
 app.get('/visualizer', (req, res) => {

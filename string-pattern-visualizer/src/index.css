@@ -97,3 +97,26 @@ body {
   margin: 0; 
   transition: background-color 0.3s, color 0.3s;
 }
+
+/* Sleek modern custom scrollbars globally */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 148, 176, 0.25);
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 148, 176, 0.45);
+}
+/* Hide scrollbar by default in modern browsers if supported */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 148, 176, 0.25) transparent;
+}
+

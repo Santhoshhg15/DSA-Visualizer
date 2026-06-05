@@ -27,7 +27,10 @@ export function TrieExplanation({ step, curStepIndex, totalSteps }: Props) {
     startsWith: 'StartsWith Prefix',
   };
 
-  const op = step.activeOperation || 'insert';
+  let op = step.activeOperation || 'insert';
+  if (op !== 'insert' && op !== 'search' && op !== 'startsWith') {
+    op = 'insert';
+  }
 
   return (
     <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-2xl p-5 shadow-xl backdrop-blur-xl h-fit flex flex-col space-y-6">

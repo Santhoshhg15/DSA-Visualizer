@@ -16,3 +16,7 @@ Thumbs.db
 
 # Build output
 public/pattern/
+
+# Temporary files
+temp_chrome_profile/
+

@@ -13,6 +13,7 @@ interface VisualizerStore {
   gridInput: string;
   wordsInput: string;
   tab: 'setup' | 'visualizer';
+  codeLanguage: 'python' | 'java';
   
   // Persistent Trie Playground State
   trieWords: string[];
@@ -20,6 +21,7 @@ interface VisualizerStore {
 
   setAlgo: (a: AlgoType) => void;
   setSteps: (s: Step[]) => void;
+  setStepsAndPlay: (s: Step[]) => void;
   setCur: (n: number) => void;
   setPlaying: (b: boolean) => void;
   setSpeed: (n: number) => void;
@@ -28,6 +30,7 @@ interface VisualizerStore {
   setGridInput: (s: string) => void;
   setWordsInput: (s: string) => void;
   setTab: (t: 'setup' | 'visualizer') => void;
+  setCodeLanguage: (lang: 'python' | 'java') => void;
   reset: () => void;
   
   // Trie state updates
@@ -50,12 +53,14 @@ export const useStore = create<VisualizerStore>((set) => ({
   gridInput: 'OAT,EAA,IHN,PGH',
   wordsInput: 'OAT,EAT,ATE,OATH',
   tab: 'setup',
+  codeLanguage: 'python',
   
   trieWords: [],
   trieNodes: INITIAL_TRIE_NODES,
 
   setAlgo: (algo) => set({ algo, steps: [], cur: 0, playing: false, tab: 'setup' }),
   setSteps: (steps) => set({ steps, cur: 0, playing: false, tab: 'visualizer' }),
+  setStepsAndPlay: (steps) => set({ steps, cur: 0, playing: true, tab: 'visualizer' }),
   setCur: (cur) => set({ cur }),
   setPlaying: (playing) => set({ playing }),
   setSpeed: (speed) => set({ speed }),
@@ -64,6 +69,7 @@ export const useStore = create<VisualizerStore>((set) => ({
   setGridInput: (gridInput) => set({ gridInput }),
   setWordsInput: (wordsInput) => set({ wordsInput }),
   setTab: (tab) => set({ tab }),
+  setCodeLanguage: (codeLanguage) => set({ codeLanguage }),
   reset: () => set({ steps: [], cur: 0, playing: false, tab: 'setup' }),
   
   setTrieState: (trieWords, trieNodes) => set({ trieWords, trieNodes }),
