@@ -16,6 +16,7 @@ Thumbs.db
 
 # Build output
 public/pattern/
+public/tree-visualizer/
 
 # Temporary files
 temp_chrome_profile/

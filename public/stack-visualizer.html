@@ -356,7 +356,7 @@
     align-items: stretch;
     width: 100%;
     max-width: 1200px;
-    margin: auto;
+    margin: 0 auto;
     gap: 0;
   }
   .resizer-bar {
@@ -636,6 +636,74 @@
   .ai-overlay-sub { font-size: 0.72rem; color: var(--muted); }
 
   .lang-selector-row { display: flex; justify-content: space-between; align-items: center; }
+
+  /* ===== Progressive Disclosure Animations ===== */
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeInUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes heroPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  @keyframes gridReveal {
+    from { opacity: 0; }
+    to { opacity: 0.4; }
+  }
+
+  .animate-slideInLeft { animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-slideInRight { animation: slideInRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-fadeInUp { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-heroFloat { animation: heroFloat 4s ease-in-out infinite; }
+  .animate-heroPulse { animation: heroPulse 3s ease-in-out infinite; }
+  
+  /* Hero Empty State */
+  .hero-empty-state {
+    position: absolute;
+    top: 64px; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 4rem 2rem 2rem 2rem;
+    z-index: 25;
+    background: var(--bg-main);
+    transition: opacity 0.4s, visibility 0.4s;
+    overflow-y: auto;
+  }
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0;
+    animation: gridReveal 1.2s ease-out 0.3s forwards;
+    pointer-events: none;
+  }
+  
+  /* Hide workspace elements initially */
+  .workspace-inactive aside,
+  .workspace-inactive main,
+  .workspace-inactive #sidebarResizer {
+    display: none !important;
+  }
+  .workspace-active .hero-empty-state {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -643,7 +711,7 @@
 <div class="glow-blob blob-1"></div>
 <div class="glow-blob blob-2"></div>
 
-<div class="app-container">
+<div class="app-container workspace-inactive" id="appContainer">
 
   <!-- AI Translation Overlay -->
   <div class="ai-overlay" id="aiOverlay">
@@ -655,7 +723,7 @@
   <!-- Header Nav -->
   <header>
     <div class="header-left">
-      <button class="p-2 btn-header-action" onclick="toggleSidebar()" title="Toggle Configurations">⚙️</button>
+      <button class="p-2 btn-header-action" onclick="toggleSidebar()" title="Toggle Configurations" id="headerSidebarBtn">⚙️</button>
       <div class="logo-icon">🥞</div>
       <span class="header-title">Stack Visualizer Module</span>
     </div>
@@ -667,8 +735,49 @@
     </div>
   </header>
 
+  <!-- EMPTY STATE — HERO MODE -->
+  <div class="hero-empty-state" id="heroState">
+    <div class="hero-grid-bg"></div>
+    <div style="z-index: 10; max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;">
+      <div class="logo-icon animate-heroFloat" style="width: 96px; height: 96px; font-size: 3.5rem; border-radius: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+        🥞
+      </div>
+      <h1 style="font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 16px; line-height: 1.1;">
+        <span style="background: linear-gradient(to right, #ff6eb4, #5ea8ff); -webkit-background-clip: text; color: transparent; display: inline-block;" class="animate-heroPulse">Stack</span> Visualizer
+      </h1>
+      <p style="color: var(--muted); text-align: center; margin-bottom: 40px; font-size: 1rem; font-weight: 500; line-height: 1.6;">
+        Explore stack operations (LIFO), automatic string processing, and algorithmic code tracing with step-by-step visualizations.
+      </p>
+
+      <div style="background: var(--surface-opacity); border: 1px solid var(--border-opacity); border-radius: 24px; padding: 24px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); backdrop-filter: blur(20px);" class="animate-fadeInUp" style="animation-delay: 0.1s; opacity: 0;">
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Quick Start</h2>
+        
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="heroSingleInput" placeholder="Enter a value (e.g. 42)..." style="flex: 1; padding: 12px 16px; font-size: 0.9rem;" onkeydown="if(event.key === 'Enter') heroDoPush()" />
+          <button style="background: linear-gradient(to right, var(--accent), #059669); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroDoPush()">Push →</button>
+        </div>
+
+        <div style="height: 1px; background: var(--border-opacity); margin: 20px 0;"></div>
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Bulk / Auto Processing</h2>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="heroAutoInput" placeholder="String to process (e.g. HELLO)..." style="flex: 1; padding: 12px 16px; font-size: 0.9rem;" />
+          <button style="background: linear-gradient(to right, #5ea8ff, #0062ff); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroDoAuto()">Start Auto-Push</button>
+        </div>
+
+        <div style="height: 1px; background: var(--border-opacity); margin: 20px 0;"></div>
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Algorithm Code Trace</h2>
+
+        <div style="display: flex; gap: 12px;">
+          <textarea id="heroTraceInput" placeholder="Paste python/JS/java code..." style="flex: 1; padding: 12px 16px; font-size: 0.8rem; height: 60px; font-family: monospace; resize: none;"></textarea>
+          <button style="background: linear-gradient(to right, #a371f7, #7928ca); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroRunTrace()">Run Trace</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- COLLAPSIBLE LEFT SIDEBAR -->
-  <aside id="sidebar">
+  <aside id="sidebar" class="animate-slideInLeft">
     <!-- Single Push -->
     <div class="sidebar-section">
       <div class="section-label">Push Element</div>
@@ -780,6 +889,48 @@
 </div>
 
 <script>
+  let isWorkspaceActive = false;
+
+  function activateWorkspace() {
+    if (isWorkspaceActive) return;
+    isWorkspaceActive = true;
+    const app = document.getElementById('appContainer');
+    app.classList.remove('workspace-inactive');
+    app.classList.add('workspace-active');
+  }
+
+  function deactivateWorkspace() {
+    if (!isWorkspaceActive) return;
+    isWorkspaceActive = false;
+    const app = document.getElementById('appContainer');
+    app.classList.remove('workspace-active');
+    app.classList.add('workspace-inactive');
+  }
+
+  function heroDoPush() {
+    document.getElementById('singleInput').value = document.getElementById('heroSingleInput').value;
+    activateWorkspace();
+    doPush();
+  }
+
+  function heroDoAuto() {
+    const val = document.getElementById('heroAutoInput').value.trim();
+    if (!val) {
+      alert("Please enter a string to process (e.g., HELLO) before starting.");
+      return;
+    }
+    document.getElementById('autoInput').value = val;
+    activateWorkspace();
+    // Wait for the workspace transition to complete before starting auto-push
+    setTimeout(toggleAuto, 450);
+  }
+
+  function heroRunTrace() {
+    document.getElementById('traceInput').value = document.getElementById('heroTraceInput').value;
+    activateWorkspace();
+    runTrace();
+  }
+
   const stack = [];
   let autoTimer = null;
   let autoChars = [];
@@ -899,6 +1050,13 @@
     if (top) { top.classList.remove('anim-push'); void top.offsetWidth; top.classList.add('anim-push'); }
   }
 
+  function scrollCanvas() {
+    setTimeout(() => {
+      const el = document.getElementById('visualFlex');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
   function doPush(val, isAuto = false) {
     let v = (val !== undefined) ? val : document.getElementById('singleInput').value;
     v = String(v).trim();
@@ -912,6 +1070,7 @@
     setStatus(`Pushed "${v}" → stack size is now ${stack.length}.`, 'ok');
     addLog('PUSH', `"${escHtml(v)}" at index ${stack.length - 1}`, 'log-push', isAuto ? 'log-auto' : '');
     hidePeek();
+    scrollCanvas();
   }
 
   function doPop() {
@@ -947,6 +1106,7 @@
     setStatus('Stack cleared.', '');
     addLog('CLEAR', 'all elements removed', 'log-clear');
     hidePeek();
+    deactivateWorkspace();
   }
 
   function toggleAuto() {
@@ -970,6 +1130,7 @@
       autoTimer = setTimeout(pushNext, autoDelay);
     }
     pushNext();
+    scrollCanvas();
   }
 
   function stopAuto() {
@@ -1151,6 +1312,7 @@
   }
 
   async function runTrace() {
+    activateWorkspace();
     if (isTracing && traceTimer) return;
     const ta = document.getElementById('traceInput');
     const sourceCode = ta.value.trim();
@@ -1177,6 +1339,7 @@
       traceTimer = setTimeout(nextStep, autoDelay + 200);
     }
     nextStep();
+    scrollCanvas();
   }
 
   async function stepTrace() {

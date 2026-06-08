@@ -10,7 +10,7 @@ export function InputPanel() {
   const {
     algo, textInput, patInput, gridInput, wordsInput,
     setTextInput, setPatInput, setGridInput, setWordsInput,
-    setSteps, trieWords, trieNodes, setTrieState, clearTrie,
+    setSteps, setStepsAndPlay, trieWords, trieNodes, setTrieState, clearTrie,
   } = useStore();
 
   const [wordInput, setWordInput] = useState('CAT');
@@ -30,21 +30,21 @@ export function InputPanel() {
     const { steps, finalNodes } = traceInsert(word, trieNodes);
     const nextWords = trieWords.includes(word) ? trieWords : [...trieWords, word];
     setTrieState(nextWords, finalNodes);
-    setSteps(steps); // Load steps but don't auto-play — user clicks Play
+    setStepsAndPlay(steps);
   };
 
   const handleSearch = () => {
     const word = wordInput.toUpperCase().trim().replace(/[^A-Z]/g, '');
     if (!word) return;
     const steps = traceSearch(word, trieNodes);
-    setSteps(steps); // Load steps but don't auto-play — user clicks Play
+    setStepsAndPlay(steps);
   };
 
   const handleStartsWith = () => {
     const prefix = wordInput.toUpperCase().trim().replace(/[^A-Z]/g, '');
     if (!prefix) return;
     const steps = traceStartsWith(prefix, trieNodes);
-    setSteps(steps); // Load steps but don't auto-play — user clicks Play
+    setStepsAndPlay(steps);
   };
 
   const inputCls = "bg-[#0b0d12]/80 border border-[#252a38] rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-[#5ea8ff] focus:ring-1 focus:ring-[#5ea8ff]/50 w-full transition-all placeholder-gray-600";

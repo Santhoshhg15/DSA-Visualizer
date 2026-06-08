@@ -6,13 +6,6 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Premium Visual workbench canvas grid background */
-.canvas-grid {
-  background-image: radial-gradient(var(--border-color) 1.2px, transparent 1.2px);
-  background-size: 20px 20px;
-}
-
-
 :root {
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Outfit', sans-serif;
@@ -56,6 +49,12 @@
   --pill-btn-bg: #161b2d;
   --pill-btn-border: #30364d;
   --pill-btn-hover: #21263d;
+
+  /* Node & Link Defaults - DARK */
+  --node-default-bg: rgba(99, 102, 241, 0.06);
+  --node-default-border: rgba(99, 102, 241, 0.45);
+  --node-default-text: #a5b4fc;
+  --link-default-color: rgba(99, 102, 241, 0.25);
 }
 
 body.light {
@@ -98,6 +97,12 @@ body.light {
   --pill-btn-bg: #f3f4f6;
   --pill-btn-border: #d1d5db;
   --pill-btn-hover: #e5e7eb;
+
+  /* Node & Link Defaults - LIGHT */
+  --node-default-bg: rgba(99, 102, 241, 0.03);
+  --node-default-border: rgba(99, 102, 241, 0.3);
+  --node-default-text: #4f46e5;
+  --link-default-color: rgba(99, 102, 241, 0.18);
 }
 
 * { box-sizing: border-box; }
@@ -125,63 +130,164 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 148, 176, 0.45);
 }
-/* Hide scrollbar by default in modern browsers if supported */
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(139, 148, 176, 0.25) transparent;
 }
 
+/* Premium Visual workbench canvas grid background */
+.canvas-grid {
+  background-image: radial-gradient(var(--border-color) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+
+/* Premium Interactive Micro-animations for BST Nodes */
+.bst-node-group {
+  cursor: pointer;
+}
+
+.bst-node-circle {
+  transition: r 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              stroke-width 0.35s ease, 
+              fill 0.35s ease, 
+              stroke 0.35s ease, 
+              filter 0.35s ease;
+}
+
+.bst-node-text {
+  transition: font-size 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              fill 0.35s ease,
+              font-weight 0.35s ease;
+}
+
+.bst-node-group:hover .bst-node-circle {
+  r: 25.5px; /* Scale radius from 22px to 25.5px */
+  stroke-width: 2.5px;
+  stroke: #818cf8; /* indigo-400 */
+  fill: rgba(99, 102, 241, 0.18) !important;
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.45));
+}
+
+body.light .bst-node-group:hover .bst-node-circle {
+  stroke: #4f46e5;
+  fill: rgba(99, 102, 241, 0.1) !important;
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.25));
+}
+
+.bst-node-group:hover .bst-node-text {
+  font-size: 13.5px;
+  fill: #ffffff !important;
+  font-weight: 900;
+}
+
+body.light .bst-node-group:hover .bst-node-text {
+  fill: #4f46e5 !important;
+}
+
+/* Edge active flow marching ants animation */
+@keyframes edgeFlow {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.edge-active-flow {
+  stroke-dasharray: 6 4;
+  animation: edgeFlow 0.5s linear infinite;
+}
+
 /* ===== Progressive Disclosure Animations ===== */
 
 @keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(40px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes heroFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes heroPulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.08); }
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 @keyframes gridReveal {
-  from { opacity: 0; }
-  to { opacity: 0.4; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.4;
+  }
 }
 
 .animate-slideInLeft {
   animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 .animate-slideInRight {
   animation: slideInRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 .animate-slideInRight-delay {
   animation: slideInRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
   opacity: 0;
 }
+
 .animate-fadeInUp {
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 .animate-heroFloat {
   animation: heroFloat 4s ease-in-out infinite;
 }
+
 .animate-heroPulse {
   animation: heroPulse 3s ease-in-out infinite;
 }
+
 .animate-gridReveal {
   animation: gridReveal 1s ease-out forwards;
 }
@@ -191,9 +297,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: calc(100vh - 4rem);
-  padding: 2rem;
+  padding: 4rem 2rem 2rem 2rem;
   position: relative;
 }
 
@@ -216,3 +322,4 @@ body {
   z-index: 50;
   animation: fadeInUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+

@@ -6,106 +6,153 @@ interface Props {
   highlightLine?: number;
 }
 
-// ── Generic Pseudocode ────────────────────────────────
 const INSERT_CODE = [
-  "function insert(word):",
-  "    node = root",
-  "    for each char in word:",
-  "        if char not in node.children:",
-  "            node.children[char] = new TrieNode()",
-  "        node = node.children[char]",
-  "    node.isEndOfWord = true"
+  "function insert(node, val):",
+  "    if node == null:",
+  "        return new Node(val)",
+  "    if val < node.val:",
+  "        node.left = insert(node.left, val)",
+  "    else if val > node.val:",
+  "        node.right = insert(node.right, val)",
+  "    return node"
 ];
 
 const SEARCH_CODE = [
-  "function search(word):",
-  "    node = root",
-  "    for each char in word:",
-  "        if char not in node.children:",
-  "            return false",
-  "        node = node.children[char]",
-  "    return node.isEndOfWord"
+  "function search(node, val):",
+  "    if node == null or node.val == val:",
+  "        return node",
+  "    if val < node.val:",
+  "        return search(node.left, val)",
+  "    else:",
+  "        return search(node.right, val)"
 ];
 
-const STARTSWITH_CODE = [
-  "function startsWith(prefix):",
-  "    node = root",
-  "    for each char in prefix:",
-  "        if char not in node.children:",
-  "            return false",
-  "        node = node.children[char]",
-  "    return true"
+const DELETE_CODE = [
+  "function deleteNode(root, val):",
+  "    if root == null: return null",
+  "    if val < root.val:",
+  "        root.left = deleteNode(root.left, val)",
+  "    else if val > root.val:",
+  "        root.right = deleteNode(root.right, val)",
+  "    else:",
+  "        if root.left == null: return root.right",
+  "        if root.right == null: return root.left",
+  "        root.val = minValue(root.right)",
+  "        root.right = deleteNode(root.right, root.val)",
+  "    return root"
 ];
 
-// ── Full Java Class Code (User provided structure) ───
-const TRIE_FULL_JAVA_CODE = [
-  "class TrieNode",
-  "{",
-  "    TrieNode[] child;",
-  "    boolean isEnd;",
+const INORDER_CODE = [
+  "function inorder(node):",
+  "    if node == null: return",
+  "    inorder(node.left)",
+  "    print(node.val)",
+  "    inorder(node.right)",
+  "    return"
+];
+
+const PREORDER_CODE = [
+  "function preorder(node):",
+  "    if node == null: return",
+  "    print(node.val)",
+  "    preorder(node.left)",
+  "    preorder(node.right)",
+  "    return"
+];
+
+const POSTORDER_CODE = [
+  "function postorder(node):",
+  "    if node == null: return",
+  "    postorder(node.left)",
+  "    postorder(node.right)",
+  "    print(node.val)",
+  "    return"
+];
+
+const BFS_CODE = [
+  "function bfs(root):",
+  "    queue = [root]",
+  "    while queue is not empty:",
+  "        curr = queue.pop(0)",
+  "        print(curr.val)",
+  "        if curr.left:",
+  "            queue.append(curr.left)",
+  "        if curr.right:",
+  "            queue.append(curr.right)"
+];
+
+const BST_FULL_JAVA_CODE = [
+  "class Node {",
+  "    int val;",
+  "    Node left, right;",
   "",
-  "    public TrieNode()",
-  "    {",
-  "        child = new TrieNode[26];",
-  "        isEnd = false;",
+  "    public Node(int item) {",
+  "        val = item;",
+  "        left = right = null;",
   "    }",
   "}",
   "",
-  "class Trie",
-  "{",
-  "    TrieNode root;",
+  "class BinarySearchTree {",
+  "    Node root;",
   "",
-  "    public Trie()",
-  "    {",
-  "        root = new TrieNode();",
+  "    public BinarySearchTree() {",
+  "        root = null;",
   "    }",
   "",
-  "    public void insert(String word)",
-  "    {",
-  "        TrieNode current = root;",
-  "        for(int i = 0; i < word.length(); i++)",
-  "        {",
-  "            char ch = word.charAt(i);",
-  "            int index = ch - 'a';",
-  "            if(current.child[index] == null)",
-  "            {",
-  "                current.child[index] = new TrieNode();",
-  "            }",
-  "            current = current.child[index];",
-  "        }",
-  "        current.isEnd = true;",
+  "    public void insert(int key) {",
+  "        root = insertRec(root, key);",
   "    }",
   "",
-  "    public boolean search(String word)",
-  "    {",
-  "        TrieNode current = root;",
-  "        for(int i = 0; i < word.length(); i++)",
-  "        {",
-  "            char ch = word.charAt(i);",
-  "            int index = ch - 'a';",
-  "            if(current.child[index] == null)",
-  "            {",
-  "                return false;",
-  "            }",
-  "            current = current.child[index];",
+  "    private Node insertRec(Node root, int key) {",
+  "        if (root == null) {",
+  "            root = new Node(key);",
+  "            return root;",
   "        }",
-  "        return current.isEnd;",
+  "        if (key < root.val)",
+  "            root.left = insertRec(root.left, key);",
+  "        else if (key > root.val)",
+  "            root.right = insertRec(root.right, key);",
+  "        return root;",
   "    }",
   "",
-  "    public boolean startsWith(String prefix)",
-  "    {",
-  "        TrieNode current = root;",
-  "        for(int i = 0; i < prefix.length(); i++)",
-  "        {",
-  "            char ch = prefix.charAt(i);",
-  "            int index = ch - 'a';",
-  "            if(current.child[index] == null)",
-  "            {",
-  "                return false;",
-  "            }",
-  "            current = current.child[index];",
+  "    public boolean search(int key) {",
+  "        return searchRec(root, key) != null;",
+  "    }",
+  "",
+  "    private Node searchRec(Node root, int key) {",
+  "        if (root == null || root.val == key)",
+  "            return root;",
+  "        if (key < root.val)",
+  "            return searchRec(root.left, key);",
+  "        return searchRec(root.right, key);",
+  "    }",
+  "",
+  "    public void delete(int key) {",
+  "        root = deleteRec(root, key);",
+  "    }",
+  "",
+  "    private Node deleteRec(Node root, int key) {",
+  "        if (root == null) return root;",
+  "        if (key < root.val)",
+  "            root.left = deleteRec(root.left, key);",
+  "        else if (key > root.val)",
+  "            root.right = deleteRec(root.right, key);",
+  "        else {",
+  "            if (root.left == null) return root.right;",
+  "            else if (root.right == null) return root.left;",
+  "            root.val = minValue(root.right);",
+  "            root.right = deleteRec(root.right, root.val);",
   "        }",
-  "        return true;",
+  "        return root;",
+  "    }",
+  "",
+  "    private int minValue(Node root) {",
+  "        int minv = root.val;",
+  "        while (root.left != null) {",
+  "            minv = root.left.val;",
+  "            root = root.left;",
+  "        }",
+  "        return minv;",
   "    }",
   "}"
 ];
@@ -113,34 +160,32 @@ const TRIE_FULL_JAVA_CODE = [
 function highlightJavaTokens(text: string): string {
   let html = text;
 
-  // Highlight strings: "..."
+  // Highlight strings
   html = html.replace(/("(?:[^"\\]|\\.)*")/g, '<span style="color: #ce9178;">$1</span>');
 
-  // Control flow keywords: pink/magenta
+  // Keywords
   const controlKeywords = ['if', 'for', 'while', 'return', 'break', 'else'];
   controlKeywords.forEach(kw => {
     const reg = new RegExp(`\\b(${kw})\\b`, 'g');
     html = html.replace(reg, '<span style="color: #c586c0;">$1</span>');
   });
 
-  // Structural modifiers: blue
   const typeKeywords = ['public', 'private', 'static', 'class', 'void', 'int', 'boolean', 'new'];
   typeKeywords.forEach(kw => {
     const reg = new RegExp(`\\b(${kw})\\b`, 'g');
     html = html.replace(reg, '<span style="color: #569cd6;">$1</span>');
   });
 
-  // Custom class types: teal
-  const classTypes = ['String', 'List', 'ArrayList', 'TrieNode', 'Trie', 'Node'];
+  const classTypes = ['String', 'Node', 'BinarySearchTree', 'System', 'out'];
   classTypes.forEach(t => {
     const reg = new RegExp(`\\b(${t})\\b`, 'g');
     html = html.replace(reg, '<span style="color: #4ec9b0;">$1</span>');
   });
 
-  // Numbers: light green
+  // Numbers
   html = html.replace(/\b(\d+)\b/g, '<span style="color: #b5cea8;">$1</span>');
 
-  // Method calls: yellow
+  // Methods
   html = html.replace(/\b(\w+)(?=\()/g, '<span style="color: #dcdcaa;">$1</span>');
 
   return html;
@@ -161,7 +206,7 @@ function highlightJava(line: string): string {
   return highlightJavaTokens(escaped);
 }
 
-export function TriePseudocode({ activeOperation, highlightLine }: Props) {
+export function BSTPseudocode({ activeOperation, highlightLine }: Props) {
   const [showJavaModal, setShowJavaModal] = useState(false);
   const [modalAnimate, setModalAnimate] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -169,18 +214,25 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
   const genericCode = (() => {
     if (activeOperation === 'insert') return INSERT_CODE;
     if (activeOperation === 'search') return SEARCH_CODE;
-    if (activeOperation === 'startsWith') return STARTSWITH_CODE;
+    if (activeOperation === 'delete') return DELETE_CODE;
+    if (activeOperation === 'inorder') return INORDER_CODE;
+    if (activeOperation === 'preorder') return PREORDER_CODE;
+    if (activeOperation === 'postorder') return POSTORDER_CODE;
+    if (activeOperation === 'bfs') return BFS_CODE;
     return null;
   })();
 
   const title = (() => {
-    if (activeOperation === 'insert') return 'Trie: Insert';
-    if (activeOperation === 'search') return 'Trie: Search';
-    if (activeOperation === 'startsWith') return 'Trie: StartsWith';
-    return 'Trie Operations';
+    if (activeOperation === 'insert') return 'BST: Insert';
+    if (activeOperation === 'search') return 'BST: Search';
+    if (activeOperation === 'delete') return 'BST: Delete';
+    if (activeOperation === 'inorder') return 'Inorder DFS';
+    if (activeOperation === 'preorder') return 'Preorder DFS';
+    if (activeOperation === 'postorder') return 'Postorder DFS';
+    if (activeOperation === 'bfs') return 'Level-order BFS';
+    return 'BST Operations';
   })();
 
-  // ALL hooks must be called before any early return (Rules of Hooks)
   const handleOpenModal = () => {
     setShowJavaModal(true);
   };
@@ -202,16 +254,15 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(TRIE_FULL_JAVA_CODE.join('\n'));
+    navigator.clipboard.writeText(BST_FULL_JAVA_CODE.join('\n'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Early return AFTER all hooks have been called
   if (!genericCode) {
     return (
       <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-2xl p-4 shadow-xl backdrop-blur-xl h-full flex flex-col justify-center items-center text-[var(--muted-color)] text-xs font-semibold">
-        Perform an action (Insert, Search, or StartsWith) to start line tracking
+        Perform a tree operation (Insert, Search, Delete, or Traversal) to trace execution.
       </div>
     );
   }
@@ -233,7 +284,7 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
         </button>
       </div>
 
-      {/* Code list (Generic Pseudocode) */}
+      {/* Code Lines */}
       <div className="flex-grow font-mono text-[11px] overflow-y-auto space-y-1 scrollbar-none">
         {genericCode.map((line, idx) => {
           const isHighlighted = idx === highlightLine;
@@ -253,7 +304,7 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
         })}
       </div>
 
-      {/* VS Code Theme Full Screen Java Overlay Modal */}
+      {/* Java Code Modal */}
       {showJavaModal && createPortal(
         <div 
           className={`fixed inset-0 bg-black/75 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-8 transition-opacity duration-350 ease-[cubic-bezier(0.25,1,0.5,1)] ${
@@ -261,7 +312,6 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
           }`}
           onClick={handleCloseModal}
         >
-          {/* Modal Container: Animated with macOS Genie-like scale & bounce cubic bezier curves */}
           <div 
             className={`w-full max-w-4xl h-[85vh] bg-[#1e1e1e] rounded-xl border border-[#333] shadow-2xl flex flex-col overflow-hidden font-mono text-xs transition-all duration-350 transform ${
               modalAnimate 
@@ -271,22 +321,19 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
             onClick={(e) => e.stopPropagation()}
             style={{ transformOrigin: 'bottom center' }}
           >
-            {/* Title Bar (VS Code Look) */}
+            {/* Title Bar */}
             <div className="bg-[#2d2d2d] px-4 py-2.5 flex items-center justify-between border-b border-[#1e1e1e] flex-shrink-0">
               <div className="flex items-center gap-6">
-                {/* Traffic Light Dots */}
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-[#ff5f56] cursor-pointer hover:opacity-85" onClick={handleCloseModal} />
                   <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                   <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
                 </div>
-                {/* Active Tab filename */}
                 <div className="bg-[#1e1e1e] px-4 py-1.5 rounded-t-lg border-t-2 border-[#007acc] flex items-center gap-2 text-[11px] font-semibold">
-                  <span className="text-[#f59e0b]">☕</span> Trie.java
+                  <span className="text-[#f59e0b]">☕</span> BST.java
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleCopy}
@@ -304,19 +351,17 @@ export function TriePseudocode({ activeOperation, highlightLine }: Props) {
               </div>
             </div>
 
-            {/* Code Body - Single Scroll Container with sync scroll */}
+            {/* Code Body */}
             <div className="flex-grow overflow-auto p-6 bg-[#1e1e1e] leading-relaxed scrollbar-thin select-text">
               <div className="flex min-w-max">
-                {/* Line Numbers */}
                 <div className="text-right text-[#858585] pr-4 select-none border-r border-[#333] flex flex-col min-w-[30px] font-sans">
-                  {TRIE_FULL_JAVA_CODE.map((_, idx) => (
+                  {BST_FULL_JAVA_CODE.map((_, idx) => (
                     <span key={idx}>{idx + 1}</span>
                   ))}
                 </div>
 
-                {/* Code text */}
                 <pre className="pl-4 text-[#d4d4d4] whitespace-pre font-mono">
-                  {TRIE_FULL_JAVA_CODE.map((line, idx) => (
+                  {BST_FULL_JAVA_CODE.map((line, idx) => (
                     <div
                       key={idx}
                       dangerouslySetInnerHTML={{ __html: highlightJava(line) || '&nbsp;' }}

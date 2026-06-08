@@ -4,7 +4,7 @@ import type { VisualTrieNode } from '../types';
 interface Props {
   nodes: Record<string, VisualTrieNode>;
   activeNodeId?: string | null;
-  activeOperation?: 'insert' | 'search' | 'startsWith';
+  activeOperation?: string | null;
 }
 
 const NODE_RADIUS = 20;
@@ -158,7 +158,7 @@ export function TrieTreeCanvas({ nodes, activeNodeId, activeOperation }: Props) 
 
   return (
     <div
-      className="w-full overflow-auto p-4 bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-2xl shadow-xl backdrop-blur-xl flex flex-col items-center relative"
+      className="w-full overflow-auto p-4 bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-2xl shadow-xl backdrop-blur-xl flex flex-col items-center relative canvas-grid"
       style={{ minHeight: '380px' }}
     >
       {/* Legend */}

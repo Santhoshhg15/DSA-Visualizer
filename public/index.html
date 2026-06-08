@@ -274,6 +274,9 @@
   .portal-card.pattern-card:hover {
     box-shadow: 0 20px 40px rgba(94, 168, 255, 0.05);
   }
+  .portal-card.tree-card:hover {
+    box-shadow: 0 20px 40px rgba(255, 110, 180, 0.05);
+  }
 
   .card-header {
     display: flex;
@@ -301,6 +304,11 @@
     background: var(--blue-dim);
     color: var(--blue);
     border: 1px solid rgba(94, 168, 255, 0.2);
+  }
+  .tree-icon {
+    background: var(--pink-dim);
+    color: var(--pink);
+    border: 1px solid rgba(255, 110, 180, 0.2);
   }
 
   .card-header h2 {
@@ -371,6 +379,16 @@
   .btn-pattern:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 30px rgba(94,168,255,0.4);
+  }
+  
+  .btn-tree {
+    background: linear-gradient(135deg, var(--pink) 0%, #eb4b96 100%);
+    color: var(--bg);
+    box-shadow: 0 8px 24px rgba(255, 110, 180, 0.25);
+  }
+  .btn-tree:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255, 110, 180, 0.4);
   }
 
   footer {
@@ -475,6 +493,38 @@
       </ul>
       <a href="/pattern" class="btn-launch btn-pattern">
         Launch Pattern Visualizer
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Card 3: Tree Visualizer -->
+    <div class="portal-card tree-card">
+      <div class="card-header">
+        <div class="card-icon tree-icon">🌳</div>
+        <h2>Tree Visualizer</h2>
+      </div>
+      <p class="card-desc">
+        Construct and traverse binary search trees in real time. Animate insertions, deletions, and DFS/BFS traversals with call stack visualizations.
+      </p>
+      <ul class="feature-list">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          BST Node Insert, Delete, and Search
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Animated DFS (In/Pre/Post-order) & BFS
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Interactive Recursion Stack & Queue Panel
+        </li>
+      </ul>
+      <a href="/tree-visualizer" class="btn-launch btn-tree">
+        Launch Tree Visualizer
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>
