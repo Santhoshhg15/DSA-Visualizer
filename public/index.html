@@ -277,6 +277,9 @@
   .portal-card.tree-card:hover {
     box-shadow: 0 20px 40px rgba(255, 110, 180, 0.05);
   }
+  .portal-card.graph-card:hover {
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.05);
+  }
 
   .card-header {
     display: flex;
@@ -309,6 +312,11 @@
     background: var(--pink-dim);
     color: var(--pink);
     border: 1px solid rgba(255, 110, 180, 0.2);
+  }
+  .graph-icon {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
   }
 
   .card-header h2 {
@@ -389,6 +397,16 @@
   .btn-tree:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 30px rgba(255, 110, 180, 0.4);
+  }
+
+  .btn-graph {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: var(--bg);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+  }
+  .btn-graph:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
   }
 
   footer {
@@ -525,6 +543,38 @@
       </ul>
       <a href="/tree-visualizer" class="btn-launch btn-tree">
         Launch Tree Visualizer
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Card 4: Graph Visualizer -->
+    <div class="portal-card graph-card">
+      <div class="card-header">
+        <div class="card-icon graph-icon">🕸️</div>
+        <h2>Graph Visualizer</h2>
+      </div>
+      <p class="card-desc">
+        Learn, Build, and Explore Graph Algorithms. Start with fundamentals and progress to complex shortest path algorithms.
+      </p>
+      <ul class="feature-list">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Rich Education Panel (7 Concepts)
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Graph Canvas (Coming Soon)
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Algorithms (Coming Soon)
+        </li>
+      </ul>
+      <a href="/graph" class="btn-launch btn-graph">
+        Launch Graph Visualizer
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>

@@ -6,7 +6,7 @@ class TrieNode {
 }
 
 export function buildTrie(gridRaw: string, wordsRaw: string): Step[] {
-  const rows = gridRaw.split(',').map(r => r.trim().toUpperCase().replace(/[^A-Z]/g, ''));
+  const rows = gridRaw.split(',').map(r => r.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''));
   const words = wordsRaw.split(',').map(w => w.trim().toUpperCase()).filter(Boolean);
   const numCols = rows[0]?.length ?? 0;
   const grid = rows.filter(r => r.length === numCols && r.length > 0);

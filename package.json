@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --prefix string-pattern-visualizer && npm run build --prefix string-pattern-visualizer && npm install --prefix tree-visualizer && npm run build --prefix tree-visualizer && node copy-dist.js",
+    "build": "npm install --prefix string-pattern-visualizer && npm run build --prefix string-pattern-visualizer && npm install --prefix tree-visualizer && npm run build --prefix tree-visualizer && npm install --prefix graph-visualizer && npm run build --prefix graph-visualizer && node copy-dist.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

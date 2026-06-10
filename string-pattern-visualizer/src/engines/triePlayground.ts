@@ -15,7 +15,7 @@ function cloneNodes(nodes: Record<string, VisualTrieNode>): Record<string, Visua
 export function traceInsert(word: string, currentNodes: Record<string, VisualTrieNode>): { steps: Step[]; finalNodes: Record<string, VisualTrieNode> } {
   const steps: Step[] = [];
   const nodes = cloneNodes(currentNodes);
-  const w = word.toUpperCase().trim().replace(/[^A-Z]/g, '');
+  const w = word.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
 
   if (!w) {
     return {
@@ -127,7 +127,7 @@ export function traceInsert(word: string, currentNodes: Record<string, VisualTri
 export function traceSearch(word: string, currentNodes: Record<string, VisualTrieNode>): Step[] {
   const steps: Step[] = [];
   const nodes = cloneNodes(currentNodes);
-  const w = word.toUpperCase().trim().replace(/[^A-Z]/g, '');
+  const w = word.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
 
   if (!w) {
     return [{
@@ -233,7 +233,7 @@ export function traceSearch(word: string, currentNodes: Record<string, VisualTri
 export function traceStartsWith(prefix: string, currentNodes: Record<string, VisualTrieNode>): Step[] {
   const steps: Step[] = [];
   const nodes = cloneNodes(currentNodes);
-  const pre = prefix.toUpperCase().trim().replace(/[^A-Z]/g, '');
+  const pre = prefix.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
 
   if (!pre) {
     return [{

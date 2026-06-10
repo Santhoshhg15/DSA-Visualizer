@@ -30,3 +30,10 @@ copyDir(
   path.join(__dirname, 'public', 'tree-visualizer'),
   'tree-visualizer'
 );
+
+// Copy Graph Visualizer
+copyDir(
+  path.join(__dirname, 'graph-visualizer', 'dist'),
+  path.join(__dirname, 'public', 'graph'),
+  'graph-visualizer'
+);

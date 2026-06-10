@@ -25,7 +25,7 @@ export function InputPanel() {
   };
 
   const handleInsert = () => {
-    const word = wordInput.toUpperCase().trim().replace(/[^A-Z]/g, '');
+    const word = wordInput.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
     if (!word) return;
     const { steps, finalNodes } = traceInsert(word, trieNodes);
     const nextWords = trieWords.includes(word) ? trieWords : [...trieWords, word];
@@ -34,14 +34,14 @@ export function InputPanel() {
   };
 
   const handleSearch = () => {
-    const word = wordInput.toUpperCase().trim().replace(/[^A-Z]/g, '');
+    const word = wordInput.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
     if (!word) return;
     const steps = traceSearch(word, trieNodes);
     setStepsAndPlay(steps);
   };
 
   const handleStartsWith = () => {
-    const prefix = wordInput.toUpperCase().trim().replace(/[^A-Z]/g, '');
+    const prefix = wordInput.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
     if (!prefix) return;
     const steps = traceStartsWith(prefix, trieNodes);
     setStepsAndPlay(steps);

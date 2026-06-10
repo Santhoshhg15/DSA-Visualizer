@@ -22,6 +22,9 @@ app.use('/pattern', express.static(path.join(__dirname, 'public', 'pattern')));
 // Serve Tree Visualizer static files at /tree-visualizer prefix
 app.use('/tree-visualizer', express.static(path.join(__dirname, 'public', 'tree-visualizer')));
 
+// Serve Graph Visualizer static files at /graph prefix
+app.use('/graph', express.static(path.join(__dirname, 'public', 'graph')));
+
 // Serve index at root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -46,6 +49,11 @@ app.get('/pattern/*any', (req, res) => {
 // Fallback for Tree Visualizer SPA router paths
 app.get('/tree-visualizer/*any', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tree-visualizer', 'index.html'));
+});
+
+// Fallback for Graph Visualizer SPA router paths
+app.get('/graph/*any', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'graph', 'index.html'));
 });
 
 // Translation API Endpoint
