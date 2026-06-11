@@ -1,13 +1,16 @@
 import { useIslandsStore } from '../../stores/useIslandsStore';
 import { useCycleStore } from '../../stores/useCycleStore';
+import { useBipartiteStore } from '../../stores/useBipartiteStore';
 import { islandsPresets } from './islandsPresets';
 import { generateIslandsSteps } from './stepEngine';
 import { cyclePresets } from '../cycleDetection/cyclePresets';
 import { generateCycleSteps } from '../cycleDetection/stepEngine';
+import { bipartitePresets } from '../bipartite/bipartitePresets';
+import { generateBipartiteSteps } from '../bipartite/stepEngine';
 
 export interface IslandsPanelProps {
-  selectedProgram: 'islands' | 'cycle';
-  setSelectedProgram: (prog: 'islands' | 'cycle') => void;
+  selectedProgram: 'islands' | 'cycle' | 'bipartite';
+  setSelectedProgram: (prog: 'islands' | 'cycle' | 'bipartite') => void;
 }
 
 export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPanelProps) {
@@ -21,6 +24,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
   } = useIslandsStore();
 
   const { currentPreset: selectedCyclePreset, loadPreset: loadCyclePreset, setSteps: setCycleSteps, reset: resetCycle } = useCycleStore();
+  const { currentPreset: selectedBipartitePreset, loadPreset: loadBipartitePreset, setSteps: setBipartiteSteps, reset: resetBipartite } = useBipartiteStore();
 
   const handleIslandPresetChange = (presetId: string, currentVersion: 'leetcode' | 'gfg' = version) => {
     const preset = islandsPresets.find(p => p.id === presetId);
@@ -100,6 +104,35 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
             <div>
               <h4 className="font-bold text-white text-[13px]">Cycle Detection</h4>
               <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">Union-Find • DFS Back-Edge</p>
+            </div>
+          </div>
+        </button>
+
+        {/* Card 3: Bipartite Graph Check */}
+        <button
+          onClick={() => {
+            setSelectedProgram('bipartite');
+            const activePresetId = selectedBipartitePreset || bipartitePresets[0].id;
+            const preset = bipartitePresets.find(p => p.id === activePresetId);
+            if (preset) {
+              resetBipartite();
+              loadBipartitePreset(preset.id, preset);
+              const steps = generateBipartiteSteps(preset.nodes, preset.edges, preset.directed);
+              setBipartiteSteps(steps);
+            }
+          }}
+          className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
+            selectedProgram === 'bipartite'
+              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-50"></div>
+          <div className="relative z-10 flex items-start gap-3">
+            <div className="text-xl mt-0.5">🎨</div>
+            <div>
+              <h4 className="font-bold text-white text-[13px]">Bipartite Graph Check</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">BFS 2-Coloring • Undirected + Directed</p>
             </div>
           </div>
         </button>

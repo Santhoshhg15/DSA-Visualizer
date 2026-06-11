@@ -3,10 +3,16 @@ import { useCycleStore } from '../../stores/useCycleStore';
 import { cyclePresets } from './cyclePresets';
 import { generateCycleSteps } from './stepEngine';
 import type { Node, Edge } from '../../stores/useGraphStore';
+import { useIslandsStore } from '../../stores/useIslandsStore';
+import { islandsPresets } from '../numberOfIslands/islandsPresets';
+import { generateIslandsSteps } from '../numberOfIslands/stepEngine';
+import { useBipartiteStore } from '../../stores/useBipartiteStore';
+import { bipartitePresets } from '../bipartite/bipartitePresets';
+import { generateBipartiteSteps } from '../bipartite/stepEngine';
 
 export interface CyclePanelProps {
-  selectedProgram: 'islands' | 'cycle';
-  setSelectedProgram: (prog: 'islands' | 'cycle') => void;
+  selectedProgram: 'islands' | 'cycle' | 'bipartite';
+  setSelectedProgram: (prog: 'islands' | 'cycle' | 'bipartite') => void;
 }
 
 export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelProps) {
@@ -20,6 +26,9 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
     reset,
     nodes,
   } = useCycleStore();
+
+  const { selectedPreset: selectedIslandPreset, loadPreset: loadIslandPreset, setSteps: setIslandsSteps, reset: resetIslands, version } = useIslandsStore();
+  const { currentPreset: selectedBipartitePreset, loadPreset: loadBipartitePreset, setSteps: setBipartiteSteps, reset: resetBipartite } = useBipartiteStore();
 
   const [customNodes, setCustomNodes] = useState('A, B, C, D, E');
   const [customEdges, setCustomEdges] = useState('A-B\nB-C\nC-D');
@@ -200,7 +209,17 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       <div className="flex flex-col gap-3">
         {/* Card 1: Islands */}
         <button
-          onClick={() => setSelectedProgram('islands')}
+          onClick={() => {
+            setSelectedProgram('islands');
+            const activePresetId = selectedIslandPreset || islandsPresets[0].id;
+            const preset = islandsPresets.find(p => p.id === activePresetId);
+            if (preset) {
+              resetIslands();
+              loadIslandPreset(preset.id, preset.grid);
+              const steps = generateIslandsSteps(preset.grid, version);
+              setIslandsSteps(steps);
+            }
+          }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'islands'
               ? 'border-blue-500 bg-blue-500/10 shadow-md'
@@ -221,7 +240,12 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
 
         {/* Card 2: Cycle Detection */}
         <button
-          onClick={() => setSelectedProgram('cycle')}
+          onClick={() => {
+            setSelectedProgram('cycle');
+            if (!currentPreset && cyclePresets.length > 0) {
+              handlePresetChange(cyclePresets[0].id);
+            }
+          }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'cycle'
               ? 'border-blue-500 bg-blue-500/10 shadow-md'
@@ -236,6 +260,35 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
                 Union-Find • DFS Back-Edge
               </p>
+            </div>
+          </div>
+        </button>
+
+        {/* Card 3: Bipartite Graph Check */}
+        <button
+          onClick={() => {
+            setSelectedProgram('bipartite');
+            const activePresetId = selectedBipartitePreset || bipartitePresets[0].id;
+            const preset = bipartitePresets.find(p => p.id === activePresetId);
+            if (preset) {
+              resetBipartite();
+              loadBipartitePreset(preset.id, preset);
+              const steps = generateBipartiteSteps(preset.nodes, preset.edges, preset.directed);
+              setBipartiteSteps(steps);
+            }
+          }}
+          className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
+            selectedProgram === 'bipartite'
+              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-50"></div>
+          <div className="relative z-10 flex items-start gap-3">
+            <div className="text-xl mt-0.5">🎨</div>
+            <div>
+              <h4 className="font-bold text-white text-[13px]">Bipartite Graph Check</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">BFS 2-Coloring • Undirected + Directed</p>
             </div>
           </div>
         </button>

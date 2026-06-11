@@ -417,3 +417,20 @@ body.light .bst-node-group:hover .bst-node-text {
   animation: nodeCycleFlash 1s ease-in-out infinite;
 }
 
+@keyframes conflictFlash {
+  0%, 33.3%, 66.6%, 100% { fill: #DC2626; }
+  16.6%, 50%, 83.3% { fill: #FFFFFF; }
+}
+
+.animate-conflict-flash {
+  animation: conflictFlash 0.6s ease-in-out 3;
+}
+
+@keyframes pulseStroke {
+  0%, 100% { stroke-width: 3.5px; opacity: 1; }
+  50% { stroke-width: 5px; opacity: 0.6; }
+}
+
+.animate-pulse-stroke {
+  animation: pulseStroke 1s ease-in-out infinite;
+}

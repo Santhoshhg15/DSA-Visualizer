@@ -23,6 +23,12 @@ import { CyclePanel } from './programs/cycleDetection/CyclePanel';
 import { CycleRightPanel } from './programs/cycleDetection/CycleRightPanel';
 import { CycleBottomPanel } from './programs/cycleDetection/CycleBottomPanel';
 import { useCycleStore } from './stores/useCycleStore';
+import { BipartiteCanvas } from './programs/bipartite/BipartiteCanvas';
+import { BipartitePanel } from './programs/bipartite/BipartitePanel';
+import { BipartiteRightPanel } from './programs/bipartite/BipartiteRightPanel';
+import { BipartiteBottomPanel } from './programs/bipartite/BipartiteBottomPanel';
+import { useBipartiteStore } from './stores/useBipartiteStore';
+
 
 export default function App() {
   const { darkMode, setDarkMode } = useStore();
@@ -34,18 +40,19 @@ export default function App() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   
-  // Selected Program under PROGRAMS tab ('islands' | 'cycle')
-  const [selectedProgram, setSelectedProgram] = useState<'islands' | 'cycle'>('islands');
+  // Selected Program under PROGRAMS tab ('islands' | 'cycle' | 'bipartite')
+  const [selectedProgram, setSelectedProgram] = useState<'islands' | 'cycle' | 'bipartite'>('islands');
 
   // Auto-switch right tab to TRACE when algorithm plays
   const islandsPlaying = useIslandsStore(state => state.playing);
   const cyclePlaying = useCycleStore(state => state.playing);
+  const bipartitePlaying = useBipartiteStore(state => state.playing);
   
   useEffect(() => {
-    if (playing || islandsPlaying || cyclePlaying) {
+    if (playing || islandsPlaying || cyclePlaying || bipartitePlaying) {
       setActiveRightTab('trace');
     }
-  }, [playing, islandsPlaying, cyclePlaying]);
+  }, [playing, islandsPlaying, cyclePlaying, bipartitePlaying]);
   
   // Right Panel State
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
@@ -295,6 +302,8 @@ export default function App() {
                         <div key="programs" className="flex flex-col gap-4 animate-fadeInUp">
                           {selectedProgram === 'cycle' ? (
                             <CyclePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
+                          ) : selectedProgram === 'bipartite' ? (
+                            <BipartitePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
                           ) : (
                             <IslandsPanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
                           )}
@@ -319,13 +328,25 @@ export default function App() {
                 <div className="flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-[var(--border-color)] overflow-hidden bg-[var(--panel-bg)] min-h-[400px] lg:min-h-[300px] relative z-10">
                   <div className="flex-1 relative min-h-[200px]">
                     {activeWorkspaceMode === 'programs' ? (
-                      selectedProgram === 'cycle' ? <CycleCanvas /> : <IslandsCanvas />
+                      selectedProgram === 'cycle' ? (
+                        <CycleCanvas />
+                      ) : selectedProgram === 'bipartite' ? (
+                        <BipartiteCanvas />
+                      ) : (
+                        <IslandsCanvas />
+                      )
                     ) : (
                       <GraphCanvas />
                     )}
                   </div>
                   {activeWorkspaceMode === 'programs' ? (
-                    selectedProgram === 'cycle' ? <CycleBottomPanel /> : <IslandsBottomPanel />
+                    selectedProgram === 'cycle' ? (
+                      <CycleBottomPanel />
+                    ) : selectedProgram === 'bipartite' ? (
+                      <BipartiteBottomPanel />
+                    ) : (
+                      <IslandsBottomPanel />
+                    )
                   ) : (
                     <AlgorithmOutput />
                   )}
@@ -370,6 +391,8 @@ export default function App() {
                             if (activeWorkspaceMode === 'programs') {
                               if (selectedProgram === 'cycle') {
                                 useCycleStore.getState().setSteps([]);
+                              } else if (selectedProgram === 'bipartite') {
+                                useBipartiteStore.getState().setSteps([]);
                               } else {
                                 useIslandsStore.getState().setSteps([]);
                               }
@@ -442,6 +465,8 @@ export default function App() {
                       {activeWorkspaceMode === 'programs' ? (
                         selectedProgram === 'cycle' ? (
                           <CycleRightPanel activeRightTab={activeRightTab} />
+                        ) : selectedProgram === 'bipartite' ? (
+                          <BipartiteRightPanel activeRightTab={activeRightTab} />
                         ) : (
                           <IslandsRightPanel activeRightTab={activeRightTab} />
                         )
