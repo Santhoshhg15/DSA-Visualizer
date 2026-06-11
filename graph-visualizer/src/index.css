@@ -388,3 +388,32 @@ body.light .bst-node-group:hover .bst-node-text {
   from { fill: #FFB800; }
   to { fill: #00C896; }
 }
+
+@keyframes nodeCycleFlash {
+  0%, 100% { fill: #DC2626; stroke: #991B1B; filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.9)); }
+  50% { fill: #EF4444; stroke: #B91C1C; filter: drop-shadow(0 0 12px rgba(239, 68, 68, 1)); }
+}
+
+@keyframes nodeStuckFlash {
+  0%, 100% { fill: #DC2626; stroke: #991B1B; opacity: 1; }
+  50% { fill: #7F1D1D; stroke: #DC2626; opacity: 0.7; }
+}
+
+@keyframes amberFlash {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.3)); }
+  50% { transform: scale(1.2) translateY(-2px); filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.3)); }
+}
+
+.animate-amber-flash {
+  animation: amberFlash 0.5s ease-in-out;
+}
+
+.animate-node-stuck-flash {
+  animation: nodeStuckFlash 0.8s ease-in-out infinite;
+}
+
+.animate-node-cycle-flash {
+  animation: nodeCycleFlash 1s ease-in-out infinite;
+}
+

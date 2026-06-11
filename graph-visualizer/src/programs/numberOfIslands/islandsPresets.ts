@@ -57,5 +57,14 @@ export const islandsPresets: IslandsPreset[] = [
       [1, 1, 0, 1, 1],
       [1, 1, 1, 1, 1]
     ]
+  },
+  {
+    id: "diagonal-difference",
+    name: "Diagonal Test",
+    grid: [
+      [1, 0, 1],
+      [0, 1, 0],
+      [1, 0, 1]
+    ]
   }
 ];

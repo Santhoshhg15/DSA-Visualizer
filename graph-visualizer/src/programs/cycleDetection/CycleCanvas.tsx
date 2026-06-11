@@ -134,7 +134,8 @@ export function CycleCanvas() {
   }, [currentPreset, nodes.length]);
 
   const handleAlgoToggle = (type: 'undirected' | 'directed') => {
-    setAlgorithmType(type);
+    const targetAlgo = type === 'directed' ? 'directed-dfs' : 'undirected-union-find';
+    setAlgorithmType(targetAlgo);
     // Find first matching preset and load it
     const defaultPreset = cyclePresets.find((p) => p.directed === (type === 'directed'));
     if (defaultPreset) {
@@ -146,7 +147,7 @@ export function CycleCanvas() {
 
   // Component colors mapping for Union-Find groups
   const getComponentColor = (nodeId: string): string => {
-    if (!currentStepData || algorithmType !== 'undirected') return '#FF4444'; // Red default
+    if (!currentStepData || algorithmType !== 'undirected-union-find') return '#FF4444'; // Red default
     const roots = Object.keys(unionFindGroups);
     // Find which group contains this node
     let groupIndex = -1;
@@ -175,7 +176,7 @@ export function CycleCanvas() {
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
         <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] px-4 py-2 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-3">
           <span className="text-sm font-bold text-[var(--text-color)]">
-            {algorithmType === 'directed' ? 'Directed • Unweighted' : 'Undirected • Unweighted'}
+            {algorithmType.startsWith('directed') ? 'Directed • Unweighted' : 'Undirected • Unweighted'}
           </span>
         </div>
       </div>
@@ -185,7 +186,7 @@ export function CycleCanvas() {
         <button
           onClick={() => handleAlgoToggle('undirected')}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            algorithmType === 'undirected'
+            algorithmType.startsWith('undirected')
               ? 'bg-blue-500 text-white shadow-sm'
               : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
           }`}
@@ -195,7 +196,7 @@ export function CycleCanvas() {
         <button
           onClick={() => handleAlgoToggle('directed')}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            algorithmType === 'directed'
+            algorithmType.startsWith('directed')
               ? 'bg-blue-500 text-white shadow-sm'
               : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
           }`}
@@ -281,6 +282,17 @@ export function CycleCanvas() {
           >
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626" />
           </marker>
+          <marker
+            id="arrow-parent"
+            viewBox="0 0 10 10"
+            refX={NODE_RADIUS + 7}
+            refY="5"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3B82F6" />
+          </marker>
 
           {/* Glow filters */}
           <filter id="glow-current" x="-50%" y="-50%" width="200%" height="200%">
@@ -301,7 +313,7 @@ export function CycleCanvas() {
 
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {/* Halos for Undirected Union-Find groups */}
-          {algorithmType === 'undirected' &&
+          {algorithmType === 'undirected-union-find' &&
             steps.length > 0 &&
             nodes.map((node) => {
               const pos = nodePositions[node.id];
@@ -317,6 +329,57 @@ export function CycleCanvas() {
                   fillOpacity="0.1"
                   className="transition-all duration-300"
                 />
+              );
+            })}
+
+          {/* Parent tracking arrows (BFS Undirected) */}
+          {algorithmType === 'undirected-bfs' &&
+            steps.length > 0 &&
+            nodes.map((node) => {
+              const parentId = currentStepData?.parentTrackingMap?.[node.id];
+              if (!parentId) return null;
+              const p1 = nodePositions[node.id];
+              const p2 = nodePositions[parentId];
+              if (!p1 || !p2) return null;
+              const midX = (p1.x + p2.x) / 2;
+              const midY = (p1.y + p2.y) / 2;
+              return (
+                <g key={`parent-arrow-${node.id}`}>
+                  <line
+                    x1={p1.x}
+                    y1={p1.y}
+                    x2={p2.x}
+                    y2={p2.y}
+                    stroke="#3B82F6"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,4"
+                    markerEnd="url(#arrow-parent)"
+                    strokeOpacity="0.8"
+                  />
+                  <g transform={`translate(${midX}, ${midY})`}>
+                    <rect
+                      x="-16"
+                      y="-6"
+                      width="32"
+                      height="12"
+                      rx="3"
+                      fill="#1E3A8A"
+                      stroke="#3B82F6"
+                      strokeWidth="0.5"
+                    />
+                    <text
+                      x="0"
+                      y="2.5"
+                      textAnchor="middle"
+                      fontSize="7"
+                      fontWeight="bold"
+                      fill="#93C5FD"
+                      className="font-mono select-none pointer-events-none"
+                    >
+                      parent
+                    </text>
+                  </g>
+                </g>
               );
             })}
 
@@ -355,22 +418,34 @@ export function CycleCanvas() {
                 } else {
                   // If nodes on both ends have been processed
                   let isProcessed = false;
-                  if (algorithmType === 'undirected') {
-                    // Check if edge is finished/safe (which means we finished processing it already)
-                    const curIndex = cur;
-                    // Find if there is a 'union' or 'cycle-found' step in past that contains this edge.
-                    // Or simpler: any edge in past is safe unless it's in cycle
-                    const edgeStepIndex = steps.findIndex(
-                      (s) => s.highlightEdges && s.highlightEdges.includes(edge.id)
-                    );
-                    if (edgeStepIndex !== -1 && edgeStepIndex < curIndex) {
-                      isProcessed = true;
+                  if (algorithmType.startsWith('undirected')) {
+                    if (algorithmType === 'undirected-union-find') {
+                      const curIndex = cur;
+                      const edgeStepIndex = steps.findIndex(
+                        (s) => s.highlightEdges && s.highlightEdges.includes(edge.id)
+                      );
+                      if (edgeStepIndex !== -1 && edgeStepIndex < curIndex) {
+                        isProcessed = true;
+                      }
+                    } else {
+                      // undirected-bfs
+                      const edgeStepIndex = steps.findIndex(
+                        (s) => s.highlightEdges && s.highlightEdges.includes(edge.id)
+                      );
+                      if (edgeStepIndex !== -1 && edgeStepIndex < cur) {
+                        isProcessed = true;
+                      }
                     }
                   } else {
-                    // DFS: check if neighbor check is done and both are visited
-                    const srcVisited = visitedSnapshot.includes(edge.source);
-                    const tgtVisited = visitedSnapshot.includes(edge.target);
-                    isProcessed = srcVisited && tgtVisited;
+                    if (algorithmType === 'directed-dfs') {
+                      const srcVisited = visitedSnapshot.includes(edge.source);
+                      const tgtVisited = visitedSnapshot.includes(edge.target);
+                      isProcessed = srcVisited && tgtVisited;
+                    } else {
+                      // directed-bfs (Kahn's)
+                      const topo = currentStepData?.topoOrder || [];
+                      isProcessed = topo.includes(edge.source);
+                    }
                   }
 
                   if (isProcessed) {
@@ -425,7 +500,7 @@ export function CycleCanvas() {
                         fill="#DC2626"
                         className="font-mono uppercase select-none pointer-events-none"
                       >
-                        {algorithmType === 'directed' ? 'BACK EDGE' : 'CYCLE'}
+                        {algorithmType.startsWith('directed') ? 'BACK EDGE' : 'CYCLE'}
                       </text>
                     </g>
                   )}
@@ -456,13 +531,15 @@ export function CycleCanvas() {
                   fillColor = '#DC2626'; // bright red
                   strokeColor = '#991B1B';
                   filter = 'url(#glow-cycle)';
-                  animationClass = 'animate-[nodeCycleFlash_1s_ease-in-out_infinite]';
+                  animationClass = algorithmType === 'directed-bfs'
+                    ? 'animate-node-stuck-flash'
+                    : 'animate-node-cycle-flash';
                 } else if (isNodeActive) {
                   fillColor = '#FFB800'; // Amber
                   strokeColor = '#FF8C00';
                   filter = 'url(#glow-current)';
                   animationClass = 'animate-[nodeCurrentPulse_0.6s_ease-in-out_infinite]';
-                } else if (algorithmType === 'directed') {
+                } else if (algorithmType === 'directed-dfs') {
                   if (isRecStack) {
                     fillColor = '#7C3AED'; // Purple
                     strokeColor = '#5B21B6';
@@ -472,6 +549,25 @@ export function CycleCanvas() {
                     fillColor = '#00C896'; // teal green
                     strokeColor = '#00A87A';
                     filter = 'url(#glow-visited)';
+                  }
+                } else if (algorithmType === 'undirected-bfs') {
+                  if (isVisited) {
+                    fillColor = '#00C896'; // teal green
+                    strokeColor = '#00A87A';
+                    filter = 'url(#glow-visited)';
+                  }
+                } else if (algorithmType === 'directed-bfs') {
+                  const topo = currentStepData?.topoOrder || [];
+                  const queueSnapshot = currentStepData?.queueSnapshot || [];
+                  
+                  if (topo.includes(node.id)) {
+                    fillColor = '#00C896'; // teal green
+                    strokeColor = '#00A87A';
+                    filter = 'url(#glow-visited)';
+                  } else if (queueSnapshot.includes(node.id)) {
+                    fillColor = '#7C3AED'; // Purple (in queue)
+                    strokeColor = '#5B21B6';
+                    filter = 'url(#glow-recstack)';
                   }
                 } else {
                   // Undirected Union-Find: nodes take component colors once processed
@@ -489,6 +585,11 @@ export function CycleCanvas() {
                   }
                 }
               }
+
+              // Kahn's indegree logic
+              const initialInDegree = edges.filter(e => e.target === node.id).length;
+              const inDegree = currentStepData?.inDegreeSnapshot?.[node.id] ?? initialInDegree;
+              const isDecrementing = currentStepData?.type === 'kahns-decrement' && currentStepData?.neighborNode === node.id;
 
               return (
                 <g key={node.id} transform={`translate(${pos.x}, ${pos.y})`}>
@@ -523,6 +624,33 @@ export function CycleCanvas() {
                   >
                     {node.label}
                   </text>
+
+                  {/* Kahn's In-Degree Badge */}
+                  {algorithmType === 'directed-bfs' && (
+                    <g transform={`translate(0, ${NODE_RADIUS + 12})`} className={isDecrementing ? 'animate-amber-flash' : ''}>
+                      <rect
+                        x="-16"
+                        y="-6"
+                        width="32"
+                        height="12"
+                        rx="3"
+                        fill="#111"
+                        stroke={inDegree === 0 ? "#00C896" : "#444"}
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="0"
+                        y="2.5"
+                        textAnchor="middle"
+                        fontSize="8"
+                        fontWeight="bold"
+                        fill={inDegree === 0 ? "#00C896" : "#aaa"}
+                        className="font-mono select-none pointer-events-none"
+                      >
+                        in:{inDegree}
+                      </text>
+                    </g>
+                  )}
                 </g>
               );
             })}

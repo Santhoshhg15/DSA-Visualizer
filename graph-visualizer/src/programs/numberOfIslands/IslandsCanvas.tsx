@@ -10,7 +10,7 @@ const ISLAND_COLORS = [
 ];
 
 export function IslandsCanvas() {
-  const { grid: initialGrid, steps, cur, playing } = useIslandsStore();
+  const { grid: initialGrid, steps, cur, playing, version } = useIslandsStore();
   
   if (!initialGrid || initialGrid.length === 0) {
     return <div className="w-full h-full flex items-center justify-center text-[var(--muted-color)]">No grid loaded</div>;
@@ -36,6 +36,9 @@ export function IslandsCanvas() {
     let pulseClass = '';
     let isScanner = false;
     let extraShadow = '';
+    let borderStyle = 'solid';
+    let borderWidth = '1px';
+    let opacity = '1';
 
     const isOriginalLand = initialGrid[r][c] === 1;
 
@@ -77,7 +80,7 @@ export function IslandsCanvas() {
         bg = color;
         border = 'rgba(0,0,0,0.2)'; // darker shade approximation
         text = '#ffffff';
-        valStr = '0';
+        valStr = '1'; // keep original land value display intact
       } else if (isOriginalLand) {
         // Unvisited Land
         bg = '#14532d';
@@ -91,6 +94,35 @@ export function IslandsCanvas() {
         text = '#4a6fa5';
         valStr = '0';
       }
+
+      // Check neighbor highlight conditions:
+      // When a cell is current, highlight its valid neighbor directions on neighbor-checking steps.
+      const isNeighborChecking = 
+        currentStep.type === 'check-neighbor' || 
+        currentStep.type === 'enqueue-neighbor' || 
+        currentStep.type === 'flood-neighbor';
+
+      if (isNeighborChecking && currentStep.currentCell && !isCurrent) {
+        const [currR, currC] = currentStep.currentCell;
+        const dr = r - currR;
+        const dc = c - currC;
+
+        let isTargetNeighbor = false;
+        if (version === 'leetcode') {
+          // 4-directional check
+          isTargetNeighbor = (dr === 0 && Math.abs(dc) === 1) || (dc === 0 && Math.abs(dr) === 1);
+        } else {
+          // 8-directional check
+          isTargetNeighbor = Math.abs(dr) <= 1 && Math.abs(dc) <= 1 && !(dr === 0 && dc === 0);
+        }
+
+        if (isTargetNeighbor) {
+          border = '#3b82f6';
+          borderStyle = 'dashed';
+          borderWidth = '2px';
+          opacity = '0.7';
+        }
+      }
     }
 
     return {
@@ -99,11 +131,12 @@ export function IslandsCanvas() {
         height: cellSize,
         backgroundColor: bg,
         borderColor: isScanner ? '#3b82f6' : border,
-        borderWidth: isScanner ? '2px' : '1px',
-        borderStyle: 'solid',
+        borderWidth: isScanner ? '2px' : borderWidth,
+        borderStyle: borderStyle,
         color: text,
         borderRadius: '6px',
         boxShadow: extraShadow,
+        opacity: opacity,
         transition: 'all 250ms ease'
       },
       valStr,
@@ -121,6 +154,11 @@ export function IslandsCanvas() {
           backgroundSize: '24px 24px'
         }}
       />
+
+      {/* Floating Direction Badge */}
+      <div className="absolute top-4 right-4 z-20 bg-[var(--panel-bg)]/85 border border-[var(--border-color)] rounded-lg px-2.5 py-1 text-[10px] font-['Space_Grotesk'] uppercase tracking-[0.06em] text-[var(--muted-color)] shadow-md">
+        {version === 'leetcode' ? '4-DIRECTIONAL ↑↓←→' : '8-DIRECTIONAL ↑↗→↘↓↙←↖'}
+      </div>
       
       {/* The 2D Grid */}
       <div 

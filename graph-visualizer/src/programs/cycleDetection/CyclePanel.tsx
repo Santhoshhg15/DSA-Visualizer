@@ -30,7 +30,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
   useEffect(() => {
     if (!currentPreset) {
       handlePresetChange(
-        algorithmType === 'directed' ? 'dir-with-cycle' : 'undir-with-cycle'
+        algorithmType.startsWith('directed') ? 'dir-with-cycle' : 'undir-with-cycle'
       );
     }
   }, []);
@@ -40,14 +40,20 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
     if (preset) {
       reset();
       loadPreset(preset.id, preset);
-      const steps = generateCycleSteps(preset.nodes, preset.edges, preset.directed ? 'directed' : 'undirected');
+      const steps = generateCycleSteps(preset.nodes, preset.edges, algorithmType);
       setSteps(steps);
     }
   };
 
-  const handleAlgoChange = (type: 'undirected' | 'directed') => {
+  const handleAlgoChange = (type: 'undirected-union-find' | 'undirected-bfs' | 'directed-dfs' | 'directed-bfs') => {
     setAlgorithmType(type);
-    const preset = cyclePresets.find((p) => p.directed === (type === 'directed'));
+    const isDirected = type.startsWith('directed');
+    let defaultPresetId = 'undir-with-cycle';
+    if (type === 'undirected-bfs') defaultPresetId = 'bfs-parent-cycle';
+    else if (type === 'directed-dfs') defaultPresetId = 'dir-with-cycle';
+    else if (type === 'directed-bfs') defaultPresetId = 'kahns-cycle';
+
+    const preset = cyclePresets.find((p) => p.id === defaultPresetId);
     if (preset) {
       reset();
       loadPreset(preset.id, preset);
@@ -55,7 +61,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       setSteps(steps);
     }
     // Update placeholders for inputs
-    if (type === 'directed') {
+    if (isDirected) {
       setCustomEdges('A→B\nB→C\nC→D');
     } else {
       setCustomEdges('A-B\nB-C\nC-D');
@@ -115,7 +121,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       }
 
       // Check duplicates
-      const key = algorithmType === 'directed' ? `${u}->${v}` : [u, v].sort().join('-');
+      const key = algorithmType.startsWith('directed') ? `${u}->${v}` : [u, v].sort().join('-');
       if (edgeKeys.has(key)) {
         setError(`Duplicate edge detected: "${line}".`);
         return;
@@ -152,7 +158,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
     const parsedNodes: Node[] = nodeList.map((id) => ({ id, label: id }));
 
     reset();
-    setCustomGraph(parsedNodes, edgesList, positions, algorithmType === 'directed');
+    setCustomGraph(parsedNodes, edgesList, positions, algorithmType.startsWith('directed'));
 
     // Automatically generate steps and load them
     const steps = generateCycleSteps(parsedNodes, edgesList, algorithmType);
@@ -166,9 +172,21 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
     setSteps(steps);
   };
 
-  const filteredPresets = cyclePresets.filter(
-    (p) => p.directed === (algorithmType === 'directed')
-  );
+  const filteredPresets = cyclePresets.filter((p) => {
+    if (algorithmType === 'undirected-union-find') {
+      return !p.directed && !p.id.startsWith('bfs-parent');
+    }
+    if (algorithmType === 'undirected-bfs') {
+      return !p.directed && p.id.startsWith('bfs-parent');
+    }
+    if (algorithmType === 'directed-dfs') {
+      return p.directed && !p.id.startsWith('kahns');
+    }
+    if (algorithmType === 'directed-bfs') {
+      return p.directed && p.id.startsWith('kahns');
+    }
+    return false;
+  });
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 w-full h-full text-white animate-fadeInUp">
@@ -226,33 +244,65 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       <div className="h-px w-full bg-[var(--border-color)] my-1"></div>
 
       {/* SECTION 1 — Algorithm Selector */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
-          Algorithm Type
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => handleAlgoChange('undirected')}
-            className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all ${
-              algorithmType === 'undirected'
-                ? 'border-blue-500 bg-blue-500/10 text-white'
-                : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
-            }`}
-          >
-            <span className="text-xs font-bold">UNDIRECTED</span>
-            <span className="text-[9px] opacity-80 mt-0.5">Union-Find</span>
-          </button>
-          <button
-            onClick={() => handleAlgoChange('directed')}
-            className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all ${
-              algorithmType === 'directed'
-                ? 'border-blue-500 bg-blue-500/10 text-white'
-                : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
-            }`}
-          >
-            <span className="text-xs font-bold">DIRECTED</span>
-            <span className="text-[9px] opacity-80 mt-0.5">DFS Back-Edge</span>
-          </button>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+            Undirected Algorithms
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleAlgoChange('undirected-union-find')}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
+                algorithmType === 'undirected-union-find'
+                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
+              }`}
+            >
+              <span className="text-[11px] font-bold">Union-Find</span>
+              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Disjoint Set</span>
+            </button>
+            <button
+              onClick={() => handleAlgoChange('undirected-bfs')}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
+                algorithmType === 'undirected-bfs'
+                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
+              }`}
+            >
+              <span className="text-[11px] font-bold">BFS Parent</span>
+              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Queue Track</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+            Directed Algorithms
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleAlgoChange('directed-dfs')}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
+                algorithmType === 'directed-dfs'
+                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
+              }`}
+            >
+              <span className="text-[11px] font-bold">DFS Back-Edge</span>
+              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Recursion Stack</span>
+            </button>
+            <button
+              onClick={() => handleAlgoChange('directed-bfs')}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
+                algorithmType === 'directed-bfs'
+                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
+              }`}
+            >
+              <span className="text-[11px] font-bold">Kahn's BFS</span>
+              <span className="text-[9px] opacity-80 mt-0.5 font-mono">In-Degree Sort</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -319,7 +369,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               rows={3}
               value={customEdges}
               onChange={(e) => setCustomEdges(e.target.value)}
-              placeholder={algorithmType === 'directed' ? 'A→B\nB→C' : 'A-B\nB-C'}
+              placeholder={algorithmType.startsWith('directed') ? 'A→B\nB→C' : 'A-B\nB-C'}
               className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 resize-none"
             />
           </div>
@@ -357,7 +407,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
 
         {infoExpanded && (
           <div className="p-3.5 bg-[var(--panel-bg)] flex flex-col gap-3 text-xs leading-relaxed text-[var(--muted-color)]">
-            {algorithmType === 'undirected' ? (
+            {algorithmType === 'undirected-union-find' && (
               <>
                 <p>
                   Union-Find detects cycles by tracking connected components. If adding an edge
@@ -372,11 +422,44 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
                   </span>
                 </div>
               </>
-            ) : (
+            )}
+            {algorithmType === 'undirected-bfs' && (
+              <>
+                <p>
+                  BFS Parent tracking explores the graph layer by layer. If an already visited node
+                  is reached that is not the parent of the current node, a cycle exists.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                    Time: O(V + E)
+                  </span>
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                    Space: O(V)
+                  </span>
+                </div>
+              </>
+            )}
+            {algorithmType === 'directed-dfs' && (
               <>
                 <p>
                   DFS back-edge detection uses a recursion stack. If DFS reaches a node already
                   in the current stack, a back edge (cycle) is found.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                    Time: O(V + E)
+                  </span>
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                    Space: O(V)
+                  </span>
+                </div>
+              </>
+            )}
+            {algorithmType === 'directed-bfs' && (
+              <>
+                <p>
+                  Kahn's BFS algorithm calculates in-degrees and processes nodes with 0 in-degree.
+                  If the final sorted list count is less than V, a cycle exists.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
                   <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">

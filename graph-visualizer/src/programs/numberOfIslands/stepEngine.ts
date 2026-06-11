@@ -1,13 +1,14 @@
 import type { IslandsStep } from '../../stores/useIslandsStore';
 
-export function generateIslandsSteps(initialGrid: number[][]): IslandsStep[] {
+export function generateIslandsSteps(initialGrid: number[][], version: 'leetcode' | 'gfg' = 'leetcode'): IslandsStep[] {
   const steps: IslandsStep[] = [];
   const rows = initialGrid.length;
   if (rows === 0) return steps;
   const cols = initialGrid[0].length;
   
-  // Clone grid to mutate during algorithm
-  const grid = initialGrid.map(row => [...row]);
+  // Keep original grid completely intact. 
+  // We use vis[][] array instead of mutating the grid.
+  const vis = Array.from({ length: rows }, () => Array(cols).fill(0));
   
   let stepId = 0;
   let islandsCount = 0;
@@ -32,7 +33,8 @@ export function generateIslandsSteps(initialGrid: number[][]): IslandsStep[] {
       type,
       description: desc,
       codeLineActive: codeLine,
-      gridSnapshot: grid.map(r => [...r]),
+      gridSnapshot: initialGrid.map(r => [...r]),
+      visSnapshot: vis.map(r => [...r]),
       visited: new Set(visited),
       queue: [...queue],
       currentCell,
@@ -52,92 +54,188 @@ export function generateIslandsSteps(initialGrid: number[][]): IslandsStep[] {
     });
   };
 
-  const directions = [
-    [-1, 0], // UP
-    [1, 0],  // DOWN
-    [0, -1], // LEFT
-    [0, 1]   // RIGHT
-  ];
+  if (version === 'leetcode') {
+    // ----------------------------------------------------
+    // LeetCode 4-Directional BFS
+    // ----------------------------------------------------
+    const dRow = [-1, 0, 1, 0];
+    const dCol = [0, 1, 0, -1];
 
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      currentScannerPosition = [i, j];
-      
-      // Line 5: Scanning cell
-      pushStep('scan', `Scanning cell [${i}][${j}] = '${initialGrid[i][j]}'`, 5);
-      
-      if (grid[i][j] === 1) {
-        islandsCount++;
-        currentIslandCells = [];
-        islandCellsMap[islandsCount] = currentIslandCells;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        currentScannerPosition = [r, c];
+        
+        // Line 30: Scan row
+        pushStep('scan', `Scanning cell [${r}][${c}] = '${initialGrid[r][c]}'`, 30);
+        
+        // Line 32: Check land and not visited
+        if (initialGrid[r][c] === 1 && vis[r][c] === 0) {
+          islandsCount++;
+          currentIslandCells = [];
+          islandCellsMap[islandsCount] = currentIslandCells;
 
-        // Line 7: Found island (islands++)
-        pushStep('found-island', `🏝️ Land found at [${i}][${j}]! Starting Island #${islandsCount}`, 7);
-        
-        // Line 8: bfs(grid, i, j)
-        pushStep('bfs-called', `Calling BFS to traverse Island #${islandsCount} starting at [${i}][${j}]`, 8);
-
-        // BFS Setup
-        const queue: [number, number][] = [];
-        
-        // Enqueue starting cell
-        queue.push([i, j]);
-        pushStep('enqueue', `Enqueue starting cell [${i}][${j}] → Queue size: ${queue.length}`, 17, queue);
-        
-        // Mark as visited (flood)
-        grid[i][j] = 0; 
-        islandMap[`${i},${j}`] = islandsCount;
-        visited.add(`${i},${j}`);
-        visitedOrder.push([i, j]);
-        currentIslandCells.push([i, j]);
-        pushStep('flood', `Mark starting cell [${i}][${j}] = '0' (visited)`, 18, queue);
-        
-        while (queue.length > 0) {
-          // Dequeue cell
-          const currentCell = queue.shift()!;
-          pushStep('dequeue', `Dequeue cell [${currentCell[0]}][${currentCell[1]}] ← Queue size: ${queue.length}`, 22, queue, currentCell);
+          // Line 33: Found island, increment count
+          pushStep('found-island', `🏝️ Land found at [${r}][${c}]! Starting Island #${islandsCount}`, 33);
           
-          for (const [dr, dc] of directions) {
-            const nr = currentCell[0] + dr;
-            const nc = currentCell[1] + dc;
-            const inBounds = nr >= 0 && nr < rows && nc >= 0 && nc < cols;
-            const value = inBounds ? (initialGrid[nr][nc] === 1 ? '1' : '0') : 'out-of-bounds';
-            const valid = inBounds && grid[nr][nc] === 1;
+          // Line 34: bfs(row, col, vis, grid) called
+          pushStep('bfs-called', `Calling BFS to traverse Island #${islandsCount} starting at [${r}][${c}]`, 34);
 
-            const nStr = inBounds ? `[${nr}][${nc}]` : 'out-of-bounds';
-            pushStep(
-              'check-neighbor', 
-              `Check neighbor ${nStr} = '${value}' → ${valid ? 'valid land' : 'invalid'}`, 
-              28, 
-              queue, 
-              currentCell,
-              { nr, nc, value, valid }
-            );
+          // BFS Setup
+          const queue: [number, number][] = [];
+          
+          // Line 8: Enqueue starting cell
+          queue.push([r, c]);
+          pushStep('enqueue', `Enqueue starting cell [${r}][${c}] → Queue size: ${queue.length}`, 8, queue);
+          
+          // Line 9: Mark visited
+          vis[r][c] = 1;
+          islandMap[`${r},${c}`] = islandsCount;
+          visited.add(`${r},${c}`);
+          visitedOrder.push([r, c]);
+          currentIslandCells.push([r, c]);
+          pushStep('flood', `Mark starting cell [${r}][${c}] as visited (vis[${r}][${c}] = 1)`, 9, queue);
+          
+          while (queue.length > 0) {
+            // Line 12: Dequeue cell
+            const currentCell = queue.shift()!;
+            pushStep('dequeue', `Dequeue cell [${currentCell[0]}][${currentCell[1]}] ← Queue size: ${queue.length}`, 12, queue, currentCell);
             
-            if (valid) {
-              // Enqueue neighbor
-              queue.push([nr, nc]);
-              pushStep('enqueue-neighbor', `Enqueue neighbor [${nr}][${nc}] → Queue size: ${queue.length}`, 31, queue, currentCell);
+            // Line 13: Loop 4 neighbors
+            for (let i = 0; i < 4; i++) {
+              const nr = currentCell[0] + dRow[i];
+              const nc = currentCell[1] + dCol[i];
+              
+              // Line 14-15: compute neighbor coordinates nr, nc
+              const inBounds = nr >= 0 && nr < rows && nc >= 0 && nc < cols;
+              const value = inBounds ? (initialGrid[nr][nc] === 1 ? '1' : '0') : 'out-of-bounds';
+              const valid = inBounds && initialGrid[nr][nc] === 1 && vis[nr][nc] === 0;
 
-              // Flood neighbor
-              grid[nr][nc] = 0;
-              islandMap[`${nr},${nc}`] = islandsCount;
-              visited.add(`${nr},${nc}`);
-              visitedOrder.push([nr, nc]);
-              currentIslandCells.push([nr, nc]);
-              pushStep('flood-neighbor', `Mark neighbor [${nr}][${nc}] = '0' (visited)`, 32, queue, currentCell);
+              const nStr = inBounds ? `[${nr}][${nc}]` : 'out-of-bounds';
+              pushStep(
+                'check-neighbor', 
+                `Check neighbor ${nStr} = '${value}' → ${valid ? 'valid land' : 'invalid'}`, 
+                13, 
+                queue, 
+                currentCell,
+                { nr, nc, value, valid }
+              );
+              
+              if (valid) {
+                // Line 20: Mark visited (vis = 1)
+                vis[nr][nc] = 1;
+                islandMap[`${nr},${nc}`] = islandsCount;
+                visited.add(`${nr},${nc}`);
+                visitedOrder.push([nr, nc]);
+                currentIslandCells.push([nr, nc]);
+                pushStep('flood-neighbor', `Mark neighbor [${nr}][${nc}] = 1 (visited)`, 20, queue, currentCell);
+
+                // Line 21: Enqueue neighbor
+                queue.push([nr, nc]);
+                pushStep('enqueue-neighbor', `Enqueue neighbor [${nr}][${nc}] → Queue size: ${queue.length}`, 21, queue, currentCell);
+              }
             }
           }
+          
+          // Island Complete
+          pushStep('island-complete', `✓ Island #${islandsCount} complete — ${currentIslandCells.length} cells flooded`, 34);
+          currentIslandCells = [];
         }
-        
-        // Island Complete
-        pushStep('island-complete', `✓ Island #${islandsCount} complete — ${currentIslandCells.length} cells flooded`, 13);
-        currentIslandCells = []; // Reset current island cells when BFS finishes
       }
     }
+    pushStep('complete', `✅ Algorithm complete. Total islands: ${islandsCount}`, 37);
+
+  } else {
+    // ----------------------------------------------------
+    // GFG 8-Directional BFS
+    // ----------------------------------------------------
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        currentScannerPosition = [r, c];
+        
+        // Line 36: Scan row
+        pushStep('scan', `Scanning cell [${r}][${c}] = '${initialGrid[r][c]}'`, 36);
+        
+        // Line 38: Check land and not visited
+        if (vis[r][c] === 0 && initialGrid[r][c] === 1) {
+          islandsCount++;
+          currentIslandCells = [];
+          islandCellsMap[islandsCount] = currentIslandCells;
+
+          // Line 39: Found island, increment count
+          pushStep('found-island', `🏝️ Land found at [${r}][${c}]! Starting Island #${islandsCount}`, 39);
+          
+          // Line 40: bfs(row, col, vis, grid) called
+          pushStep('bfs-called', `Calling BFS to traverse Island #${islandsCount} starting at [${r}][${c}]`, 40);
+
+          // BFS Setup
+          const queue: [number, number][] = [];
+          
+          // Line 6: Mark visited
+          vis[r][c] = 1;
+          islandMap[`${r},${c}`] = islandsCount;
+          visited.add(`${r},${c}`);
+          visitedOrder.push([r, c]);
+          currentIslandCells.push([r, c]);
+          pushStep('flood', `Mark starting cell [${r}][${c}] as visited (vis[${r}][${c}] = 1)`, 6, queue);
+
+          // Line 8: Enqueue starting cell
+          queue.push([r, c]);
+          pushStep('enqueue', `Enqueue starting cell [${r}][${c}] → Queue size: ${queue.length}`, 8, queue);
+          
+          while (queue.length > 0) {
+            // Line 13: Dequeue cell
+            const currentCell = queue.shift()!;
+            pushStep('dequeue', `Dequeue cell [${currentCell[0]}][${currentCell[1]}] ← Queue size: ${queue.length}`, 13, queue, currentCell);
+            
+            // Line 15: Loop delrow
+            for (let delrow = -1; delrow <= 1; delrow++) {
+              // Line 17: Loop delcol
+              for (let delcol = -1; delcol <= 1; delcol++) {
+                if (delrow === 0 && delcol === 0) continue; // skip self
+
+                const nr = currentCell[0] + delrow;
+                const nc = currentCell[1] + delcol;
+                
+                // Line 19-20: compute neighbor coordinates nr, nc
+                const inBounds = nr >= 0 && nr < rows && nc >= 0 && nc < cols;
+                const value = inBounds ? (initialGrid[nr][nc] === 1 ? '1' : '0') : 'out-of-bounds';
+                const valid = inBounds && initialGrid[nr][nc] === 1 && vis[nr][nc] === 0;
+
+                const nStr = inBounds ? `[${nr}][${nc}]` : 'out-of-bounds';
+                pushStep(
+                  'check-neighbor', 
+                  `Check neighbor ${nStr} = '${value}' → ${valid ? 'valid land' : 'invalid'}`, 
+                  17, 
+                  queue, 
+                  currentCell,
+                  { nr, nc, value, valid }
+                );
+                
+                if (valid) {
+                  // Line 25: Mark visited (vis = 1)
+                  vis[nr][nc] = 1;
+                  islandMap[`${nr},${nc}`] = islandsCount;
+                  visited.add(`${nr},${nc}`);
+                  visitedOrder.push([nr, nc]);
+                  currentIslandCells.push([nr, nc]);
+                  pushStep('flood-neighbor', `Mark neighbor [${nr}][${nc}] = 1 (visited)`, 25, queue, currentCell);
+
+                  // Line 26: Enqueue neighbor
+                  queue.push([nr, nc]);
+                  pushStep('enqueue-neighbor', `Enqueue neighbor [${nr}][${nc}] → Queue size: ${queue.length}`, 26, queue, currentCell);
+                }
+              }
+            }
+          }
+          
+          // Island Complete
+          pushStep('island-complete', `✓ Island #${islandsCount} complete — ${currentIslandCells.length} cells flooded`, 40);
+          currentIslandCells = [];
+        }
+      }
+    }
+    pushStep('complete', `✅ Algorithm complete. Total islands: ${islandsCount}`, 43);
   }
-  
-  pushStep('complete', `✅ Algorithm complete. Total islands: ${islandsCount}`, 13);
   
   return steps;
 }

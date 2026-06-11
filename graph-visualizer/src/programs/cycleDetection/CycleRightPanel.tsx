@@ -130,6 +130,123 @@ const javaCodeDirected = [
   "}"
 ];
 
+const pseudoCodeUndirectedBfs = [
+  "hasCycleBFS(n, adj):",
+  "  visited[all] = false",
+  "  parent[all] = -1",
+  "  for each node i:",
+  "    if not visited[i]:",
+  "      if bfsCheck(i, adj, visited, parent):",
+  "        return true",
+  "  return false",
+  "",
+  "bfsCheck(start, adj, visited, parent):",
+  "  queue.enqueue(start)",
+  "  visited[start] = true",
+  "  while queue is not empty:",
+  "    node = queue.dequeue()",
+  "    for each neighbor in adj[node]:",
+  "      if not visited[neighbor]:",
+  "        visited[neighbor] = true",
+  "        parent[neighbor] = node",
+  "        queue.enqueue(neighbor)",
+  "      elif neighbor != parent[node]:",
+  "        return true  ← CYCLE DETECTED",
+  "  return false"
+];
+
+const javaCodeUndirectedBfs = [
+  "class Solution {",
+  "    public boolean hasCycle(int V, List<List<Integer>> adj) {",
+  "        boolean[] visited = new boolean[V];",
+  "        int[] parent = new int[V];",
+  "        Arrays.fill(parent, -1);",
+  "        for (int i = 0; i < V; i++) {",
+  "            if (!visited[i]) {",
+  "                if (bfsCheck(i, adj, visited, parent)) {",
+  "                    return true;",
+  "                }",
+  "            }",
+  "        }",
+  "        return false;",
+  "    }",
+  "",
+  "    private boolean bfsCheck(int start, List<List<Integer>> adj, ",
+  "                            boolean[] visited, int[] parent) {",
+  "        Queue<Integer> q = new LinkedList<>();",
+  "        q.add(start);",
+  "        visited[start] = true;",
+  "        while (!q.isEmpty()) {",
+  "            int node = q.poll();",
+  "            for (int neighbor : adj.get(node)) {",
+  "                if (!visited[neighbor]) {",
+  "                    visited[neighbor] = true;",
+  "                    parent[neighbor] = node;",
+  "                    q.add(neighbor);",
+  "                } else if (neighbor != parent[node]) {",
+  "                    return true; // Cycle detected",
+  "                }",
+  "            }",
+  "        }",
+  "        return false;",
+  "    }",
+  "}"
+];
+
+const pseudoCodeDirectedBfs = [
+  "detectCycleKahn(n, adj):",
+  "  compute inDegree[i] for all nodes",
+  "  enqueue all nodes with inDegree == 0",
+  "  count = 0",
+  "  while queue is not empty:",
+  "    u = queue.dequeue()",
+  "    topoOrder.append(u)",
+  "    count++",
+  "    for each neighbor v of u:",
+  "      inDegree[v]--",
+  "      if inDegree[v] == 0:",
+  "        queue.enqueue(v)",
+  "  if count < n:",
+  "    return true  ← CYCLE DETECTED (stuck)",
+  "  return false"
+];
+
+const javaCodeDirectedBfs = [
+  "class Solution {",
+  "    public boolean isCyclic(int V, List<List<Integer>> adj) {",
+  "        int[] inDegree = new int[V];",
+  "        for (int u = 0; u < V; u++) {",
+  "            for (int v : adj.get(u)) {",
+  "                inDegree[v]++;",
+  "            }",
+  "        }",
+  "        Queue<Integer> q = new LinkedList<>();",
+  "        for (int i = 0; i < V; i++) {",
+  "            if (inDegree[i] == 0) {",
+  "                q.add(i);",
+  "            }",
+  "        }",
+  "        int count = 0;",
+  "        List<Integer> topo = new ArrayList<>();",
+  "        while (!q.isEmpty()) {",
+  "            int u = q.poll();",
+  "            topo.add(u);",
+  "            count++;",
+  "            for (int v : adj.get(u)) {",
+  "                inDegree[v]--;",
+  "                if (inDegree[v] == 0) {",
+  "                    q.add(v);",
+  "                }",
+  "            }",
+  "        }",
+  "        if (count < V) {",
+  "            return true; // Cycle detected",
+  "        }",
+  "        return false; // Valid DAG, no cycle",
+  "    }",
+  "}"
+];
+
 function syntaxHighlight(code: string, isJava: boolean) {
   if (!isJava) {
     if (code.trim().startsWith('//') || code.trim().startsWith('#')) {
@@ -194,9 +311,11 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
     nodes.forEach(n => adjList[n.id] = []);
     edges.forEach(e => {
       adjList[e.source].push(e.target);
+      if (!algorithmType.startsWith('directed')) {
+        adjList[e.target].push(e.source);
+      }
     });
 
-    const isDirected = algorithmType === 'directed';
 
     return (
       <div className="flex-1 flex flex-col overflow-y-auto p-4 gap-6 custom-scrollbar h-full bg-[#0d0d0d]">
@@ -224,7 +343,7 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
         </div>
 
         {/* ALGORITHM SPECIFIC STATE */}
-        {!isDirected ? (
+        {algorithmType === 'undirected-union-find' && (
           /* UNION-FIND STATE (UNDIRECTED) */
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
@@ -287,7 +406,72 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
               </div>
             </div>
           </div>
-        ) : (
+        )}
+
+        {algorithmType === 'undirected-bfs' && (
+          /* BFS PARENT STATE (UNDIRECTED) */
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+                Visited Array
+              </h3>
+              <div className="flex flex-col gap-1 max-h-[180px] overflow-y-auto pr-1">
+                {nodes.map(n => {
+                  const isVis = visitedSnapshot.includes(n.id);
+                  const isCurrent = currentStep?.currentNode === n.id;
+                  return (
+                    <div
+                      key={`vis-${n.id}`}
+                      className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-xs font-mono ${
+                        isCurrent ? 'bg-[#FFB800]/10 border-amber-500/50' : 'bg-[var(--input-bg)]'
+                      }`}
+                    >
+                      <span className={isCurrent ? 'text-amber-400 font-bold' : ''}>{n.id}</span>
+                      <span className={isVis ? 'text-emerald-400 font-bold' : 'text-red-400'}>
+                        {isVis ? '[✓]' : '[ ]'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+                Parent Map
+              </h3>
+              <div className="border border-[var(--border-color)] rounded-lg overflow-hidden bg-black/10">
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="bg-[var(--input-bg)] border-b border-[var(--border-color)] text-[var(--muted-color)] text-[10px]">
+                      <th className="px-3 py-1.5 text-left">NODE</th>
+                      <th className="px-3 py-1.5 text-left">PARENT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nodes.map(n => {
+                      const p = currentStep?.parentTrackingMap?.[n.id] ?? 'none';
+                      const isNodeActive = currentStep?.currentNode === n.id || currentStep?.neighborNode === n.id;
+                      return (
+                        <tr
+                          key={n.id}
+                          className={`border-b border-[var(--border-color)]/30 hover:bg-black/20 ${
+                            isNodeActive ? 'bg-[#FFB800]/10 border-l-[3px] border-l-amber-500' : ''
+                          }`}
+                        >
+                          <td className="px-3 py-1.5 font-bold">{n.id}</td>
+                          <td className="px-3 py-1.5">{p}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {algorithmType === 'directed-dfs' && (
           /* DFS STATE (DIRECTED) */
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
@@ -342,6 +526,84 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
           </div>
         )}
 
+        {algorithmType === 'directed-bfs' && (
+          /* KAHN'S STATE (DIRECTED) */
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+                In-Degree Table
+              </h3>
+              <div className="border border-[var(--border-color)] rounded-lg overflow-hidden bg-black/10">
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="bg-[var(--input-bg)] border-b border-[var(--border-color)] text-[var(--muted-color)] text-[10px]">
+                      <th className="px-3 py-1.5 text-left">NODE</th>
+                      <th className="px-3 py-1.5 text-left">IN-DEGREE</th>
+                      <th className="px-3 py-1.5 text-left">STATE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nodes.map(n => {
+                      const initialInDegree = edges.filter(e => e.target === n.id).length;
+                      const deg = currentStep?.inDegreeSnapshot?.[n.id] ?? initialInDegree;
+                      const topo = currentStep?.topoOrder || [];
+                      const queueSnapshot = currentStep?.queueSnapshot || [];
+                      const isProcessed = topo.includes(n.id);
+                      const isInQueue = queueSnapshot.includes(n.id);
+                      
+                      let stateText = 'Unprocessed';
+                      let stateColor = 'text-gray-400';
+                      if (isProcessed) {
+                        stateText = 'Processed';
+                        stateColor = 'text-emerald-400 font-bold';
+                      } else if (isInQueue) {
+                        stateText = 'In Queue';
+                        stateColor = 'text-purple-400 font-bold animate-pulse';
+                      }
+
+                      const isNodeActive = currentStep?.currentNode === n.id || currentStep?.neighborNode === n.id;
+
+                      return (
+                        <tr
+                          key={n.id}
+                          className={`border-b border-[var(--border-color)]/30 hover:bg-black/20 ${
+                            isNodeActive ? 'bg-[#FFB800]/10 border-l-[3px] border-l-amber-500' : ''
+                          }`}
+                        >
+                          <td className="px-3 py-1.5 font-bold">{n.id}</td>
+                          <td className="px-3 py-1.5">{deg}</td>
+                          <td className={`px-3 py-1.5 ${stateColor}`}>{stateText}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Topological List */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+                Topological Order
+              </h3>
+              <div className="flex flex-wrap gap-2 items-center min-h-[40px] bg-black/10 border border-[var(--border-color)] rounded-lg p-2.5">
+                {currentStep?.topoOrder && currentStep.topoOrder.length > 0 ? (
+                  currentStep.topoOrder.map((node, idx) => (
+                    <div key={node} className="flex items-center gap-1">
+                      <span className="px-2 py-1 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded font-mono text-xs font-bold animate-[nodeFadeInGreen_0.3s_ease-out_forwards]">
+                        {node}
+                      </span>
+                      {idx < currentStep.topoOrder!.length - 1 && <span className="text-gray-600 text-xs">→</span>}
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-[11px] text-[var(--muted-color)] italic">No nodes processed yet</span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* CELL NEIGHBORS (ADJACENCY LIST) */}
         <div className="flex flex-col gap-2 flex-grow overflow-hidden min-h-[160px]">
           <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
@@ -373,7 +635,8 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
                     {neighbors.length > 0 ? (
                       neighbors.map((neighbor) => {
                         const edgeId = `${node.id}-${neighbor}`;
-                        const isEdgeActive = currentStep?.highlightEdges?.includes(edgeId);
+                        const isEdgeActive = currentStep?.highlightEdges?.includes(edgeId) || 
+                          (currentStep?.highlightEdges && currentStep.highlightEdges.includes(`${neighbor}-${node.id}`));
 
                         let pillBg = "bg-black/30";
                         let pillColor = "text-[var(--muted-color)]";
@@ -406,10 +669,18 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
   }
 
   if (activeRightTab === 'code') {
-    const isDirected = algorithmType === 'directed';
-    const codeLines = isPseudoCode
-      ? (isDirected ? pseudoCodeDirected : pseudoCodeUndirected)
-      : (isDirected ? javaCodeDirected : javaCodeUndirected);
+    let codeLines = pseudoCodeUndirected;
+    if (isPseudoCode) {
+      if (algorithmType === 'undirected-union-find') codeLines = pseudoCodeUndirected;
+      else if (algorithmType === 'undirected-bfs') codeLines = pseudoCodeUndirectedBfs;
+      else if (algorithmType === 'directed-dfs') codeLines = pseudoCodeDirected;
+      else if (algorithmType === 'directed-bfs') codeLines = pseudoCodeDirectedBfs;
+    } else {
+      if (algorithmType === 'undirected-union-find') codeLines = javaCodeUndirected;
+      else if (algorithmType === 'undirected-bfs') codeLines = javaCodeUndirectedBfs;
+      else if (algorithmType === 'directed-dfs') codeLines = javaCodeDirected;
+      else if (algorithmType === 'directed-bfs') codeLines = javaCodeDirectedBfs;
+    }
 
     return (
       <div className="flex-grow flex flex-col bg-[#0d0d0d] h-full">
@@ -424,7 +695,7 @@ export function CycleRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 mr-2">
               <div className="px-1.5 py-0.5 rounded-[4px] border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[9px] uppercase font-bold tracking-wider" title="Time Complexity">
-                {isDirected ? 'O(V + E)' : 'O(E·α(V))'}
+                {algorithmType === 'undirected-union-find' ? 'O(E·α(V))' : 'O(V + E)'}
               </div>
               <div className="px-1.5 py-0.5 rounded-[4px] border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[9px] uppercase font-bold tracking-wider" title="Space Complexity">
                 O(V)

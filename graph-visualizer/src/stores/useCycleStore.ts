@@ -14,7 +14,14 @@ export interface CycleStep {
     | 'dfs-neighbor'
     | 'back-edge-found'
     | 'dfs-exit'
-    | 'complete';
+    | 'complete'
+    | 'bfs-pop'
+    | 'bfs-neighbor'
+    | 'bfs-enqueue'
+    | 'kahns-enqueue-zero'
+    | 'kahns-pop'
+    | 'kahns-decrement'
+    | 'kahns-enqueue';
   nodeA?: string;
   nodeB?: string;
   parentA?: string;
@@ -34,11 +41,18 @@ export interface CycleStep {
   hasCycle: boolean | null;
   description: string;
   codeLineActive: number;
-  algorithmType: 'undirected' | 'directed';
+  algorithmType: 'undirected-union-find' | 'undirected-bfs' | 'directed-dfs' | 'directed-bfs';
+  parentTrackingMap?: Record<string, string>;
+  currentParent?: string;
+  inDegreeSnapshot?: Record<string, number>;
+  processedCount?: number;
+  topoOrder?: string[];
+  stuckNodes?: string[];
+  queueSnapshot?: any[];
 }
 
 export interface CycleState {
-  algorithmType: 'undirected' | 'directed';
+  algorithmType: 'undirected-union-find' | 'undirected-bfs' | 'directed-dfs' | 'directed-bfs';
   currentPreset: string | null;
 
   nodes: Node[];
@@ -61,7 +75,7 @@ export interface CycleState {
   visitedSet: string[];
   recStackSet: string[];
 
-  setAlgorithmType: (type: 'undirected' | 'directed') => void;
+  setAlgorithmType: (type: 'undirected-union-find' | 'undirected-bfs' | 'directed-dfs' | 'directed-bfs') => void;
   loadPreset: (
     id: string,
     data: {
@@ -85,7 +99,7 @@ export interface CycleState {
 }
 
 export const useCycleStore = create<CycleState>((set) => ({
-  algorithmType: 'undirected',
+  algorithmType: 'undirected-union-find',
   currentPreset: null,
 
   nodes: [],

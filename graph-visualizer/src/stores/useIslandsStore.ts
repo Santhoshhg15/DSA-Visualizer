@@ -9,6 +9,7 @@ export interface IslandsStep {
   // State at this step
   gridSnapshot: number[][];      // The grid exactly at this step (with 0s and 1s)
   visited: Set<string>;          // Set of "r,c" coordinates
+  visSnapshot?: number[][];      // Visited 2D snapshot array
   queue: [number, number][];     // Queue of coordinates
   currentCell: [number, number] | null; // Cell currently being processed
   scannerPosition: [number, number];    // Outer loop position
@@ -39,6 +40,7 @@ export interface IslandsState {
   // Data
   selectedPreset: string | null;
   grid: number[][];
+  version: 'leetcode' | 'gfg';
   
   // Playback
   steps: IslandsStep[];
@@ -48,6 +50,7 @@ export interface IslandsState {
 
   // Actions
   loadPreset: (presetId: string, gridData: number[][]) => void;
+  setVersion: (version: 'leetcode' | 'gfg') => void;
   setSteps: (steps: IslandsStep[]) => void;
   setCur: (step: number) => void;
   setPlaying: (val: boolean) => void;
@@ -58,6 +61,7 @@ export interface IslandsState {
 export const useIslandsStore = create<IslandsState>((set) => ({
   selectedPreset: null,
   grid: [],
+  version: 'leetcode',
   
   steps: [],
   cur: 0,
@@ -72,6 +76,7 @@ export const useIslandsStore = create<IslandsState>((set) => ({
     playing: false
   }),
 
+  setVersion: (version) => set({ version, steps: [], cur: 0, playing: false }),
   setSteps: (steps) => set({ steps }),
   setCur: (cur) => set({ cur }),
   setPlaying: (playing) => set({ playing }),

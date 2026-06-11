@@ -10,66 +10,147 @@ const ISLAND_COLORS = [
   '#DB2777', // Island 6: pink
 ];
 
-const pseudoCode = [
-  "numIslands(grid):",
-  "  islands = 0",
-  "  for each row i:",
-  "    for each col j:",
-  "      if grid[i][j] == '1':",
-  "        islands++",
-  "        bfs(grid, i, j)",
-  "  return islands",
-  "",
-  "bfs(grid, row, col):",
-  "  enqueue (row, col)",
-  "  mark grid[row][col] = '0'",
-  "  while queue not empty:",
-  "    (r, c) = dequeue",
-  "    for each direction d in [↑↓←→]:",
-  "      nr = r + dr[d]",
-  "      nc = c + dc[d]",
-  "      if inBounds(nr,nc) and",
-  "         grid[nr][nc] == '1':",
-  "        enqueue (nr, nc)",
-  "        mark grid[nr][nc] = '0'"
+const pseudoCodeLeetCode = [
+  "numIslands(grid):", // 1
+  "  vis[n][m] = all zeros", // 2
+  "  count = 0", // 3
+  "  for each cell (row, col):", // 4
+  "    if grid[row][col]=='1' and not vis:", // 5
+  "      count++", // 6
+  "      bfs(row, col, vis, grid)", // 7
+  "  return count", // 8
+  "", // 9
+  "bfs(row, col, vis, grid):", // 10
+  "  enqueue (row, col)", // 11
+  "  mark vis[row][col] = 1", // 12
+  "  dRow = [-1, 0, 1, 0]", // 13
+  "  dCol = [0, 1, 0, -1]", // 14
+  "  while queue not empty:", // 15
+  "    (r, c) = dequeue", // 16
+  "    for i in 0..3:", // 17
+  "      nRow = r + dRow[i]", // 18
+  "      nCol = c + dCol[i]", // 19
+  "      if inBounds and '1' and not vis:", // 20
+  "        vis[nRow][nCol] = 1", // 21
+  "        enqueue (nRow, nCol)" // 22
 ];
 
-const javaCode = [
-  "public int numIslands(char[][] grid) {",
-  "    if (grid == null || grid.length == 0) return 0;",
-  "    int M = grid.length, N = grid[0].length;",
-  "    int islands = 0;",
-  "    for (int i = 0; i < M; i++) {",
-  "        for (int j = 0; j < N; j++) {",
-  "            if (grid[i][j] == '1') {",
-  "                islands++;",
-  "                bfs(grid, i, j);",
-  "            }",
-  "        }",
-  "    }",
-  "    return islands;",
-  "}",
-  "",
-  "private void bfs(char[][] grid, int row, int col) {",
-  "    Queue<int[]> queue = new LinkedList<>();",
-  "    queue.offer(new int[]{row, col});",
-  "    grid[row][col] = '0';",
-  "    int[][] dirs = {{-1,0}, {1,0}, {0,-1}, {0,1}};",
-  "    while (!queue.isEmpty()) {",
-  "        int[] curr = queue.poll();",
-  "        int r = curr[0], c = curr[1];",
-  "        for (int[] d : dirs) {",
-  "            int nr = r + d[0];",
-  "            int nc = c + d[1];",
-  "            if (nr >= 0 && nr < grid.length &&",
-  "                nc >= 0 && nc < grid[0].length &&",
-  "                grid[nr][nc] == '1') {",
-  "                queue.offer(new int[]{nr, nc});",
-  "                grid[nr][nc] = '0';",
-  "            }",
-  "        }",
-  "    }",
-  "}"
+const javaCodeLeetCode = [
+  "class Solution {", // 1
+  "    private void bfs(int row, int col,", // 2
+  "                     int[][] vis, char[][] grid) {", // 3
+  "        int n = grid.length;", // 4
+  "        int m = grid[0].length;", // 5
+  "        Queue<Pair> q = new LinkedList<>();", // 6
+  "        // Initialize queue", // 7
+  "        q.add(new Pair(row, col));", // 8
+  "        vis[row][col] = 1;", // 9
+  "        int[] dRow = {-1, 0, 1, 0};", // 10
+  "        int[] dCol = {0, 1, 0, -1};", // 11
+  "        while (!q.isEmpty()) {", // 12
+  "            Pair curr = q.poll();", // 13
+  "            for (int i = 0; i < 4; i++) {", // 14
+  "                int nRow = curr.row + dRow[i];", // 15
+  "                int nCol = curr.col + dCol[i];", // 16
+  "                if (nRow >= 0 && nRow < n &&", // 17
+  "                    nCol >= 0 && nCol < m &&", // 18
+  "                    grid[nRow][nCol] == '1' &&", // 19
+  "                    vis[nRow][nCol] == 0) {", // 20
+  "                    vis[nRow][nCol] = 1;", // 21
+  "                    q.add(new Pair(nRow, nCol));", // 22
+  "                }", // 23
+  "            }", // 24
+  "        }", // 25
+  "    }", // 26
+  "    // Helper fields", // 27
+  "    // Scan grid", // 28
+  "    public int numIslands(char[][] grid) {", // 29
+  "        int n = grid.length; int m = grid[0].length;", // 30
+  "        int[][] vis = new int[n][m]; int count = 0;", // 31
+  "        for (int row = 0; row < n; row++) {", // 32
+  "            for (int col = 0; col < m; col++) {", // 33
+  "                if (grid[row][col] == '1' && vis[row][col] == 0) {", // 34
+  "                    count++;", // 35
+  "                    bfs(row, col, vis, grid);", // 36
+  "                }", // 37
+  "            }", // 38
+  "        }", // 39
+  "        return count;", // 40
+  "    }", // 41
+  "}" // 42
+];
+
+const pseudoCodeGfg = [
+  "numIslands(grid):", // 1
+  "  vis[n][m] = all zeros", // 2
+  "  cnt = 0", // 3
+  "  for each cell (row, col):", // 4
+  "    if not vis and grid=='1':", // 5
+  "      cnt++", // 6
+  "      bfs(row, col, vis, grid)", // 7
+  "  return cnt", // 8
+  "", // 9
+  "bfs(ro, co, vis, grid):", // 10
+  "  mark vis[ro][co] = 1", // 11
+  "  enqueue (ro, co)", // 12
+  "  while queue not empty:", // 13
+  "    (row, col) = dequeue", // 14
+  "    for delrow in -1..1:", // 15
+  "      for delcol in -1..1:", // 16
+  "        nrow = row + delrow", // 17
+  "        ncol = col + delcol", // 18
+  "        if inBounds and '1' and not vis:", // 19
+  "          vis[nrow][ncol] = 1", // 20
+  "          enqueue (nrow, ncol)" // 21
+];
+
+const javaCodeGfg = [
+  "class Solution {", // 1
+  "    private void bfs(int ro, int co,", // 2
+  "                     int[][] vis, char[][] grid) {", // 3
+  "        // Initialize visit", // 4
+  "        // Start traversal", // 5
+  "        vis[ro][co] = 1;", // 6
+  "        Queue<Pair> q = new LinkedList<>();", // 7
+  "        q.add(new Pair(ro, co));", // 8
+  "        int n = grid.length;", // 9
+  "        int m = grid[0].length;", // 10
+  "        while (!q.isEmpty()) {", // 11
+  "            int row = q.peek().first;", // 12
+  "            int col = q.peek().second; q.remove();", // 13
+  "            // Check 8 directions", // 14
+  "            for (int delrow = -1; delrow <= 1; delrow++) {", // 15
+  "                // inner loop", // 16
+  "                for (int delcol = -1; delcol <= 1; delcol++) {", // 17
+  "                    // Calculate nrow", // 18
+  "                    int nrow = row + delrow;", // 19
+  "                    int ncol = col + delcol;", // 20
+  "                    if (nrow >= 0 && nrow < n &&", // 21
+  "                        ncol >= 0 && ncol < m &&", // 22
+  "                        grid[nrow][ncol] == '1' &&", // 23
+  "                        vis[nrow][ncol] == 0) {", // 24
+  "                        vis[nrow][ncol] = 1;", // 25
+  "                        q.add(new Pair(nrow, ncol));", // 26
+  "                    }", // 27
+  "                }", // 28
+  "            }", // 29
+  "        }", // 30
+  "    }", // 31
+  "    // Grid scan", // 32
+  "    public int numIslands(char[][] grid) {", // 33
+  "        int n = grid.length; int m = grid[0].length;", // 34
+  "        int[][] vis = new int[n][m]; int cnt = 0;", // 35
+  "        for (int row = 0; row < n; row++) {", // 36
+  "            for (int col = 0; col < m; col++) {", // 37
+  "                if (vis[row][col] == 0 && grid[row][col] == '1') {", // 38
+  "                    cnt++;", // 39
+  "                    bfs(row, col, vis, grid);", // 40
+  "                }", // 41
+  "            }", // 42
+  "        }", // 43
+  "        return cnt;", // 44
+  "    }", // 45
+  "}" // 46
 ];
 
 function syntaxHighlight(code: string, isJava: boolean) {
@@ -77,7 +158,7 @@ function syntaxHighlight(code: string, isJava: boolean) {
     if (code.trim().startsWith('//') || code.trim().startsWith('#')) {
       return <span className="text-gray-500 italic">{code}</span>;
     }
-    const pseudoKeywords = ['for', 'each', 'if', 'return', 'while', 'in'];
+    const pseudoKeywords = ['for', 'each', 'if', 'return', 'while', 'in', 'and', 'not', 'or', 'to'];
     const tokens = code.split(/([ \(\)\{\}\[\]\.\,;\<\>])/g);
     return tokens.map((token, i) => {
       if (pseudoKeywords.includes(token)) return <span key={i} className="text-blue-400">{token}</span>;
@@ -88,8 +169,8 @@ function syntaxHighlight(code: string, isJava: boolean) {
   if (code.trim().startsWith('//')) {
     return <span className="text-gray-500 italic">{code}</span>;
   }
-  const keywords = ['public', 'private', 'void', 'int', 'return', 'if', 'else', 'while', 'for', 'new'];
-  const types = ['Queue', 'LinkedList', 'char', 'Map', 'Set', 'HashSet', 'HashMap'];
+  const keywords = ['public', 'private', 'void', 'int', 'return', 'if', 'else', 'while', 'for', 'new', 'class'];
+  const types = ['Queue', 'LinkedList', 'char', 'Map', 'Set', 'HashSet', 'HashMap', 'Pair'];
   const tokens = code.split(/([ \(\)\{\}\[\]\.\,;\<\>])/g);
   return tokens.map((token, i) => {
     if (keywords.includes(token)) return <span key={i} className="text-blue-400">{token}</span>;
@@ -99,7 +180,7 @@ function syntaxHighlight(code: string, isJava: boolean) {
 }
 
 export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 'code' | 'trace' }) {
-  const { grid, steps, cur } = useIslandsStore();
+  const { grid, steps, cur, version } = useIslandsStore();
   const [isPseudoCode, setIsPseudoCode] = useState(true);
   const codeContainerRef = useRef<HTMLDivElement>(null);
   const traceContainerRef = useRef<HTMLDivElement>(null);
@@ -127,7 +208,9 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
 
   const getNeighbors = (r: number, c: number) => {
     const list: [number, number][] = [];
-    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    const dirs = version === 'leetcode'
+      ? [[-1, 0], [1, 0], [0, -1], [0, 1]]
+      : [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
     for (const [dr, dc] of dirs) {
       const nr = r + dr;
       const nc = c + dc;
@@ -148,7 +231,7 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
     }
   }, [activeLine, activeRightTab, isPseudoCode]);
 
-  // Scroll to active trace step (since newest is on top)
+  // Scroll to active trace step
   useEffect(() => {
     if (traceContainerRef.current) {
       traceContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -338,7 +421,10 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
   }
 
   if (activeRightTab === 'code') {
-    const codeLines = isPseudoCode ? pseudoCode : javaCode;
+    const codeLines = isPseudoCode 
+      ? (version === 'leetcode' ? pseudoCodeLeetCode : pseudoCodeGfg) 
+      : (version === 'leetcode' ? javaCodeLeetCode : javaCodeGfg);
+
     return (
       <div className="flex-grow flex flex-col bg-[#0d0d0d] h-full">
         {/* Toggle + Complexity badges in code panel header */}
