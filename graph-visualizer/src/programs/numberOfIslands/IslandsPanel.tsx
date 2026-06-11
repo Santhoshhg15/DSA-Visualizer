@@ -54,12 +54,12 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 w-full h-full text-white animate-fadeInUp">
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-[12px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Active Program</h3>
+      <div className="flex items-center gap-2 mb-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">Active Program</h3>
       </div>
       
       {/* Selector Cards Container */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 font-sans">
         {/* Card 1: Islands */}
         <button
           onClick={() => {
@@ -70,7 +70,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'islands'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -78,8 +78,8 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🏝️</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Number of Islands</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">Grid BFS • LeetCode #200</p>
+              <h4 className="font-semibold text-white text-[14px]">Number of Islands</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">Grid BFS • LeetCode #200</p>
             </div>
           </div>
         </button>
@@ -94,7 +94,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'cycle'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -102,8 +102,8 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🔄</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Cycle Detection</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">Union-Find • DFS Back-Edge</p>
+              <h4 className="font-semibold text-white text-[14px]">Cycle Detection</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">Union-Find • DFS • BFS</p>
             </div>
           </div>
         </button>
@@ -123,7 +123,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'bipartite'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -131,8 +131,8 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🎨</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Bipartite Graph Check</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">BFS 2-Coloring • Undirected + Directed</p>
+              <h4 className="font-semibold text-white text-[14px]">Bipartite Graph Check</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">BFS 2-Coloring • Undirected + Directed</p>
             </div>
           </div>
         </button>
@@ -143,8 +143,8 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
       {selectedProgram === 'islands' && (
         <>
           {/* Version Selector Toggle */}
-          <div className="flex flex-col gap-2">
-            <h3 className="text-[12px] font-bold text-[var(--muted-color)] uppercase tracking-wider">BFS Version</h3>
+          <div className="flex flex-col gap-2 font-sans">
+            <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">BFS Version</h3>
             <div className="flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-1 relative">
               <div 
                 className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md transition-all duration-300 ease-out shadow-sm bg-blue-500 ${
@@ -153,7 +153,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
               />
               <button
                 onClick={() => handleVersionChange('leetcode')}
-                className={`flex-1 py-1.5 text-center text-xs font-bold transition-all relative z-10 ${
+                className={`flex-1 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.04em] transition-all relative z-10 ${
                   version === 'leetcode' ? 'text-white' : 'text-[var(--muted-color)] hover:text-white'
                 }`}
               >
@@ -161,7 +161,7 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
               </button>
               <button
                 onClick={() => handleVersionChange('gfg')}
-                className={`flex-1 py-1.5 text-center text-xs font-bold transition-all relative z-10 ${
+                className={`flex-1 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.04em] transition-all relative z-10 ${
                   version === 'gfg' ? 'text-white' : 'text-[var(--muted-color)] hover:text-white'
                 }`}
               >
@@ -173,8 +173,8 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
           <div className="h-px w-full bg-[var(--border-color)] my-1"></div>
 
           {/* Preset Selector */}
-          <div className="flex flex-col gap-3">
-            <h3 className="text-[12px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Choose Grid</h3>
+          <div className="flex flex-col gap-3 font-sans">
+            <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">Choose Grid</h3>
             <div className="grid grid-cols-1 gap-2">
               {islandsPresets.map(preset => {
                 let expectedText = "";
@@ -186,15 +186,15 @@ export function IslandsPanel({ selectedProgram, setSelectedProgram }: IslandsPan
                   <button
                     key={preset.id}
                     onClick={() => handleIslandPresetChange(preset.id)}
-                    className={`text-left px-3 py-2 text-[12px] rounded-md border font-medium transition-all flex items-center justify-between ${
+                    className={`text-left px-3 py-2 text-[14px] rounded-md border font-semibold transition-all flex items-center justify-between ${
                       isSelected
-                        ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm'
+                        ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
                         : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-emerald-500/30 hover:text-white'
                     }`}
                   >
                     <span>{preset.name}</span>
                     {expectedText && (
-                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
+                      <span className={`text-[9px] font-sans font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded border ${
                         version === 'leetcode' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                       }`}>
                         {expectedText}

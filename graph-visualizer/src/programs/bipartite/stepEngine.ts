@@ -10,6 +10,7 @@ export function generateBipartiteSteps(
   let stepId = 0;
 
   const colorMap: Record<string, number> = {};
+  const coloredOrder: string[] = [];
   nodes.forEach((n) => {
     colorMap[n.id] = -1;
   });
@@ -58,6 +59,7 @@ export function generateBipartiteSteps(
       group1Nodes: group1,
       description,
       codeLineActive,
+      auxiliaryState: { visitedOrder: [...coloredOrder] },
       ...extra,
     });
   };
@@ -105,6 +107,7 @@ export function generateBipartiteSteps(
 
     // Color source
     colorMap[startNode] = 0;
+    coloredOrder.push(startNode);
     addStep(
       'color-source',
       `Color source node ${startNode} = 0 (Yellow group)`,
@@ -172,7 +175,7 @@ export function generateBipartiteSteps(
           const newColor = 1 - colorMap[node];
           const newColorName = newColor === 0 ? 'Yellow' : 'Orange';
           colorMap[neighbor] = newColor;
-
+          coloredOrder.push(neighbor);
           addStep(
             'color-neighbor',
             `color[${neighbor}] = 1 - color[${node}] = ${newColor} (${newColorName})`,
@@ -292,6 +295,16 @@ export function generateBipartiteSteps(
     } else if (conflictFound && idx >= steps.findIndex(s => s.type === 'conflict-found')) {
       step.isBipartite = false;
     }
+
+    step.queueSnapshot = (step.queueSnapshot || []).map((nodeId: any) => {
+      if (nodeId && typeof nodeId === 'object') {
+        return nodeId;
+      }
+      return {
+        node: String(nodeId),
+        color: step.colorSnapshot && step.colorSnapshot[nodeId] !== undefined ? step.colorSnapshot[nodeId] : -1
+      };
+    });
   });
 
   return steps;

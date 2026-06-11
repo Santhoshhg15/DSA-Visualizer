@@ -1,6 +1,7 @@
 import { useGraphStore } from '../stores/useGraphStore';
 import { useEffect, useRef, useState } from 'react';
 import { algorithmCode } from '../data/algorithmCode';
+import { CopyDownloadButtons } from './CopyDownloadButtons';
 
 const operationCodes: Record<string, string[]> = {
   'add-vertex': [
@@ -203,11 +204,11 @@ const operationCodes: Record<string, string[]> = {
 function syntaxHighlight(code: string) {
   // Comments
   if (code.trim().startsWith('//')) {
-    return <span className="text-gray-500 italic">{code}</span>;
+    return <span className="text-[var(--muted-color)] italic">{code}</span>;
   }
 
-  const keywords = ['public', 'void', 'return', 'if', 'else', 'while', 'for', 'new', 'continue', 'break'];
-  const types = ['String', 'int', 'boolean', 'List', 'Map', 'Set', 'Queue', 'PriorityQueue', 'ArrayList', 'LinkedList', 'HashSet', 'HashMap', 'Edge', 'Integer'];
+  const keywords = ['public', 'void', 'return', 'if', 'else', 'while', 'for', 'new', 'continue', 'break', 'class', 'static', 'int', 'boolean'];
+  const types = ['String', 'int[]', 'List', 'Map', 'Set', 'Queue', 'PriorityQueue', 'ArrayList', 'LinkedList', 'HashSet', 'HashMap', 'Edge', 'Integer', 'Pair', 'Solution'];
   
   // Replace words
   let result: React.ReactNode[] = [];
@@ -215,9 +216,9 @@ function syntaxHighlight(code: string) {
   
   tokens.forEach((token, i) => {
     if (keywords.includes(token)) {
-      result.push(<span key={i} className="text-blue-400">{token}</span>);
+      result.push(<span key={i} className="text-[#60a5fa]">{token}</span>);
     } else if (types.includes(token)) {
-      result.push(<span key={i} className="text-emerald-400">{token}</span>);
+      result.push(<span key={i} className="text-[#10b981]">{token}</span>);
     } else {
       result.push(token);
     }
@@ -226,15 +227,29 @@ function syntaxHighlight(code: string) {
   return result;
 }
 
-export function CodePanel({ collapsed, onToggle }: { collapsed: boolean, onToggle: () => void }) {
-  const { steps, cur, stats, selectedAlgorithm } = useGraphStore();
-  const containerRef = useRef<HTMLDivElement>(null);
+export function CodePanel({ 
+  collapsed, 
+  onToggle,
+  codeScrollRef,
+  onScroll
+}: { 
+  collapsed: boolean; 
+  onToggle: () => void;
+  codeScrollRef?: React.RefObject<HTMLDivElement | null>;
+  onScroll?: React.UIEventHandler<HTMLDivElement>;
+}) {
+  const { steps, cur, stats, selectedAlgorithm, dijkstraImpl } = useGraphStore();
+  const outerContainerRef = useRef<HTMLDivElement>(null);
+  const [panelWidth, setPanelWidth] = useState(350);
   const [isPseudoCode, setIsPseudoCode] = useState(true);
 
   const currentStepData = steps[cur];
   const activeLine = currentStepData?.codeLineActive || 0;
   
-  const opKey = selectedAlgorithm || stats?.operation?.toLowerCase()?.replace(' ', '-') || '';
+  let opKey = selectedAlgorithm || stats?.operation?.toLowerCase()?.replace(' ', '-') || '';
+  if (opKey === 'dijkstra' && dijkstraImpl === 'set') {
+    opKey = 'dijkstra-set';
+  }
   
   const hasAlgorithmData = !!algorithmCode[opKey];
   const codeLines = hasAlgorithmData 
@@ -242,76 +257,133 @@ export function CodePanel({ collapsed, onToggle }: { collapsed: boolean, onToggl
     : (operationCodes[opKey] || []);
 
   useEffect(() => {
-    if (activeLine > 0 && containerRef.current && !collapsed) {
-      const activeEl = containerRef.current.querySelector('[data-active="true"]');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!outerContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setPanelWidth(entry.contentRect.width);
       }
-    }
-  }, [activeLine, collapsed]);
+    });
+    observer.observe(outerContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const isNarrow = panelWidth < 450;
 
   return (
-    <div className={`w-full flex flex-col bg-[#0d0d0d] border-l border-[var(--border-color)] transition-all duration-300 ${collapsed ? 'h-[40px]' : 'flex-grow basis-[35%]'}`}>
+    <div ref={outerContainerRef} className={`w-full flex flex-col bg-[var(--panel-bg)] border-l border-[var(--border-color)] transition-all duration-300 font-sans ${collapsed ? 'h-[40px]' : 'h-full min-h-0'}`}>
       <div 
-        className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[#111] cursor-pointer hover:bg-[#1a1a1a] transition-colors"
+        className={`px-3 flex border-b border-[var(--border-color)] bg-[var(--panel-bg)] cursor-pointer hover:bg-[var(--input-bg)] transition-colors select-none ${
+          isNarrow && !collapsed ? 'flex-col gap-2 py-2.5 h-auto' : 'h-[40px] flex-row items-center justify-between'
+        }`}
         onClick={onToggle}
       >
-        <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.08em] flex items-center gap-2">
-          <span className="text-blue-500">💻</span> {hasAlgorithmData ? (isPseudoCode ? 'Pseudo Code' : 'Java Source') : 'Source Code'}
-        </h3>
-        
-        <div className="flex items-center gap-3">
-          {hasAlgorithmData && steps.length > 0 && !collapsed && (
-            <div className="flex items-center gap-2 mr-2">
-              <div className="px-1.5 py-0.5 rounded-[4px] border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[10px] uppercase font-bold tracking-wider" title="Time Complexity">
-                {algorithmCode[opKey].timeComplexity}
+        {isNarrow && !collapsed ? (
+          <>
+            {/* Row 1 */}
+            <div className="flex items-center justify-between w-full">
+              <h3 className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
+                <span className="text-blue-500">💻</span> {hasAlgorithmData ? (isPseudoCode ? 'Pseudo Code' : 'Java Source') : 'Source Code'}
+              </h3>
+              {hasAlgorithmData && steps.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="px-1.5 py-0.5 rounded-[4px] border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[11px] font-medium" title="Time Complexity">
+                    {algorithmCode[opKey].timeComplexity}
+                  </div>
+                  <div className="px-1.5 py-0.5 rounded-[4px] border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[11px] font-medium" title="Space Complexity">
+                    {algorithmCode[opKey].spaceComplexity}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Row 2 */}
+            <div className="flex items-center justify-between w-full border-t border-[var(--border-color)]/50 pt-2" onClick={(e) => e.stopPropagation()}>
+              <div className="flex-grow">
+                {hasAlgorithmData && (
+                  <div className="flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[4px] p-[2px] w-fit">
+                    <button 
+                      onClick={() => setIsPseudoCode(true)}
+                      className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors cursor-pointer ${isPseudoCode ? 'bg-blue-500/20 text-blue-400 font-bold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'}`}
+                    >
+                      Pseudo
+                    </button>
+                    <button 
+                      onClick={() => setIsPseudoCode(false)}
+                      className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors cursor-pointer ${!isPseudoCode ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'}`}
+                    >
+                      Java
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="px-1.5 py-0.5 rounded-[4px] border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[10px] uppercase font-bold tracking-wider" title="Space Complexity">
-                {algorithmCode[opKey].spaceComplexity}
+              <div className="flex items-center gap-2">
+                {hasAlgorithmData && <div className="h-4 w-[1px] bg-[var(--border-color)]" />}
+                <CopyDownloadButtons algorithmKey={hasAlgorithmData ? opKey : null} />
               </div>
             </div>
-          )}
-          
-          {hasAlgorithmData && !collapsed && (
-            <div 
-              className="flex items-center bg-[#222] rounded-[4px] p-[2px]"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <button 
-                onClick={() => setIsPseudoCode(true)}
-                className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] rounded-[3px] transition-colors ${isPseudoCode ? 'bg-blue-500/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                Pseudo
-              </button>
-              <button 
-                onClick={() => setIsPseudoCode(false)}
-                className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] rounded-[3px] transition-colors ${!isPseudoCode ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                Java
+          </>
+        ) : (
+          <>
+            <h3 className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
+              <span className="text-blue-500">💻</span> {hasAlgorithmData ? (isPseudoCode ? 'Pseudo Code' : 'Java Source') : 'Source Code'}
+            </h3>
+            
+            <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+              {hasAlgorithmData && steps.length > 0 && !collapsed && (
+                <div className="flex items-center gap-2 mr-1">
+                  <div className="px-1.5 py-0.5 rounded-[4px] border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[11px] font-medium" title="Time Complexity">
+                    {algorithmCode[opKey].timeComplexity}
+                  </div>
+                  <div className="px-1.5 py-0.5 rounded-[4px] border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[11px] font-medium" title="Space Complexity">
+                    {algorithmCode[opKey].spaceComplexity}
+                  </div>
+                </div>
+              )}
+              
+              {!collapsed && (
+                <>
+                  {hasAlgorithmData && (
+                    <div className="flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[4px] p-[2px]">
+                      <button 
+                        onClick={() => setIsPseudoCode(true)}
+                        className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors cursor-pointer ${isPseudoCode ? 'bg-blue-500/20 text-blue-400 font-bold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'}`}
+                      >
+                        Pseudo
+                      </button>
+                      <button 
+                        onClick={() => setIsPseudoCode(false)}
+                        className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors cursor-pointer ${!isPseudoCode ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'}`}
+                      >
+                        Java
+                      </button>
+                    </div>
+                  )}
+                  {hasAlgorithmData && <div className="h-4 w-[1px] bg-[var(--border-color)]" />}
+                  <CopyDownloadButtons algorithmKey={hasAlgorithmData ? opKey : null} />
+                </>
+              )}
+              <button onClick={() => onToggle()} className="text-[var(--muted-color)] hover:text-[var(--text-color)] transition-colors ml-1 cursor-pointer">
+                <svg className={`w-4 h-4 transform transition-transform ${collapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
-          )}
-          <button className="text-gray-500 hover:text-gray-300 transition-colors">
-            <svg className={`w-4 h-4 transform transition-transform ${collapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
+          </>
+        )}
       </div>
 
       {!collapsed && (
         <div 
-          ref={containerRef}
-          className="flex-1 overflow-y-auto p-3 text-[12px] font-mono leading-relaxed custom-scrollbar bg-[#0d0d0d]"
+          ref={codeScrollRef}
+          onScroll={onScroll}
+          className="flex-1 overflow-y-auto p-3 text-[13px] font-mono leading-[1.7] custom-scrollbar bg-[var(--panel-bg)]"
         >
           {codeLines.length === 0 ? (
-            <div className="text-gray-600 text-center mt-4">No code available.</div>
+            <div className="text-[var(--muted-color)] text-center mt-4">No code available.</div>
           ) : (
             <div className="flex">
               {/* Line numbers */}
-              <div className="flex flex-col text-right pr-3 mr-3 border-r border-gray-800 text-[11px] text-gray-600 select-none">
+              <div className="flex flex-col text-right pr-3 mr-3 border-r border-[var(--border-color)] text-[13px] text-[var(--muted-color)]/60 select-none">
                 {codeLines.map((_, i) => (
                   <div key={i} className="py-[2px]">{i + 1}</div>
                 ))}
@@ -324,10 +396,11 @@ export function CodePanel({ collapsed, onToggle }: { collapsed: boolean, onToggl
                     <div 
                       key={idx} 
                       data-active={isActive}
-                      className={`py-[2px] pl-2 -ml-2 transition-colors duration-200 whitespace-pre ${
+                      data-active-line={isActive}
+                      className={`py-[2px] pl-2 -ml-2 transition-colors duration-200 whitespace-pre border-l-[3px] ${
                         isActive 
-                          ? 'bg-blue-500/20 text-gray-100 border-l-[3px] border-blue-500' 
-                          : 'text-gray-300 border-l-[3px] border-transparent'
+                          ? 'bg-blue-500/10 text-[var(--text-color)] border-blue-500 font-semibold' 
+                          : 'text-[var(--text-color)] border-transparent font-normal'
                       }`}
                     >
                       {syntaxHighlight(line)}

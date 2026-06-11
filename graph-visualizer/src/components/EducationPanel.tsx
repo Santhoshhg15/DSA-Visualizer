@@ -9,12 +9,12 @@ import { AdjacencyDiagram } from './diagrams/AdjacencyDiagram';
 
 export function EducationPanel() {
   return (
-    <div className="w-full">
+    <div className="w-full font-sans">
       <div className="flex items-center gap-3 mb-8">
         <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.4)]">
           📚
         </span>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+        <h2 className="text-[22px] font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
           Graph Fundamentals
         </h2>
       </div>

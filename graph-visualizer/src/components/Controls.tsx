@@ -99,7 +99,7 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
   const speeds = [0.25, 0.5, 0.75, 1, 1.5, 2];
 
   return (
-    <div className="flex w-full items-center justify-center py-3 px-2 select-none">
+    <div className="flex w-full items-center justify-center py-3 px-2 select-none font-sans">
       <div className="w-full max-w-lg md:w-fit md:min-w-[480px] flex items-center justify-between gap-2 md:gap-4 px-3 md:px-5 py-2 rounded-full border border-[var(--border-color)] bg-[var(--panel-bg)]/85 backdrop-blur-md shadow-lg shadow-black/5 mx-auto">
         
         {/* Navigation Left */}
@@ -114,7 +114,7 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
 
         {/* Hero Play/Pause Button */}
         <button
-          className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full text-white transition-all transform hover:scale-105 active:scale-95 shadow-md ${
+          className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full text-white transition-all transform hover:scale-105 active:scale-95 shadow-md cursor-pointer ${
             playing ? 'bg-orange-500 hover:bg-orange-400' : 'bg-blue-500 hover:bg-blue-400'
           }`}
           onClick={toggle}
@@ -138,7 +138,7 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
         </div>
 
         {/* Progress Track */}
-        <div className="flex items-center gap-2 md:gap-3 flex-1 md:flex-none">
+        <div className="flex items-center gap-2 md:gap-3 flex-1 md:flex-none font-sans">
           <div 
             ref={trackRef}
             onClick={handleTrackClick}
@@ -158,7 +158,7 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
           </div>
           
           {/* Step Counter */}
-          <span className="text-[13px] font-mono text-[var(--muted-color)] w-[50px] text-right">
+          <span className="text-[13px] font-mono font-medium text-[var(--muted-color)] w-[50px] text-right">
             {cur + 1}/{steps.length}
           </span>
         </div>
@@ -171,11 +171,11 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
           <select
             value={speed}
             onChange={e => setSpeed(parseFloat(e.target.value))}
-            className="h-[28px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] pl-2 pr-6 text-[11px] font-mono font-bold text-[var(--text-color)] outline-none focus:border-blue-500 hover:border-blue-500/50 transition-colors cursor-pointer appearance-none text-center min-w-[64px]"
+            className="h-[28px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] pl-2 pr-6 text-[10px] font-mono font-bold text-[var(--text-color)] outline-none focus:border-blue-500 hover:border-blue-500/50 transition-colors cursor-pointer appearance-none text-center min-w-[64px] uppercase"
             title="Change Playback Speed"
           >
             {speeds.map(s => (
-              <option key={s} value={s} className="bg-[var(--panel-bg)] text-[var(--text-color)]">{s}×</option>
+              <option key={s} value={s} className="bg-[var(--panel-bg)] text-[var(--text-color)] font-sans">{s}X</option>
             ))}
           </select>
           <div className="absolute right-2 pointer-events-none text-[var(--muted-color)] flex items-center justify-center">

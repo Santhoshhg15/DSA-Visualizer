@@ -199,14 +199,14 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 w-full h-full text-white animate-fadeInUp">
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-[12px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex items-center gap-2 mb-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Active Program
         </h3>
       </div>
 
       {/* Program Selector Cards */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 font-sans">
         {/* Card 1: Islands */}
         <button
           onClick={() => {
@@ -222,7 +222,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'islands'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -230,8 +230,8 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🏝️</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Number of Islands</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
+              <h4 className="font-semibold text-white text-[14px]">Number of Islands</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">
                 Grid BFS • LeetCode #200
               </p>
             </div>
@@ -248,7 +248,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'cycle'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -256,9 +256,9 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🔄</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Cycle Detection</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
-                Union-Find • DFS Back-Edge
+              <h4 className="font-semibold text-white text-[14px]">Cycle Detection</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">
+                Union-Find • DFS • BFS
               </p>
             </div>
           </div>
@@ -279,7 +279,7 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'bipartite'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -287,8 +287,8 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🎨</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Bipartite Graph Check</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">BFS 2-Coloring • Undirected + Directed</p>
+              <h4 className="font-semibold text-white text-[14px]">Bipartite Graph Check</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">BFS 2-Coloring • Undirected + Directed</p>
             </div>
           </div>
         </button>
@@ -297,9 +297,9 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       <div className="h-px w-full bg-[var(--border-color)] my-1"></div>
 
       {/* SECTION 1 — Algorithm Selector */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 font-sans">
         <div className="flex flex-col gap-1.5">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
             Undirected Algorithms
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -307,29 +307,29 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               onClick={() => handleAlgoChange('undirected-union-find')}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                 algorithmType === 'undirected-union-find'
-                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  ? 'border-blue-500 bg-blue-500/10 text-white'
                   : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
               }`}
             >
-              <span className="text-[11px] font-bold">Union-Find</span>
-              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Disjoint Set</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em]">Union-Find</span>
+              <span className="text-[9px] font-medium font-mono tracking-wider opacity-60 mt-0.5">Disjoint Set</span>
             </button>
             <button
               onClick={() => handleAlgoChange('undirected-bfs')}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                 algorithmType === 'undirected-bfs'
-                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  ? 'border-blue-500 bg-blue-500/10 text-white'
                   : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
               }`}
             >
-              <span className="text-[11px] font-bold">BFS Parent</span>
-              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Queue Track</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em]">BFS Parent</span>
+              <span className="text-[9px] font-medium font-mono tracking-wider opacity-60 mt-0.5">Queue Track</span>
             </button>
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
             Directed Algorithms
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -337,31 +337,31 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               onClick={() => handleAlgoChange('directed-dfs')}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                 algorithmType === 'directed-dfs'
-                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  ? 'border-blue-500 bg-blue-500/10 text-white'
                   : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
               }`}
             >
-              <span className="text-[11px] font-bold">DFS Back-Edge</span>
-              <span className="text-[9px] opacity-80 mt-0.5 font-mono">Recursion Stack</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em]">DFS Back-Edge</span>
+              <span className="text-[9px] font-medium font-mono tracking-wider opacity-60 mt-0.5">Recursion Stack</span>
             </button>
             <button
               onClick={() => handleAlgoChange('directed-bfs')}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                 algorithmType === 'directed-bfs'
-                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-[0_0_6px_rgba(59,130,246,0.3)]'
+                  ? 'border-blue-500 bg-blue-500/10 text-white'
                   : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30'
               }`}
             >
-              <span className="text-[11px] font-bold">Kahn's BFS</span>
-              <span className="text-[9px] opacity-80 mt-0.5 font-mono">In-Degree Sort</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em]">Kahn's BFS</span>
+              <span className="text-[9px] font-medium font-mono tracking-wider opacity-60 mt-0.5">In-Degree Sort</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* SECTION 2 — Preset Selector */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex flex-col gap-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Presets
         </h3>
         <div className="grid grid-cols-1 gap-2">
@@ -371,21 +371,21 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               onClick={() => handlePresetChange(preset.id)}
               className={`text-left p-3 rounded-lg border flex items-center justify-between transition-all ${
                 currentPreset === preset.id
-                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-sm'
+                  ? 'border-blue-500 bg-blue-500/10 text-white'
                   : 'border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:border-blue-500/30 hover:text-white'
               }`}
             >
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold">{preset.name}</span>
-                <span className="text-[9px] font-mono tracking-wider opacity-60">
+                <span className="text-[14px] font-semibold">{preset.name}</span>
+                <span className="text-[9px] font-sans font-bold uppercase tracking-[0.06em] opacity-60">
                   {preset.directed ? 'DIRECTED' : 'UNDIRECTED'}
                 </span>
               </div>
               <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase font-mono ${
+                className={`text-[9px] font-sans font-bold px-2 py-0.5 rounded border uppercase tracking-[0.06em] ${
                   preset.expectedResult
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                    : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                 }`}
               >
                 {preset.expectedResult ? 'HAS CYCLE' : 'NO CYCLE'}
@@ -396,13 +396,13 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       </div>
 
       {/* SECTION 3 — Custom Graph Input */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex flex-col gap-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Custom Graph
         </h3>
         <div className="flex flex-col gap-3 p-3 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-[var(--muted-color)] font-bold uppercase">
+            <label className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">
               Nodes (comma separated)
             </label>
             <input
@@ -410,12 +410,12 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               value={customNodes}
               onChange={(e) => setCustomNodes(e.target.value)}
               placeholder="A, B, C, D, E"
-              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500/50"
+              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded px-2.5 py-1.5 text-[13px] text-white font-mono focus:outline-none focus:border-blue-500/50"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-[var(--muted-color)] font-bold uppercase">
+            <label className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">
               Edges
             </label>
             <textarea
@@ -423,23 +423,23 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
               value={customEdges}
               onChange={(e) => setCustomEdges(e.target.value)}
               placeholder={algorithmType.startsWith('directed') ? 'A→B\nB→C' : 'A-B\nB-C'}
-              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500/50 resize-none"
+              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded px-2.5 py-1.5 text-[13px] text-white font-mono focus:outline-none focus:border-blue-500/50 resize-none"
             />
           </div>
 
-          {error && <span className="text-[11px] text-red-400 font-semibold">{error}</span>}
+          {error && <span className="text-[11px] text-red-400 font-semibold">⚠️ {error}</span>}
 
           <div className="flex gap-2">
             <button
               onClick={validateAndLoadCustom}
-              className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition-colors shadow-md shadow-blue-900/10"
+              className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-semibold text-[11px] font-sans uppercase tracking-[0.06em] hover:bg-blue-500 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)]"
             >
               Load Graph
             </button>
             <button
               onClick={runAlgorithm}
               disabled={nodes.length === 0}
-              className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition-colors shadow-md shadow-blue-900/10 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-semibold text-[11px] font-sans uppercase tracking-[0.06em] hover:bg-blue-500 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Run Algorithm
             </button>
@@ -448,18 +448,18 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
       </div>
 
       {/* SECTION 4 — Algorithm Info */}
-      <div className="border border-[var(--border-color)] rounded-xl overflow-hidden mt-1">
+      <div className="border border-[var(--border-color)] rounded-xl overflow-hidden mt-1 font-sans">
         <button
           onClick={() => setInfoExpanded(!infoExpanded)}
           className="w-full px-4 py-2.5 bg-[var(--input-bg)] hover:bg-[var(--input-bg)]/80 transition-colors flex items-center justify-between text-left"
         >
-          <span className="text-[10px] font-bold text-[var(--muted-color)] tracking-wider uppercase">
-            ▼ About This Algorithm
+          <span className="text-[10px] font-semibold text-[var(--muted-color)] tracking-[0.08em] uppercase">
+            {infoExpanded ? '▼' : '▶'} About This Algorithm
           </span>
         </button>
 
         {infoExpanded && (
-          <div className="p-3.5 bg-[var(--panel-bg)] flex flex-col gap-3 text-xs leading-relaxed text-[var(--muted-color)]">
+          <div className="p-3.5 bg-[var(--panel-bg)] flex flex-col gap-3 text-[13px] leading-relaxed text-[var(--muted-color)]">
             {algorithmType === 'undirected-union-find' && (
               <>
                 <p>
@@ -467,10 +467,10 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
                   connects two nodes already in the same component, a cycle exists.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Time: O(E × α(V)) ≈ O(E)
                   </span>
-                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Space: O(V)
                   </span>
                 </div>
@@ -483,10 +483,10 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
                   is reached that is not the parent of the current node, a cycle exists.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Time: O(V + E)
                   </span>
-                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Space: O(V)
                   </span>
                 </div>
@@ -499,10 +499,10 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
                   in the current stack, a back edge (cycle) is found.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Time: O(V + E)
                   </span>
-                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Space: O(V)
                   </span>
                 </div>
@@ -515,10 +515,10 @@ export function CyclePanel({ selectedProgram, setSelectedProgram }: CyclePanelPr
                   If the final sorted list count is less than V, a cycle exists.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Time: O(V + E)
                   </span>
-                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-mono text-[11px] font-medium">
                     Space: O(V)
                   </span>
                 </div>

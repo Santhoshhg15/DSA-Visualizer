@@ -125,13 +125,13 @@ export function PresetSelector() {
   return (
     <div className="w-full flex flex-col flex-shrink-0">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
+        <h2 className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
           <span className="text-emerald-500">🎯</span> Graph
         </h2>
         {!isExpanded && !isBuildingCustom && (
           <button 
             onClick={() => setIsExpanded(true)}
-            className="text-[10px] font-bold uppercase tracking-[0.04em] bg-[var(--input-bg)] border border-[var(--border-color)] px-2 py-1 rounded text-[var(--text-color)] hover:bg-[var(--border-hover)] transition-colors"
+            className="text-[10px] font-semibold uppercase tracking-[0.06em] bg-[var(--input-bg)] border border-[var(--border-color)] px-2.5 py-1 rounded text-[var(--text-color)] hover:bg-[var(--border-hover)] transition-colors cursor-pointer"
           >
             Change
           </button>
@@ -145,7 +145,7 @@ export function PresetSelector() {
             {/* STEP 1: Graph Type */}
             <div className="flex gap-2">
               <label className="flex-1 flex items-center justify-between cursor-pointer group px-2 py-1.5 border border-[var(--border-color)] rounded-[6px] hover:border-[var(--border-hover)] transition-colors">
-                <span className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Directed</span>
+                <span className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">Directed</span>
                 <input 
                   type="checkbox" 
                   checked={customDirected}
@@ -154,7 +154,7 @@ export function PresetSelector() {
                 />
               </label>
               <label className="flex-1 flex items-center justify-between cursor-pointer group px-2 py-1.5 border border-[var(--border-color)] rounded-[6px] hover:border-[var(--border-hover)] transition-colors">
-                <span className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Weighted</span>
+                <span className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">Weighted</span>
                 <input 
                   type="checkbox" 
                   checked={customWeighted}
@@ -166,7 +166,7 @@ export function PresetSelector() {
 
             {/* STEP 2: Add Nodes */}
             <div className="pt-2 border-t border-[var(--border-color)]">
-              <label className="block text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] mb-1">Add Nodes</label>
+              <label className="block text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em] mb-1">Add Nodes</label>
               <div className="flex gap-2">
                 <input 
                   type="text" 
@@ -174,12 +174,12 @@ export function PresetSelector() {
                   onChange={e => setNodeLabel(e.target.value.toUpperCase().slice(0, 3))}
                   onKeyDown={e => e.key === 'Enter' && handleAddNode()}
                   placeholder="Label (e.g. A)"
-                  className="flex-1 font-mono h-[32px] bg-[var(--bg-gradient-1)] border border-[var(--border-color)] rounded-[6px] px-2 text-[12px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors"
+                  className="flex-1 font-mono h-[32px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] px-2 text-[13px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors"
                 />
                 <button 
                   onClick={handleAddNode}
                   disabled={!nodeLabel}
-                  className="px-3 bg-[var(--panel-bg)] hover:bg-emerald-500/20 text-[var(--text-color)] hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--border-color)] rounded-[6px] text-[11px] font-bold uppercase transition-colors"
+                  className="px-3 bg-[var(--panel-bg)] hover:bg-emerald-500/20 text-[var(--text-color)] hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--border-color)] rounded-[6px] text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors cursor-pointer"
                 >
                   + Add
                 </button>
@@ -189,7 +189,7 @@ export function PresetSelector() {
                   {customNodes.map(n => (
                     <div key={n.id} className="flex items-center gap-1 bg-[var(--panel-bg)] border border-emerald-500/30 rounded-full px-2 py-0.5">
                       <span className="text-[11px] font-mono font-bold text-emerald-400">{n.id}</span>
-                      <button onClick={() => handleRemoveNode(n.id)} className="text-[10px] text-[var(--muted-color)] hover:text-red-400">✕</button>
+                      <button onClick={() => handleRemoveNode(n.id)} className="text-[10px] text-[var(--muted-color)] hover:text-red-400 cursor-pointer">✕</button>
                     </div>
                   ))}
                 </div>
@@ -198,13 +198,13 @@ export function PresetSelector() {
 
             {/* STEP 3: Add Edges */}
             <div className="pt-2 border-t border-[var(--border-color)]">
-              <label className="block text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] mb-1">Add Edges</label>
+              <label className="block text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em] mb-1">Add Edges</label>
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <select value={edgeSrc} onChange={e => setEdgeSrc(e.target.value)} className="w-full h-[32px] bg-[var(--bg-gradient-1)] border border-[var(--border-color)] rounded-[6px] px-2 text-[12px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors cursor-pointer appearance-none font-mono">
+                <select value={edgeSrc} onChange={e => setEdgeSrc(e.target.value)} className="w-full h-[32px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] px-2 text-[13px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors cursor-pointer appearance-none font-mono">
                   <option value="">Source...</option>
                   {customNodes.map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
                 </select>
-                <select value={edgeDest} onChange={e => setEdgeDest(e.target.value)} className="w-full h-[32px] bg-[var(--bg-gradient-1)] border border-[var(--border-color)] rounded-[6px] px-2 text-[12px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors cursor-pointer appearance-none font-mono">
+                <select value={edgeDest} onChange={e => setEdgeDest(e.target.value)} className="w-full h-[32px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] px-2 text-[13px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors cursor-pointer appearance-none font-mono">
                   <option value="">Target...</option>
                   {customNodes.filter(n => n.id !== edgeSrc).map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
                 </select>
@@ -216,13 +216,13 @@ export function PresetSelector() {
                     value={edgeWeight} 
                     onChange={e => setEdgeWeight(e.target.value)}
                     placeholder="Weight"
-                    className="w-20 font-mono h-[32px] bg-[var(--bg-gradient-1)] border border-[var(--border-color)] rounded-[6px] px-2 text-[12px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors"
+                    className="w-20 font-mono h-[32px] bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] px-2 text-[13px] text-[var(--text-color)] outline-none focus:border-emerald-500 transition-colors"
                   />
                 )}
                 <button 
                   onClick={handleAddEdge}
                   disabled={!edgeSrc || !edgeDest}
-                  className="flex-1 bg-[var(--panel-bg)] hover:bg-emerald-500/20 text-[var(--text-color)] hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--border-color)] rounded-[6px] text-[11px] font-bold uppercase transition-colors"
+                  className="flex-1 bg-[var(--panel-bg)] hover:bg-emerald-500/20 text-[var(--text-color)] hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--border-color)] rounded-[6px] text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors cursor-pointer"
                 >
                   + Add Edge
                 </button>
@@ -236,7 +236,7 @@ export function PresetSelector() {
                         {e.source} <span className="text-[var(--muted-color)]">{customDirected ? '→' : '—'}</span> {e.target}
                         {customWeighted && e.weight !== undefined && <span className="text-purple-400 ml-2">[w:{e.weight}]</span>}
                       </div>
-                      <button onClick={() => handleRemoveEdge(e.id)} className="text-[10px] text-[var(--muted-color)] hover:text-red-400">✕</button>
+                      <button onClick={() => handleRemoveEdge(e.id)} className="text-[10px] text-[var(--muted-color)] hover:text-red-400 cursor-pointer">✕</button>
                     </div>
                   ))}
                 </div>
@@ -248,12 +248,12 @@ export function PresetSelector() {
               <button 
                 onClick={handleLoadCustomGraph}
                 disabled={customNodes.length < 2 || customEdges.length < 1}
-                className="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-[var(--border-color)] disabled:text-[var(--muted-color)] disabled:cursor-not-allowed text-white font-bold h-[36px] rounded-[6px] transition-all text-sm shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] disabled:shadow-none"
+                className="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-[var(--border-color)] disabled:text-[var(--muted-color)] disabled:cursor-not-allowed text-white font-bold h-[36px] rounded-[6px] transition-all text-sm shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] disabled:shadow-none cursor-pointer"
               >
-                <span className="text-[11px] font-medium tracking-[0.06em] uppercase">Load Graph</span>
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase">Load Graph</span>
               </button>
               <div className="text-center mt-2">
-                <button onClick={handleCancelCustom} className="text-[11px] text-[var(--muted-color)] hover:text-[var(--text-color)] underline transition-colors">
+                <button onClick={handleCancelCustom} className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--muted-color)] hover:text-[var(--text-color)] underline transition-colors cursor-pointer bg-transparent border-0">
                   Cancel
                 </button>
               </div>
@@ -269,21 +269,21 @@ export function PresetSelector() {
                   key={preset.id}
                   onClick={() => handleSelect(preset)}
                   title={preset.description}
-                  className={`w-full flex items-center justify-between h-[44px] px-3 rounded-[8px] border transition-all duration-150 ease-out group hover:translate-x-[3px] ${
+                  className={`w-full flex items-center justify-between h-[44px] px-3 rounded-[8px] border transition-all duration-150 ease-out group hover:translate-x-[3px] cursor-pointer ${
                     isSelected 
                       ? 'bg-emerald-500/10 border-emerald-500/50 border-l-4 shadow-sm' 
                       : 'bg-[var(--input-bg)] border-[var(--border-color)] border-l-[3px] border-l-transparent hover:border-[var(--border-hover)] hover:bg-[var(--bg-gradient-1)]'
                   }`}
                 >
-                  <span className={`text-[13px] font-medium transition-colors ${isSelected ? 'text-emerald-400' : 'text-[var(--text-color)] group-hover:text-emerald-400'}`}>
+                  <span className={`text-[14px] font-semibold transition-colors ${isSelected ? 'text-emerald-400' : 'text-[var(--text-color)] group-hover:text-emerald-400'}`}>
                     {preset.name}
                   </span>
                   
                   <div className="flex gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-[0.04em] ${preset.directed ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-[0.06em] ${preset.directed ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                       {preset.directed ? 'DIR' : 'UNDIR'}
                     </span>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-[0.04em] ${preset.weighted ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-[0.06em] ${preset.weighted ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-500/20 text-gray-400'}`}>
                       {preset.weighted ? 'WGT' : 'UNWGT'}
                     </span>
                   </div>
@@ -297,9 +297,9 @@ export function PresetSelector() {
                 setIsBuildingCustom(true);
                 setIsExpanded(false);
               }}
-              className="w-full flex items-center justify-center h-[44px] px-3 rounded-[8px] border border-dashed border-[var(--border-color)] bg-[var(--input-bg)] hover:bg-[var(--bg-gradient-1)] hover:border-emerald-500/50 transition-all duration-150 ease-out group"
+              className="w-full flex items-center justify-center h-[44px] px-3 rounded-[8px] border border-dashed border-[var(--border-color)] bg-[var(--input-bg)] hover:bg-[var(--bg-gradient-1)] hover:border-emerald-500/50 transition-all duration-150 ease-out group cursor-pointer"
             >
-              <span className="text-[12px] font-bold text-[var(--muted-color)] group-hover:text-emerald-400 tracking-[0.04em] uppercase">
+              <span className="text-[11px] font-semibold text-[var(--muted-color)] group-hover:text-emerald-400 tracking-[0.04em] uppercase">
                 + Build Your Own
               </span>
             </button>
@@ -307,16 +307,16 @@ export function PresetSelector() {
         ) : selectedData ? (
           <div className="flex flex-col gap-2">
             <div className="w-full flex items-center justify-between h-[44px] px-3 rounded-[8px] border bg-emerald-500/10 border-emerald-500/50 border-l-[3px]">
-              <span className="text-[13px] font-medium text-emerald-400">
+              <span className="text-[14px] font-semibold text-emerald-400">
                 {selectedData.name}
               </span>
             </div>
             {/* Graph Type Pills */}
             <div className="flex gap-2">
-              <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] text-[10px] font-bold tracking-[0.04em] text-[var(--muted-color)] uppercase">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] text-[9px] font-bold tracking-[0.06em] text-[var(--muted-color)] uppercase">
                 {selectedData.directed ? '➡️ DIRECTED' : '↔️ UNDIRECTED'}
               </div>
-              <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] text-[10px] font-bold tracking-[0.04em] text-[var(--muted-color)] uppercase">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[6px] text-[9px] font-bold tracking-[0.06em] text-[var(--muted-color)] uppercase">
                 {selectedData.weighted ? '⚖️ WEIGHTED' : '➖ UNWEIGHTED'}
               </div>
             </div>

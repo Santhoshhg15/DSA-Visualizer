@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useIslandsStore } from '../../stores/useIslandsStore';
+import { CopyDownloadButtons } from '../../components/CopyDownloadButtons';
 
 const ISLAND_COLORS = [
   '#7C3AED', // Island 1: purple
@@ -182,8 +183,33 @@ function syntaxHighlight(code: string, isJava: boolean) {
 export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' | 'code' | 'trace' }) {
   const { grid, steps, cur, version } = useIslandsStore();
   const [isPseudoCode, setIsPseudoCode] = useState(true);
+  const [panelWidth, setPanelWidth] = useState(350);
+
+  const [showTracePill, setShowTracePill] = useState(false);
+  const userScrolledUp = useRef<boolean>(false);
+  const scrollPositions = useRef({
+    graph: 0,
+    code: 0,
+    trace: 0
+  });
+
+  const graphContainerRef = useRef<HTMLDivElement>(null);
   const codeContainerRef = useRef<HTMLDivElement>(null);
   const traceContainerRef = useRef<HTMLDivElement>(null);
+  const outerContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!outerContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setPanelWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(outerContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const isNarrow = panelWidth < 450;
 
   const currentStep = steps[cur] || null;
   const activeLine = currentStep?.codeLineActive || 0;
@@ -221,22 +247,150 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
     return list;
   };
 
-  // Scroll to active line in Code Panel
-  useEffect(() => {
-    if (activeLine > 0 && codeContainerRef.current) {
-      const activeEl = codeContainerRef.current.querySelector('[data-active="true"]');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [activeLine, activeRightTab, isPseudoCode]);
+  // Handle manual scroll in TRACE tab
+  const handleTraceScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    scrollPositions.current.trace = el.scrollTop;
+    
+    const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 40;
+    userScrolledUp.current = !isAtBottom;
+    setShowTracePill(!isAtBottom);
+  };
 
   // Scroll to active trace step
-  useEffect(() => {
+  const handleScrollToActiveTrace = () => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
     if (traceContainerRef.current) {
-      traceContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+      if (activeEntry) {
+        const container = traceContainerRef.current;
+        const elementTop = activeEntry.offsetTop;
+        const elementHeight = activeEntry.offsetHeight;
+        const containerHeight = container.clientHeight;
+        
+        if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+          container.scrollTo({
+            top: elementTop - containerHeight + elementHeight,
+            behavior: 'smooth'
+          });
+        } else if (elementTop < container.scrollTop) {
+          container.scrollTo({
+            top: elementTop,
+            behavior: 'smooth'
+          });
+        }
+      }
     }
-  }, [cur, activeRightTab]);
+  };
+
+  // Auto-scroll trace when step changes
+  useEffect(() => {
+    if (!traceContainerRef.current) return;
+    if (userScrolledUp.current) return;
+    
+    const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+    if (activeEntry) {
+      const container = traceContainerRef.current;
+      const elementTop = activeEntry.offsetTop;
+      const elementHeight = activeEntry.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+        container.scrollTo({
+          top: elementTop - containerHeight + elementHeight,
+          behavior: 'smooth'
+        });
+      } else if (elementTop < container.scrollTop) {
+        container.scrollTo({
+          top: elementTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [cur]);
+
+  // Reset userScrolledUp when a new algorithm starts
+  const stepsLength = steps.length;
+  const firstStepId = stepsLength > 0 ? steps[0].id : null;
+  useEffect(() => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
+    if (traceContainerRef.current) {
+      traceContainerRef.current.scrollTop = 0;
+    }
+  }, [firstStepId]);
+
+  // Reset userScrolledUp when user switches to TRACE tab
+  useEffect(() => {
+    if (activeRightTab === 'trace') {
+      userScrolledUp.current = false;
+      setShowTracePill(false);
+    }
+  }, [activeRightTab]);
+
+  // Smooth scroll active line during normal playback
+  useEffect(() => {
+    if (activeRightTab === 'code' && codeContainerRef.current) {
+      const activeLineEl = codeContainerRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+      if (activeLineEl) {
+        const container = codeContainerRef.current;
+        const targetScrollTop = activeLineEl.offsetTop - (container.clientHeight / 2) + (activeLineEl.offsetHeight / 2);
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeLine]);
+
+  // Tab Switch Scroll Memory and Restoration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeRightTab === 'graph' && graphContainerRef.current) {
+        graphContainerRef.current.scrollTop = scrollPositions.current.graph;
+      } else if (activeRightTab === 'code' && codeContainerRef.current) {
+        const activeLineEl = codeContainerRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+        if (activeLineEl) {
+          const container = codeContainerRef.current;
+          const targetScrollTop = activeLineEl.offsetTop - (container.clientHeight / 2) + (activeLineEl.offsetHeight / 2);
+          container.scrollTo({
+            top: targetScrollTop,
+            behavior: 'instant' as any
+          });
+        } else {
+          codeContainerRef.current.scrollTop = scrollPositions.current.code;
+        }
+      } else if (activeRightTab === 'trace' && traceContainerRef.current) {
+        if (!userScrolledUp.current) {
+          const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+          if (activeEntry) {
+            const container = traceContainerRef.current;
+            const elementTop = activeEntry.offsetTop;
+            const elementHeight = activeEntry.offsetHeight;
+            const containerHeight = container.clientHeight;
+            
+            if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+              container.scrollTo({
+                top: elementTop - containerHeight + elementHeight,
+                behavior: 'instant' as any
+              });
+            } else if (elementTop < container.scrollTop) {
+              container.scrollTo({
+                top: elementTop,
+                behavior: 'instant' as any
+              });
+            }
+          } else {
+            traceContainerRef.current.scrollTop = 0;
+          }
+        } else {
+          traceContainerRef.current.scrollTop = scrollPositions.current.trace;
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [activeRightTab]);
 
   if (activeRightTab === 'graph') {
     const queue = currentStep?.queue || [];
@@ -252,35 +406,42 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
     }
 
     return (
-      <div className="flex-1 flex flex-col overflow-y-auto p-4 gap-6 custom-scrollbar h-full bg-[#0d0d0d]">
+      <div 
+        ref={graphContainerRef}
+        onScroll={(e) => {
+          scrollPositions.current.graph = e.currentTarget.scrollTop;
+        }}
+        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6 custom-scrollbar min-h-0 bg-[var(--panel-bg)]"
+        style={{ height: 0 }}
+      >
         {/* GRID INFO */}
-        <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+        <div className="flex flex-col gap-2 font-sans">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] border-b border-[var(--border-color)] pb-1">
             Grid Info
           </h3>
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-2">
-              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Rows</div>
-              <div className="text-[15px] font-mono font-bold text-emerald-400">{rows}</div>
+              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Rows</div>
+              <div className="text-[14px] font-mono font-bold text-emerald-400 mt-0.5">{rows}</div>
             </div>
             <div className="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-2">
-              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Cols</div>
-              <div className="text-[15px] font-mono font-bold text-emerald-400">{cols}</div>
+              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Cols</div>
+              <div className="text-[14px] font-mono font-bold text-emerald-400 mt-0.5">{cols}</div>
             </div>
             <div className="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-2">
-              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Land</div>
-              <div className="text-[15px] font-mono font-bold text-emerald-400">{totalLand}</div>
+              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Land</div>
+              <div className="text-[14px] font-mono font-bold text-emerald-400 mt-0.5">{totalLand}</div>
             </div>
             <div className="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-2">
-              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-wider">Water</div>
-              <div className="text-[15px] font-mono font-bold text-emerald-400">{totalWater}</div>
+              <div className="text-[9px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">Water</div>
+              <div className="text-[14px] font-mono font-bold text-emerald-400 mt-0.5">{totalWater}</div>
             </div>
           </div>
         </div>
 
         {/* ISLAND LEGEND */}
-        <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+        <div className="flex flex-col gap-2 font-sans">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] border-b border-[var(--border-color)] pb-1">
             Island Legend
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -292,12 +453,12 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
                 return (
                   <div
                     key={`legend-${id}`}
-                    className="flex items-center gap-2 px-3 py-1 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full animate-fadeInUp text-xs font-mono"
+                    className="flex items-center gap-2 px-3 py-1 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full animate-fadeInUp text-[11px] font-mono font-medium"
                     style={{ borderColor: `${color}40` }}
                   >
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
                     <span className="font-semibold" style={{ color }}>Island {id}</span>
-                    <span className="text-[var(--muted-color)]">[{count} cells]</span>
+                    <span className="text-[var(--muted-color)] font-mono font-medium">[{count} cells]</span>
                   </div>
                 );
               })
@@ -309,10 +470,10 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
 
         {/* CELL NEIGHBORS (ADJACENCY LIST) */}
         <div className="flex flex-col gap-2 flex-grow overflow-hidden min-h-[160px]">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] border-b border-[var(--border-color)] pb-1 font-sans">
             Cell Neighbors
           </h3>
-          <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 custom-scrollbar">
             {landCells.map(([r, c]) => {
               const coord = `${r},${c}`;
               const neighbors = getNeighbors(r, c);
@@ -335,13 +496,13 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
               return (
                 <div
                   key={`adj-${coord}`}
-                  className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-xs font-mono transition-all duration-200 ${bgClass}`}
+                  className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-[13px] font-mono transition-all duration-200 ${bgClass}`}
                   style={borderStyle}
                 >
                   <span className={`font-bold ${isCurrent ? 'text-[#FFB800]' : (islandColor ? '' : 'text-emerald-400')}`} style={!isCurrent && islandColor ? { color: islandColor } : {}}>
                     [{r},{c}]
                   </span>
-                  <span className="text-[var(--muted-color)]">→</span>
+                  <span className="text-[var(--muted-color)] font-sans">→</span>
                   <div className="flex flex-wrap gap-1 justify-end max-w-[70%]">
                     {neighbors.length > 0 ? (
                       neighbors.map(([nr, nc]) => {
@@ -365,7 +526,7 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
                         return (
                           <span
                             key={`n-${nCoord}`}
-                            className={`px-1.5 py-0.5 rounded text-[10px] border ${pillColor} ${pillBg}`}
+                            className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-medium border ${pillColor} ${pillBg}`}
                             style={nIsVisited && nIslandColor ? { borderColor: nIslandColor, backgroundColor: `${nIslandColor}18` } : {}}
                           >
                             [{nr},{nc}]
@@ -383,12 +544,12 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
         </div>
 
         {/* BFS QUEUE */}
-        <div className="flex flex-col gap-2 shrink-0">
+        <div className="flex flex-col gap-2 shrink-0 font-sans">
           <div className="flex justify-between items-center border-b border-[var(--border-color)] pb-1">
-            <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">
+            <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
               BFS Queue
             </h3>
-            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#FF8C00]/15 text-[#FF8C00] font-mono text-[9px] uppercase font-bold border border-[#FF8C00]/40">
+            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#FF8C00]/15 text-[#FF8C00] font-mono text-[10px] uppercase font-semibold border border-[#FF8C00]/40">
               Size: {queue.length}
             </span>
           </div>
@@ -400,13 +561,13 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
                   {queue.map(([qr, qc]) => (
                     <span
                       key={`q-${qr}-${qc}`}
-                      className="px-2 py-0.5 rounded text-[10px] border border-[#FF8C00] bg-[#FF8C00]/15 text-[#FF8C00] font-mono font-bold transition-all duration-200"
+                      className="px-2 py-0.5 rounded text-[11px] border border-[#FF8C00] bg-[#FF8C00]/15 text-[#FF8C00] font-mono font-bold transition-all duration-200"
                     >
                       [{qr},{qc}]
                     </span>
                   ))}
                 </div>
-                <div className="text-[9px] font-mono font-semibold uppercase tracking-wider text-[var(--muted-color)] flex justify-between mt-1">
+                <div className="text-[10px] font-sans font-semibold uppercase tracking-[0.06em] text-[var(--muted-color)] flex justify-between mt-1">
                   <span>Front (pop)</span>
                   <span>Back (push)</span>
                 </div>
@@ -425,51 +586,112 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
       ? (version === 'leetcode' ? pseudoCodeLeetCode : pseudoCodeGfg) 
       : (version === 'leetcode' ? javaCodeLeetCode : javaCodeGfg);
 
+    const islandAlgoKey = version === 'leetcode' ? 'number-of-islands-4dir' : 'number-of-islands-8dir';
+
     return (
-      <div className="flex-grow flex flex-col bg-[#0d0d0d] h-full">
+      <div ref={outerContainerRef} className="flex-grow flex flex-col bg-[var(--panel-bg)] min-h-0 overflow-hidden font-sans" style={{ height: 0 }}>
         {/* Toggle + Complexity badges in code panel header */}
-        <div className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[#111] shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-blue-500">💻</span>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.08em]">
-              {isPseudoCode ? 'Pseudo Code' : 'Java Source'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 mr-2">
-              <div className="px-1.5 py-0.5 rounded-[4px] border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[9px] uppercase font-bold tracking-wider" title="Time Complexity">
-                O(M × N)
+        <div 
+          className={`px-3 flex border-b border-[var(--border-color)] bg-[var(--panel-bg)] shrink-0 ${
+            isNarrow ? 'flex-col gap-2 py-2.5 h-auto' : 'h-[40px] flex-row items-center justify-between'
+          }`}
+        >
+          {isNarrow ? (
+            <>
+              {/* Row 1 */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-500">💻</span>
+                  <span className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
+                    {isPseudoCode ? 'Pseudo Code' : 'Java Source'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#FFB800]/30 bg-[#FFB800]/10 text-xs font-mono">
+                    <span className="text-[8px] text-[var(--muted-color)] uppercase tracking-[0.08em] font-sans font-semibold">Time</span>
+                    <span className="text-[11px] font-mono text-[#FFB800] font-medium">O(M × N)</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#A855F7]/30 bg-[#A855F7]/10 text-xs font-mono">
+                    <span className="text-[8px] text-[var(--muted-color)] uppercase tracking-[0.08em] font-sans font-semibold">Space</span>
+                    <span className="text-[11px] font-mono text-[#A855F7] font-medium">{version === 'leetcode' ? 'O(min(M, N))' : 'O(M × N)'}</span>
+                  </div>
+                </div>
               </div>
-              <div className="px-1.5 py-0.5 rounded-[4px] border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[9px] uppercase font-bold tracking-wider" title="Space Complexity">
-                O(min(M, N))
+              
+              {/* Row 2 */}
+              <div className="flex items-center justify-between w-full border-t border-[var(--border-color)]/50 pt-2">
+                <div className="flex items-center bg-[var(--input-bg)] rounded-[4px] p-[2px]">
+                  <button 
+                    onClick={() => setIsPseudoCode(true)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors ${isPseudoCode ? 'bg-[var(--surface-elevated)] text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Pseudo
+                  </button>
+                  <button 
+                    onClick={() => setIsPseudoCode(false)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors ${!isPseudoCode ? 'bg-[var(--surface-elevated)] text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Java
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-[1px] bg-gray-700" />
+                  <CopyDownloadButtons algorithmKey={islandAlgoKey} />
+                </div>
               </div>
-            </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="text-blue-500">💻</span>
+                <span className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
+                  {isPseudoCode ? 'Pseudo Code' : 'Java Source'}
+                </span>
+              </div>
 
-            <div className="flex items-center bg-[#222] rounded-[4px] p-[2px]">
-              <button 
-                onClick={() => setIsPseudoCode(true)}
-                className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] rounded-[3px] transition-colors ${isPseudoCode ? 'bg-blue-500/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                Pseudo
-              </button>
-              <button 
-                onClick={() => setIsPseudoCode(false)}
-                className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] rounded-[3px] transition-colors ${!isPseudoCode ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                Java
-              </button>
-            </div>
-          </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 mr-2">
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#FFB800]/30 bg-[#FFB800]/10 text-xs font-mono">
+                    <span className="text-[8px] text-[var(--muted-color)] uppercase tracking-[0.08em] font-sans font-semibold">Time</span>
+                    <span className="text-[11px] font-mono text-[#FFB800] font-medium">O(M × N)</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-[#A855F7]/30 bg-[#A855F7]/10 text-xs font-mono">
+                    <span className="text-[8px] text-[var(--muted-color)] uppercase tracking-[0.08em] font-sans font-semibold">Space</span>
+                    <span className="text-[11px] font-mono text-[#A855F7] font-medium">{version === 'leetcode' ? 'O(min(M, N))' : 'O(M × N)'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center bg-[var(--input-bg)] rounded-[4px] p-[2px]">
+                  <button 
+                    onClick={() => setIsPseudoCode(true)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors ${isPseudoCode ? 'bg-[var(--surface-elevated)] text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Pseudo
+                  </button>
+                  <button 
+                    onClick={() => setIsPseudoCode(false)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-colors ${!isPseudoCode ? 'bg-[var(--surface-elevated)] text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Java
+                  </button>
+                </div>
+                <div className="h-4 w-[1px] bg-[var(--border-color)]" />
+                <CopyDownloadButtons algorithmKey={islandAlgoKey} />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Code View */}
         <div 
           ref={codeContainerRef}
-          className="flex-1 overflow-y-auto p-3 text-[12px] font-mono leading-relaxed custom-scrollbar bg-[#0d0d0d]"
+          onScroll={(e) => {
+            scrollPositions.current.code = e.currentTarget.scrollTop;
+          }}
+          className="flex-1 overflow-y-auto p-3 text-[13px] font-mono font-normal leading-[1.7] custom-scrollbar bg-[var(--bg-primary)]"
         >
           <div className="flex">
-            <div className="flex flex-col text-right pr-3 mr-3 border-r border-gray-800 text-[11px] text-gray-600 select-none">
+            <div className="flex flex-col text-right pr-3 mr-3 border-r border-gray-800 text-[11px] text-[var(--muted-color)] font-mono select-none">
               {codeLines.map((_, i) => (
                 <div key={i} className="py-[2px]">{i + 1}</div>
               ))}
@@ -481,6 +703,7 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
                   <div 
                     key={idx} 
                     data-active={isActive}
+                    data-active-line={isActive}
                     className={`py-[2px] pl-2 -ml-2 transition-colors duration-200 whitespace-pre ${
                       isActive 
                         ? 'bg-blue-500/20 text-gray-100 border-l-[3px] border-blue-500' 
@@ -501,67 +724,80 @@ export function IslandsRightPanel({ activeRightTab }: { activeRightTab: 'graph' 
   if (activeRightTab === 'trace') {
     // Execution Trace tab
     return (
-      <div 
-        ref={traceContainerRef}
-        className="flex-1 overflow-y-auto p-3 flex flex-col gap-1 custom-scrollbar h-full bg-[#0d0d0d]"
-      >
-        {steps.length > 0 ? (
-          steps.slice(0, cur + 1).slice().reverse().map((s, reverseIdx) => {
-            const idx = cur - reverseIdx;
-            const isActive = idx === cur;
-            let icon = "🔍";
-            let typeColor = "text-[var(--text-color)]";
+      <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" style={{ height: 0 }}>
+        <div 
+          ref={traceContainerRef}
+          onScroll={handleTraceScroll}
+          className="flex-grow overflow-y-auto p-3 flex flex-col gap-1 custom-scrollbar bg-[var(--panel-bg)] min-h-0"
+        >
+          {steps.length > 0 ? (
+            steps.slice(0, cur + 1).slice().reverse().map((s, reverseIdx) => {
+              const idx = cur - reverseIdx;
+              const isActive = idx === cur;
+              let icon = "🔍";
+              let typeColor = "text-[var(--text-color)]";
 
-            if (s.type === 'found-island') {
-              icon = "🏝️";
-              typeColor = "text-[#7C3AED] font-bold";
-            } else if (s.type === 'enqueue' || s.type === 'enqueue-neighbor') {
-              icon = "📥";
-              typeColor = "text-[#FF8C00]";
-            } else if (s.type === 'dequeue') {
-              icon = "📤";
-              typeColor = "text-[#FFB800]";
-            } else if (s.type === 'flood' || s.type === 'flood-neighbor') {
-              icon = "🌊";
-              typeColor = "text-blue-400";
-            } else if (s.type === 'island-complete') {
-              icon = "✓";
-              typeColor = "text-emerald-400 font-bold";
-            } else if (s.type === 'complete') {
-              icon = "✅";
-              typeColor = "text-[#00C896] font-extrabold";
-            } else if (s.type === 'check-neighbor') {
-              icon = s.neighborCheck?.valid ? "🟢" : "🔴";
-              typeColor = s.neighborCheck?.valid ? "text-emerald-500/70" : "text-red-500/70";
-            }
+              if (s.type === 'found-island') {
+                icon = "🏝️";
+                typeColor = "text-[#7C3AED] font-bold";
+              } else if (s.type === 'enqueue' || s.type === 'enqueue-neighbor') {
+                icon = "📥";
+                typeColor = "text-[#FF8C00]";
+              } else if (s.type === 'dequeue') {
+                icon = "📤";
+                typeColor = "text-[#FFB800]";
+              } else if (s.type === 'flood' || s.type === 'flood-neighbor') {
+                icon = "🌊";
+                typeColor = "text-blue-400";
+              } else if (s.type === 'island-complete') {
+                icon = "✓";
+                typeColor = "text-emerald-400 font-bold";
+              } else if (s.type === 'complete') {
+                icon = "✅";
+                typeColor = "text-[#00C896] font-extrabold";
+              } else if (s.type === 'check-neighbor') {
+                icon = s.neighborCheck?.valid ? "🟢" : "🔴";
+                typeColor = s.neighborCheck?.valid ? "text-emerald-500/70" : "text-red-500/70";
+              }
 
-            return (
-              <div
-                key={`trace-${s.id}`}
-                data-active-trace={isActive}
-                className={`py-1.5 px-2.5 rounded-lg border font-mono text-[11px] leading-relaxed transition-all duration-200 flex gap-2.5 items-start ${
-                  isActive 
-                    ? 'bg-amber-500/10 border-amber-500/50 shadow-sm' 
-                    : 'bg-black/20 border-transparent hover:bg-black/30'
-                }`}
-                style={isActive ? { borderLeftWidth: '3px' } : {}}
-              >
-                <span className="shrink-0">{icon}</span>
-                <div className="flex-1 flex flex-col">
-                  <div className={`leading-normal ${typeColor}`}>
-                    {s.description}
+              return (
+                <div
+                  key={`trace-${s.id}`}
+                  data-active-trace={isActive}
+                  data-active={isActive}
+                  className={`py-1.5 px-2.5 rounded-lg border font-mono text-[12px] font-normal leading-[1.6] transition-all duration-200 flex gap-2.5 items-start ${
+                    isActive 
+                      ? 'bg-amber-500/10 border-amber-500/50 shadow-sm font-semibold' 
+                      : 'bg-[var(--input-bg)] border-[var(--border-color)] hover:bg-black/20'
+                  }`}
+                  style={isActive ? { borderLeftWidth: '3px' } : {}}
+                >
+                  <span className="shrink-0">{icon}</span>
+                  <div className="flex-1 flex flex-col font-sans">
+                    <div className={`leading-normal font-mono ${isActive ? 'font-semibold' : 'font-normal'} ${typeColor}`}>
+                      {s.description}
+                    </div>
+                    <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.06em] text-[var(--muted-color)] mt-0.5">
+                      Step {s.id + 1} • Line {s.codeLineActive}
+                    </span>
                   </div>
-                  <span className="text-[9px] text-gray-600 mt-0.5">
-                    Step {s.id + 1} • Line {s.codeLineActive}
-                  </span>
                 </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="text-[11px] text-[var(--muted-color)] italic text-center mt-4">
-            Run algorithm to see trace entries
-          </div>
+              );
+            })
+          ) : (
+            <div className="text-[11px] text-[var(--muted-color)] italic text-center mt-4">
+              Run algorithm to see trace entries
+            </div>
+          )}
+        </div>
+        {showTracePill && (
+          <button
+            onClick={handleScrollToActiveTrace}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#3b82f6]/90 border border-[#3b82f6] rounded-full px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-[0.06em] cursor-pointer z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:bg-[#3b82f6] transition-colors"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            ↓ Jump to current step
+          </button>
         )}
       </div>
     );

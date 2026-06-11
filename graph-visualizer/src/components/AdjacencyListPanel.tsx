@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useGraphStore } from '../stores/useGraphStore';
 
 export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolean, onToggle?: () => void }) {
@@ -6,22 +6,18 @@ export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolea
   const listRef = useRef<HTMLDivElement>(null);
   const currentRowRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (currentRowRef.current && listRef.current) {
-      currentRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [cur, steps]);
+
 
   if (!currentPreset) {
     return (
-      <div className={`w-full flex flex-col bg-[#0d0d0d] transition-all duration-300 ${collapsed ? 'h-[40px]' : 'flex-grow basis-[25%]'}`}>
-        <div className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[#111]">
-          <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.08em] flex items-center gap-2">
+      <div className={`w-full flex flex-col bg-[var(--panel-bg)] transition-all duration-300 font-sans ${collapsed ? 'h-[40px]' : 'flex-grow basis-[25%]'}`}>
+        <div className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--panel-bg)]">
+          <h3 className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
             <span className="text-purple-500">📝</span> Adjacency List
           </h3>
         </div>
         {!collapsed && (
-          <div className="flex-1 flex items-center justify-center text-[12px] text-[var(--muted-color)] p-4 text-center">
+          <div className="flex-1 flex items-center justify-center text-[12px] text-[var(--muted-color)] p-4 text-center font-normal">
             Select a graph to see adjacency list
           </div>
         )}
@@ -52,22 +48,22 @@ export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolea
   const currentNode = activeNodes.length > 0 ? activeNodes[0] : null;
 
   return (
-    <div className={`w-full flex flex-col bg-[#0d0d0d] transition-all duration-300 ${collapsed ? 'h-[40px]' : 'flex-grow basis-[25%]'}`}>
+    <div className={`w-full flex flex-col bg-[var(--panel-bg)] border-t border-[var(--border-color)] transition-all duration-300 font-sans ${collapsed ? 'h-[40px]' : 'flex-grow basis-[25%]'}`}>
       <div 
-        className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[#111] cursor-pointer hover:bg-[#1a1a1a] transition-colors"
+        className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--panel-bg)] cursor-pointer hover:bg-[var(--input-bg)] transition-colors select-none"
         onClick={onToggle}
       >
         <div className="flex items-center gap-2">
-          <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.08em] flex items-center gap-2">
+          <h3 className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] flex items-center gap-2">
             <span className="text-purple-500">📝</span> Adjacency List
           </h3>
           {!collapsed && (
-            <span className="text-[10px] font-mono font-bold text-[var(--text-color)] bg-[var(--input-bg)] px-2 py-0.5 rounded-full border border-[var(--border-color)]">
+            <span className="text-[10px] font-mono font-medium text-[var(--text-color)] bg-[var(--input-bg)] px-2 py-0.5 rounded-full border border-[var(--border-color)]">
               {displayNodes.length} nodes
             </span>
           )}
         </div>
-        <button className="text-gray-500 hover:text-gray-300 transition-colors">
+        <button className="text-[var(--muted-color)] hover:text-[var(--text-color)] transition-colors cursor-pointer">
           <svg className={`w-4 h-4 transform transition-transform ${collapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -75,7 +71,7 @@ export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolea
       </div>
 
       {!collapsed && (
-        <div ref={listRef} className="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5 custom-scrollbar bg-[#0d0d0d] min-h-[150px]">
+        <div ref={listRef} className="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5 custom-scrollbar bg-[var(--panel-bg)] min-h-[150px]">
           {displayNodes.map((nodeId) => {
             const neighbors = adjList[nodeId] || [];
             const isCurrent = nodeId === currentNode;
@@ -102,11 +98,11 @@ export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolea
                 className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-xs font-mono transition-all duration-200 ${bgClass}`}
                 style={borderStyle}
               >
-                <span className={`text-[13px] w-6 shrink-0 ${textCls}`}>{nodeId}</span>
+                <span className={`text-[13px] font-mono font-bold w-6 shrink-0 ${textCls}`}>{nodeId}</span>
                 <span className="text-[var(--muted-color)] mx-2 shrink-0">→</span>
                 <div className="flex flex-wrap gap-1 justify-end max-w-[70%]">
                   {neighbors.length === 0 ? (
-                    <span className="text-[10px] text-gray-600 italic">none</span>
+                    <span className="text-[11px] text-[var(--muted-color)] italic font-mono">none</span>
                   ) : (
                     neighbors.map((neighbor, i) => {
                       const nIsCurrent = neighbor.id === currentNode;
@@ -134,7 +130,7 @@ export function AdjacencyListPanel({ collapsed, onToggle }: { collapsed?: boolea
                       return (
                         <span 
                           key={`${neighbor.id}-${i}`}
-                          className={`px-1.5 py-0.5 rounded text-[10px] border transition-all duration-200 ${pillBg} ${pillBorder} ${pillText}`}
+                          className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-medium border transition-all duration-200 ${pillBg} ${pillBorder} ${pillText}`}
                         >
                           {neighbor.id}{suffix}
                         </span>

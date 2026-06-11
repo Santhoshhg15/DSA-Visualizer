@@ -39,6 +39,8 @@ export function generateCycleSteps(
       rank[node.id] = 0;
     });
 
+    const processedEdges: string[] = [];
+
     steps.push({
       id: stepId++,
       type: 'init',
@@ -51,6 +53,7 @@ export function generateCycleSteps(
       description: `Initialize parents and ranks for all nodes. parent[i] = i, rank[i] = 0.`,
       codeLineActive: 4,
       algorithmType,
+      auxiliaryState: { visitedOrder: [...processedEdges] },
     });
 
     const find = (x: string, edgeId: string): string => {
@@ -67,6 +70,7 @@ export function generateCycleSteps(
         description: `Calling find(${x}). Parent of ${x} is currently ${parent[x]}.`,
         codeLineActive: 22,
         algorithmType,
+        auxiliaryState: { visitedOrder: [...processedEdges] },
       });
 
       if (parent[x] !== x) {
@@ -87,6 +91,7 @@ export function generateCycleSteps(
           description: `Path compression: update parent of ${x} from ${originalParent} to root ${parent[x]}. find(${x}) = ${parent[x]}`,
           codeLineActive: 23,
           algorithmType,
+          auxiliaryState: { visitedOrder: [...processedEdges] },
         });
       }
       return parent[x];
@@ -110,6 +115,7 @@ export function generateCycleSteps(
         description: `union(${rootX}, ${rootY}) method entry. Merging components.`,
         codeLineActive: 29,
         algorithmType,
+        auxiliaryState: { visitedOrder: [...processedEdges] },
       });
 
       if (rank[rootX] < rank[rootY]) {
@@ -135,6 +141,7 @@ export function generateCycleSteps(
         description: `Component union complete. Root of ${rootY} is now ${parent[rootY]}. Updated ranks.`,
         codeLineActive: 30,
         algorithmType,
+        auxiliaryState: { visitedOrder: [...processedEdges] },
       });
     };
 
@@ -144,6 +151,8 @@ export function generateCycleSteps(
     for (const edge of edges) {
       const u = edge.source;
       const v = edge.target;
+
+      processedEdges.push(`${u}-${v}`);
 
       steps.push({
         id: stepId++,
@@ -159,6 +168,7 @@ export function generateCycleSteps(
         description: `Processing edge (${u} — ${v}). Check if they are in the same component.`,
         codeLineActive: 10,
         algorithmType,
+        auxiliaryState: { visitedOrder: [...processedEdges] },
       });
 
       const pu = find(u, edge.id);
@@ -194,6 +204,7 @@ export function generateCycleSteps(
           description: `⚠️ CYCLE DETECTED! find(${u}) == find(${v}) == ${pu}. Edge (${u}—${v}) connects nodes already in the same component!`,
           codeLineActive: 17,
           algorithmType,
+          auxiliaryState: { visitedOrder: [...processedEdges] },
         });
         break;
       }
@@ -215,6 +226,7 @@ export function generateCycleSteps(
         description: `✓ No cycle found. All edges processed safely.`,
         codeLineActive: 20,
         algorithmType,
+        auxiliaryState: { visitedOrder: [...processedEdges] },
       });
     }
 
@@ -230,6 +242,7 @@ export function generateCycleSteps(
       description: `✅ Algorithm complete. Result: ${cycleDetected ? 'Cycle Detected' : 'No Cycle Found'}`,
       codeLineActive: 20,
       algorithmType,
+      auxiliaryState: { visitedOrder: [...processedEdges] },
     });
 
   } else if (algorithmType === 'undirected-bfs') {
@@ -805,6 +818,36 @@ export function generateCycleSteps(
       algorithmType,
     });
   }
+  // Post-process steps to add auxiliaryState and queueSnapshot
+  steps.forEach(step => {
+    if (!step.auxiliaryState) {
+      if (algorithmType === 'undirected-bfs') {
+        step.auxiliaryState = { visitedOrder: step.visitedSnapshot || [] };
+      } else if (algorithmType === 'directed-dfs') {
+        step.auxiliaryState = { visitedOrder: step.visitedSnapshot || [] };
+      } else if (algorithmType === 'directed-bfs') {
+        step.auxiliaryState = { visitedOrder: step.topoOrder || [] };
+      }
+    }
+
+    if (algorithmType === 'undirected-bfs') {
+      step.queueSnapshot = (step.queueSnapshot || []).map((item: any) => {
+        if (Array.isArray(item)) {
+          return { node: item[0], parent: item[1] ?? '-1' };
+        }
+        if (item && typeof item === 'object') {
+          return { node: item.node, parent: item.parent ?? '-1' };
+        }
+        return { node: String(item), parent: '-1' };
+      });
+    } else if (algorithmType === 'directed-dfs') {
+      step.queueSnapshot = step.dfsStackSnapshot || [];
+    } else if (algorithmType === 'directed-bfs') {
+      step.queueSnapshot = step.queueSnapshot || [];
+    } else if (algorithmType === 'undirected-union-find') {
+      step.queueSnapshot = undefined;
+    }
+  });
 
   return steps;
 }

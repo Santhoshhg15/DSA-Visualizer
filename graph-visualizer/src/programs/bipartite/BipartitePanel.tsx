@@ -203,14 +203,14 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 w-full h-full text-white animate-fadeInUp">
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-[12px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex items-center gap-2 mb-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Active Program
         </h3>
       </div>
 
       {/* Program selector cards */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 font-sans">
         {/* Card 1: Islands */}
         <button
           onClick={() => {
@@ -220,7 +220,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'islands'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -228,8 +228,8 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🏝️</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Number of Islands</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
+              <h4 className="font-semibold text-white text-[14px]">Number of Islands</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">
                 Grid BFS • LeetCode #200
               </p>
             </div>
@@ -245,7 +245,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'cycle'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -253,8 +253,8 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🔄</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Cycle Detection</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
+              <h4 className="font-semibold text-white text-[14px]">Cycle Detection</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">
                 Union-Find • DFS • BFS
               </p>
             </div>
@@ -273,7 +273,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           }}
           className={`p-3 border rounded-[10px] text-left transition-all relative overflow-hidden group w-full ${
             selectedProgram === 'bipartite'
-              ? 'border-blue-500 bg-blue-500/10 shadow-md'
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-[var(--border-color)] bg-[var(--input-bg)] hover:border-blue-500/50'
           }`}
         >
@@ -281,8 +281,8 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           <div className="relative z-10 flex items-start gap-3">
             <div className="text-xl mt-0.5">🎨</div>
             <div>
-              <h4 className="font-bold text-white text-[13px]">Bipartite Graph Check</h4>
-              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono">
+              <h4 className="font-semibold text-white text-[14px]">Bipartite Graph Check</h4>
+              <p className="text-[10px] text-[var(--muted-color)] mt-0.5 font-mono font-medium">
                 BFS 2-Coloring • Undirected + Directed
               </p>
             </div>
@@ -293,14 +293,14 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
       <div className="h-px w-full bg-[var(--border-color)] opacity-50 my-2"></div>
 
       {/* SECTION 1 — Graph Type Toggle */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex flex-col gap-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Graph Type
         </h3>
         <div className="flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg p-1 relative">
           <button
             onClick={() => handleGraphTypeChange('undirected')}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
               graphType === 'undirected'
                 ? 'bg-blue-500 text-white shadow-sm'
                 : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
@@ -310,7 +310,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           </button>
           <button
             onClick={() => handleGraphTypeChange('directed')}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
               graphType === 'directed'
                 ? 'bg-blue-500 text-white shadow-sm'
                 : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
@@ -322,15 +322,15 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
       </div>
 
       {/* SECTION 2 — Preset Selector */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex flex-col gap-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Presets
         </h3>
         <div className="flex flex-col gap-3 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
           {/* Group 1: Bipartite */}
           {bipartiteGroup.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-bold text-emerald-400 tracking-wider">
+              <span className="text-[10px] font-bold text-emerald-400 tracking-[0.08em] font-sans">
                 ✓ BIPARTITE
               </span>
               {bipartiteGroup.map((preset) => (
@@ -344,14 +344,14 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-[12px] truncate max-w-[140px] text-white">
+                    <span className="font-semibold text-[14px] truncate max-w-[140px] text-white">
                       {preset.name}
                     </span>
-                    <span className="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded uppercase">
+                    <span className="text-[9px] font-sans font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded uppercase tracking-[0.06em]">
                       Bipartite
                     </span>
                   </div>
-                  <div className="flex gap-2 items-center mt-1 text-[9px] text-[var(--muted-color)] font-mono">
+                  <div className="flex gap-2 items-center mt-1 text-[9px] text-[var(--muted-color)] font-mono font-medium">
                     <span>{preset.nodes.length} nodes</span>
                     <span>•</span>
                     <span>{preset.directed ? 'Directed' : 'Undirected'}</span>
@@ -364,7 +364,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
           {/* Group 2: Not Bipartite */}
           {nonBipartiteGroup.length > 0 && (
             <div className="flex flex-col gap-1.5 mt-2">
-              <span className="text-[10px] font-bold text-red-400 tracking-wider">
+              <span className="text-[10px] font-bold text-red-400 tracking-[0.08em] font-sans">
                 ✗ NOT BIPARTITE
               </span>
               {nonBipartiteGroup.map((preset) => (
@@ -378,14 +378,14 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-[12px] truncate max-w-[130px] text-white">
+                    <span className="font-semibold text-[14px] truncate max-w-[130px] text-white">
                       {preset.name}
                     </span>
-                    <span className="text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded uppercase">
+                    <span className="text-[9px] font-sans font-bold bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded uppercase tracking-[0.06em]">
                       Not Bipartite
                     </span>
                   </div>
-                  <div className="flex gap-2 items-center mt-1 text-[9px] text-[var(--muted-color)] font-mono">
+                  <div className="flex gap-2 items-center mt-1 text-[9px] text-[var(--muted-color)] font-mono font-medium">
                     <span>{preset.nodes.length} nodes</span>
                     <span>•</span>
                     <span>{preset.directed ? 'Directed' : 'Undirected'}</span>
@@ -398,35 +398,35 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
       </div>
 
       {/* SECTION 3 — Custom Graph Input */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold text-[var(--muted-color)] uppercase tracking-wider">
+      <div className="flex flex-col gap-2 font-sans">
+        <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Custom Graph
         </h3>
         <div className="flex flex-col gap-2 bg-[var(--input-bg)] p-3 rounded-lg border border-[var(--border-color)]">
           {/* Nodes input */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-[var(--muted-color)]">
+            <label className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">
               NODES (comma separated, max 8)
             </label>
             <input
               type="text"
               value={customNodes}
               onChange={(e) => setCustomNodes(e.target.value)}
-              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-md px-2 py-1 text-xs text-white outline-none focus:border-blue-500 font-mono"
+              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-md px-2 py-1 text-[13px] text-white outline-none focus:border-blue-500 font-mono"
               placeholder="A, B, C, D"
             />
           </div>
 
           {/* Edges input */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-[var(--muted-color)]">
+            <label className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.06em]">
               EDGES (one per line)
             </label>
             <textarea
               rows={4}
               value={customEdges}
               onChange={(e) => setCustomEdges(e.target.value)}
-              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-md px-2 py-1 text-xs text-white outline-none focus:border-blue-500 font-mono resize-none"
+              className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-md px-2 py-1 text-[13px] text-white outline-none focus:border-blue-500 font-mono resize-none"
               placeholder={graphType === 'directed' ? 'A→B\nB→C' : 'A-B\nB-C'}
             />
           </div>
@@ -439,7 +439,7 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
 
           <button
             onClick={validateAndLoadCustom}
-            className="w-full py-1.5 text-xs font-bold bg-blue-500 hover:bg-blue-400 text-white rounded-md transition-colors"
+            className="w-full py-1.5 text-[11px] font-semibold font-sans uppercase tracking-[0.06em] bg-blue-500 hover:bg-blue-400 text-white rounded-md transition-colors"
           >
             Load Custom Graph
           </button>
@@ -449,22 +449,22 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
       <button
         onClick={runAlgorithm}
         disabled={nodes.length === 0}
-        className="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-[11px] font-semibold font-sans uppercase tracking-[0.06em] text-white rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Run Algorithm
       </button>
 
       {/* SECTION 4 — Algorithm Info */}
-      <div className="flex flex-col bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden mt-1">
+      <div className="flex flex-col bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden mt-1 font-sans">
         <button
           onClick={() => setInfoExpanded(!infoExpanded)}
-          className="flex justify-between items-center p-2.5 text-left text-xs font-bold tracking-wide text-blue-400 hover:bg-white/5 transition-all"
+          className="flex justify-between items-center p-2.5 text-left text-[10px] font-semibold text-blue-400 tracking-[0.08em] uppercase hover:bg-white/5 transition-all"
         >
           <span>{infoExpanded ? '▼' : '▶'} ABOUT BIPARTITE GRAPHS</span>
         </button>
 
         {infoExpanded && (
-          <div className="p-3 text-[11px] leading-relaxed text-[var(--muted-color)] border-t border-[var(--border-color)]/50 flex flex-col gap-2 animate-fadeInUp">
+          <div className="p-3 text-[13px] leading-relaxed text-[var(--muted-color)] border-t border-[var(--border-color)]/50 flex flex-col gap-2 animate-fadeInUp font-sans">
             <p>
               A graph is <strong>bipartite</strong> if its nodes can be divided into two groups such
               that every edge connects a node from one group to the other.
@@ -478,14 +478,14 @@ export function BipartitePanel({ selectedProgram, setSelectedProgram }: Bipartit
               then assign opposite colors to its neighbors. If any two adjacent nodes share the
               same color, a conflict is detected and the graph is not bipartite.
             </p>
-            <div className="flex flex-col gap-1 mt-1 font-mono text-[10px]">
+            <div className="flex flex-col gap-1 mt-1 font-mono text-[11px]">
               <div className="flex justify-between">
-                <span>Time Complexity:</span>
-                <span className="text-amber-400 font-bold">O(V + E)</span>
+                <span className="text-[10px] font-semibold tracking-[0.08em] font-sans">Time Complexity:</span>
+                <span className="text-amber-400 font-medium font-mono text-[11px]">O(V + E)</span>
               </div>
               <div className="flex justify-between">
-                <span>Space Complexity:</span>
-                <span className="text-purple-400 font-bold">O(V)</span>
+                <span className="text-[10px] font-semibold tracking-[0.08em] font-sans">Space Complexity:</span>
+                <span className="text-purple-400 font-medium font-mono text-[11px]">O(V)</span>
               </div>
             </div>
           </div>

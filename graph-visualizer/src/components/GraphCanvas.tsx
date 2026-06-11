@@ -18,6 +18,8 @@ export function GraphCanvas() {
   const spanningTreePositions = useGraphStore(state => state.spanningTreePositions);
   const setSpanningTreeMode = useGraphStore(state => state.setSpanningTreeMode);
   const calculateSpanningTreeLayout = useGraphStore(state => state.calculateSpanningTreeLayout);
+  const dijkstraImpl = useGraphStore(state => state.dijkstraImpl);
+  const selectedAlgorithm = useGraphStore(state => state.selectedAlgorithm);
 
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -181,10 +183,10 @@ export function GraphCanvas() {
 
   if (!currentPreset) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-[var(--muted-color)] p-8 text-center bg-[var(--bg-gradient-1)]">
+      <div className="w-full h-full flex flex-col items-center justify-center text-[var(--muted-color)] p-8 text-center bg-[var(--bg-primary)] font-sans">
         <span className="text-6xl mb-4 opacity-50">🕸️</span>
-        <h2 className="text-xl font-bold text-[var(--text-color)] mb-2">No Graph Selected</h2>
-        <p>Please select a preset from the left panel to begin.</p>
+        <h2 className="text-[22px] font-bold text-[var(--text-color)] mb-2">No Graph Selected</h2>
+        <p className="text-[13px] font-normal text-[var(--muted-color)]">Please select a preset from the left panel to begin.</p>
       </div>
     );
   }
@@ -195,26 +197,31 @@ export function GraphCanvas() {
     <div className="w-full h-full relative overflow-hidden bg-[var(--panel-bg)] shadow-[inset_0_2px_15px_rgba(0,0,0,0.05)] border-l border-r lg:border-l-0 border-[var(--border-color)]">
       
       {/* Header Badge */}
-      <div className="absolute top-4 left-4 z-10 flex gap-2">
-        <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] px-4 py-2 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-3">
-          <span className="text-sm font-bold text-[var(--text-color)]">
+      <div className="absolute top-4 left-4 z-10 flex gap-2 items-center font-sans">
+        <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-3">
+          <span className="text-[11px] font-semibold text-[var(--text-color)]">
             {graphType.directed ? 'Directed' : 'Undirected'}
           </span>
           <div className="w-1 h-1 rounded-full bg-[var(--border-color)]"></div>
-          <span className="text-sm font-bold text-[var(--text-color)]">
+          <span className="text-[11px] font-semibold text-[var(--text-color)]">
             {graphType.weighted ? 'Weighted' : 'Unweighted'}
           </span>
         </div>
+        {dijkstraImpl === 'set' && selectedAlgorithm === 'dijkstra' && (
+          <div className="bg-[var(--panel-bg)]/85 border border-[var(--border-color)] px-2.5 py-1 rounded-lg shadow-lg backdrop-blur-md text-[10px] uppercase tracking-[0.08em] text-[var(--muted-color)] font-semibold">
+            TREESET MODE — No Stale Entries
+          </div>
+        )}
       </div>
 
       {nodes.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 animate-fadeInUp p-8">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 animate-fadeInUp p-8 font-sans">
           <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-[var(--border-color)] rounded-2xl bg-[var(--panel-bg)]/50 backdrop-blur-sm max-w-md w-full text-center">
             <svg className="w-12 h-12 text-[var(--muted-color)] mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <h2 className="text-[22px] font-bold text-[var(--text-color)] mb-2 tracking-tight">Select a graph to begin</h2>
-            <p className="text-[13px] text-[var(--muted-color)] leading-relaxed">
+            <p className="text-[13px] font-normal leading-[1.7] text-[var(--muted-color)]">
               Choose a preset from the left panel
             </p>
           </div>
@@ -293,6 +300,17 @@ export function GraphCanvas() {
           >
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#7C3AED" />
           </marker>
+          <marker 
+            id="arrowhead-path-red" 
+            viewBox="0 0 10 10" 
+            refX={NODE_RADIUS + 8} 
+            refY="5" 
+            markerWidth="6" 
+            markerHeight="6" 
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#EF4444" />
+          </marker>
           
           <filter id="glow-current" x="-50%" y="-50%" width="200%" height="200%">
             <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="rgba(255,184,0,0.9)" />
@@ -304,6 +322,10 @@ export function GraphCanvas() {
           
           <filter id="glow-path" x="-50%" y="-50%" width="200%" height="200%">
             <feDropShadow dx="0" dy="0" stdDeviation="7" floodColor="rgba(124,58,237,0.8)" />
+          </filter>
+          
+          <filter id="glow-path-red" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="7" floodColor="rgba(239,68,68,0.8)" />
           </filter>
           
           <filter id="glow-active-edge" x="-50%" y="-50%" width="200%" height="200%">
@@ -359,23 +381,32 @@ export function GraphCanvas() {
 
             if (isAlgorithmActive) {
               if (isPath) {
-                strokeColor = '#7C3AED';
+                strokeColor = auxState?.hasNegativeCycle ? '#EF4444' : '#7C3AED';
                 strokeWidth = 3;
-                filter = 'url(#glow-path)';
+                filter = auxState?.hasNegativeCycle ? 'url(#glow-path-red)' : 'url(#glow-path)';
+                opacity = 1;
               } else if (isActive) {
                 strokeColor = '#FFB800';
                 strokeWidth = 3;
                 edgeClass += ' edge-active-flow';
                 filter = 'url(#glow-active-edge)';
-              } else if (isVisitedFallback) {
-                strokeColor = '#00C896';
-                strokeWidth = 2.5;
-                opacity = 0.8;
+                opacity = 1;
               } else {
-                // Unvisited
-                strokeColor = '#FF4444';
-                strokeWidth = 2;
-                opacity = 0.4;
+                // If a path exists, dim all non-path/non-active edges
+                const hasPath = pathEdges.length > 0;
+                if (hasPath) {
+                  strokeColor = 'var(--link-default-color)';
+                  strokeWidth = 1;
+                  opacity = 0.15;
+                } else if (isVisitedFallback) {
+                  strokeColor = '#00C896';
+                  strokeWidth = 2.5;
+                  opacity = 0.8;
+                } else {
+                  strokeColor = '#FF4444';
+                  strokeWidth = 2;
+                  opacity = 0.4;
+                }
               }
             }
 
@@ -384,7 +415,7 @@ export function GraphCanvas() {
             }
 
             const markerEnd = graphType.directed 
-              ? (isPath ? 'url(#arrowhead-path)' : (isActive ? 'url(#arrowhead-active)' : 'url(#arrowhead-default)'))
+              ? (isPath ? (auxState?.hasNegativeCycle ? 'url(#arrowhead-path-red)' : 'url(#arrowhead-path)') : (isActive ? 'url(#arrowhead-active)' : 'url(#arrowhead-default)'))
               : 'none';
 
             // Calculate midpoint for weights
@@ -422,7 +453,7 @@ export function GraphCanvas() {
                       y="3.5" 
                       textAnchor="middle" 
                       fontSize="11" 
-                      fontWeight="bold" 
+                      fontWeight="500" 
                       fill="var(--text-color)"
                       className="font-mono cursor-default select-none"
                     >
@@ -451,35 +482,57 @@ export function GraphCanvas() {
             let currentRadius = NODE_RADIUS;
             let filter = draggingNode === node.id ? "url(#drop-shadow-large)" : "url(#drop-shadow)";
             let animationClass = '';
-
+            let opacity = 1;
+ 
             if (isAlgorithmActive) {
               if (isPathNode) {
-                fillColor = '#7C3AED';
-                strokeColor = '#5B21B6';
+                fillColor = auxState?.hasNegativeCycle ? '#EF4444' : '#7C3AED';
+                strokeColor = auxState?.hasNegativeCycle ? '#B91C1C' : '#5B21B6';
+                textColor = '#ffffff';
+                filter = auxState?.hasNegativeCycle ? 'url(#glow-path-red)' : 'url(#glow-path)';
+                opacity = 1;
+              } else if (currentStepData?.type === 'set-remove-old' && node.id === currentStepData?.currentNode) {
+                fillColor = '#DC2626';
+                strokeColor = '#991B1B';
                 textColor = '#ffffff';
                 filter = 'url(#glow-path)';
+                animationClass = 'animate-[nodeCurrentPulse_0.4s_ease-in-out_infinite]';
+                opacity = 1;
               } else if (isActive) {
                 fillColor = '#FFB800';
                 strokeColor = '#FF8C00';
                 textColor = '#ffffff';
                 filter = 'url(#glow-current)';
                 animationClass = 'animate-[nodeCurrentPulse_0.6s_ease-in-out_infinite]';
-              } else if (isVisited) {
-                fillColor = '#00C896';
-                strokeColor = '#00A87A';
-                textColor = '#ffffff';
-                filter = 'url(#glow-visited)';
+                opacity = 1;
               } else {
-                fillColor = '#FF4444';
-                strokeColor = '#CC0000';
-                textColor = '#ffffff';
+                // If a path exists, dim all non-path/non-active nodes
+                const hasPath = pathNodes.length > 0;
+                if (hasPath) {
+                  fillColor = 'var(--node-default-bg)';
+                  strokeColor = 'var(--node-default-border)';
+                  textColor = 'var(--muted-color)';
+                  opacity = 0.3;
+                } else if (isVisited) {
+                  fillColor = '#00C896';
+                  strokeColor = '#00A87A';
+                  textColor = '#ffffff';
+                  filter = 'url(#glow-visited)';
+                  opacity = 1;
+                } else {
+                  fillColor = '#FF4444';
+                  strokeColor = '#CC0000';
+                  textColor = '#ffffff';
+                  opacity = 0.4;
+                }
               }
             } else {
               // Idle state - no algorithm
               fillColor = 'var(--node-default-bg)';
               textColor = 'var(--node-default-text)';
+              opacity = 1;
             }
-
+ 
             return (
               <g 
                 key={node.id} 
@@ -487,6 +540,7 @@ export function GraphCanvas() {
                 onMouseDown={(e) => handleMouseDown(node.id, e)}
                 className={`group cursor-grab ${draggingNode === node.id ? 'cursor-grabbing' : ''}`}
                 style={{ cursor: draggingNode === node.id ? 'grabbing' : 'pointer' }}
+                opacity={opacity}
               >
                 <circle 
                   r={currentRadius} 
@@ -501,7 +555,7 @@ export function GraphCanvas() {
                   x="0" 
                   y="5" 
                   textAnchor="middle" 
-                  fontSize="14" 
+                  fontSize="13" 
                   fontWeight="bold" 
                   fill={textColor}
                   className="font-mono pointer-events-none select-none transition-all duration-150 group-hover:scale-[1.05] group-active:scale-[0.95]"

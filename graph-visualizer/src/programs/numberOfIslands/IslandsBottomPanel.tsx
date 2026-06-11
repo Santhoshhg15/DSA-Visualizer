@@ -10,155 +10,89 @@ const ISLAND_COLORS = [
 ];
 
 export function IslandsBottomPanel() {
-  const { grid, steps, cur, playing } = useIslandsStore();
+  const { steps, cur, playing } = useIslandsStore();
 
   const isIdle = steps.length === 0;
   const currentStep = steps[cur] || null;
   const visitedOrder = currentStep?.auxiliaryState?.visitedOrder || [];
-  const currentCell = currentStep?.currentCell;
   const isPlaybackFinished = steps.length > 0 && cur === steps.length - 1 && !playing;
-
-  // Find all land cells in the original grid
-  const allLandCells: [number, number][] = [];
-  grid.forEach((row, r) => {
-    row.forEach((val, c) => {
-      if (val === 1) allLandCells.push([r, c]);
-    });
-  });
-
-  // Reorder allLandCells: visited ones first (in visit order), then unvisited ones (by coordinate order)
-  const visitedKeys = new Set(visitedOrder.map(([r, c]) => `${r},${c}`));
-  const unvisitedLand = allLandCells.filter(([r, c]) => !visitedKeys.has(`${r},${c}`));
-  const orderedLandCells = [
-    ...visitedOrder,
-    ...unvisitedLand
-  ];
+  const currentCell = currentStep?.currentCell;
 
   return (
-    <div className="w-full h-[120px] flex flex-row bg-[var(--panel-bg)] border-t border-b border-[var(--border-color)] shrink-0 select-none">
-      {/* LEFT PANEL — Visited Cells */}
-      <div className="w-[60%] flex flex-col border-r border-[var(--border-color)] overflow-hidden">
-        <div className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.08em] px-3 pt-2 pb-1 font-['Space_Grotesk'] shrink-0">
-          Visited Cells
-        </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-2 custom-scrollbar">
-          {isIdle ? (
-            <div className="h-full flex items-center justify-start text-[11px] text-[var(--muted-color)] italic">
-              Run algorithm to see visited cells
-            </div>
-          ) : (
-            <div className="grid grid-flow-col auto-cols-[40px] grid-rows-2 gap-2 h-full items-center">
-              {orderedLandCells.map(([r, c], idx) => {
-                const coordKey = `${r},${c}`;
-                const isCurrent = currentCell && currentCell[0] === r && currentCell[1] === c;
-                const isVisited = visitedKeys.has(coordKey);
-                
-                let bg = "bg-[#FF4444]/15";
-                let border = "border-[#FF4444]/50";
-                let color = "text-[#FF4444]";
-                let shadow = "";
-                let style = {};
+    <div className="w-full h-[80px] flex flex-row bg-[var(--panel-bg)]/60 backdrop-blur-md border-t border-[var(--border-color)] shrink-0 select-none">
 
-                if (isCurrent) {
-                  bg = "bg-[#FFB800]/30";
-                  border = "border-[#FFB800]";
-                  color = "text-white";
-                  shadow = "shadow-[0_0_8px_rgba(255,184,0,0.5)]";
-                } else if (isVisited) {
-                  const islandId = currentStep?.islandMap[coordKey] || 1;
-                  const islandColor = ISLAND_COLORS[(islandId - 1) % ISLAND_COLORS.length];
-                  bg = "";
-                  border = "";
-                  color = "text-white";
-                  style = {
-                    backgroundColor: `${islandColor}40`,
-                    borderColor: islandColor
-                  };
-                }
-
-                return (
-                  <div
-                    key={`vcell-${coordKey}`}
-                    className={`w-[40px] h-[40px] flex flex-col items-center justify-center rounded-[6px] border ${bg} ${border} ${shadow} ${color} transition-all duration-300 shrink-0`}
-                    style={style}
-                  >
-                    <span className="font-mono text-[9px] font-bold">
-                      {r},{c}
-                    </span>
-                    <span className="font-mono text-[8px] opacity-60">
-                      {idx}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+      {/* FULL WIDTH OUTPUT PANEL */}
+      <div className="w-full flex flex-col">
+        <div className="h-[28px] flex items-center px-4 gap-2 border-b border-[var(--border-color)]/40">
+          <div className="w-[6px] h-[6px] rounded-full bg-[#7C3AED] shadow-[0_0_6px_rgba(124,58,237,0.5)] animate-pulse" />
+          <span className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] font-sans">
+            OUTPUT — Number of Islands
+          </span>
+          {isPlaybackFinished && (
+            <span className="ml-auto text-[10px] font-semibold font-sans uppercase tracking-[0.06em] text-[#00C896] bg-[#00C896]/10 border border-[#00C896]/30 rounded-full px-2 py-0.5">
+              COMPLETE
+            </span>
+          )}
+          {!isIdle && !isPlaybackFinished && (
+            <span className="ml-auto text-[10px] font-semibold font-sans uppercase tracking-[0.06em] text-[#FFB800] bg-[#FFB800]/10 border border-[#FFB800]/30 rounded-full px-2 py-0.5 animate-pulse">
+              RUNNING
+            </span>
           )}
         </div>
-      </div>
-
-      {/* RIGHT PANEL — Output */}
-      <div className="w-[40%] flex flex-col overflow-hidden">
-        <div className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.08em] px-3 pt-2 pb-1 font-['Space_Grotesk'] shrink-0">
-          Output
-        </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-2 custom-scrollbar flex flex-col gap-2">
+        <div className="flex-1 overflow-x-auto flex items-center px-4 whitespace-nowrap custom-scrollbar">
           {isIdle ? (
-            <div className="h-full flex items-center justify-start text-[11px] text-[var(--muted-color)] italic">
+            <span className="text-[11px] text-[var(--muted-color)] italic">
               Run algorithm to see output
-            </div>
+            </span>
           ) : (
-            <div className="flex flex-col gap-1.5 font-mono text-xs">
+            <div className="flex items-center gap-3">
+              {/* Islands count badge */}
+              <span className="text-[12px] font-mono font-semibold text-[#7C3AED] bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded px-2 py-0.5">
+                Islands: {currentStep?.islandsCount || 0}
+              </span>
+
+              {/* Island details */}
               {Array.from({ length: currentStep?.islandsCount || 0 }).map((_, idx) => {
                 const id = idx + 1;
                 const color = ISLAND_COLORS[(id - 1) % ISLAND_COLORS.length];
                 
-                // Get all visited cells for this island in order
                 const islandCells: [number, number][] = [];
-                visitedOrder.forEach(([vr, vc]) => {
+                visitedOrder.forEach(([vr, vc]: [number, number]) => {
                   const coordKey = `${vr},${vc}`;
                   if (currentStep?.islandMap[coordKey] === id) {
                     islandCells.push([vr, vc]);
                   }
                 });
 
-                const isCurrentIsland = currentStep?.islandsCount === id && !isPlaybackFinished;
-
                 return (
-                  <div key={`output-island-${id}`} className="flex flex-col gap-0.5 animate-fadeInUp">
-                    <div className="flex items-center flex-wrap">
-                      <span className="font-bold mr-1.5" style={{ color }}>
-                        Island {id}:
-                      </span>
-                      <div className="flex items-center flex-wrap">
-                        {islandCells.map(([cr, cc], cIdx) => {
-                          const isCellCurrent = currentCell && currentCell[0] === cr && currentCell[1] === cc;
-                          return (
-                            <div key={`cell-${cr}-${cc}`} className="flex items-center">
-                              <span className={`font-bold text-[11px] ${isCellCurrent ? 'text-[#FFB800]' : ''}`} style={!isCellCurrent ? { color } : {}}>
-                                [{cr},{cc}]
-                              </span>
-                              {cIdx < islandCells.length - 1 && (
-                                <span className="text-[var(--muted-color)] text-[10px] mx-1">→</span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    {/* Complete sub-status */}
-                    {(!isCurrentIsland || (isPlaybackFinished && id === currentStep?.islandsCount)) && (
-                      <div className="text-[10px] font-semibold pl-4" style={{ color }}>
-                        ✓ Island {id} complete — {islandCells.length} cells
-                      </div>
+                  <div key={`output-island-${id}`} className="flex items-center gap-1">
+                    <span className="font-mono text-[12px] font-semibold" style={{ color }}>
+                      I{id}:
+                    </span>
+                    {islandCells.map(([cr, cc], cIdx) => {
+                      const isCellCurrent = currentCell && currentCell[0] === cr && currentCell[1] === cc;
+                      return (
+                        <div key={`cell-${cr}-${cc}`} className="flex items-center">
+                          <span className={`font-mono text-[11px] font-medium ${isCellCurrent ? 'text-[#FFB800]' : ''}`} style={!isCellCurrent ? { color } : {}}>
+                            [{cr},{cc}]
+                          </span>
+                          {cIdx < islandCells.length - 1 && (
+                            <span className="text-[var(--muted-color)] text-[10px] font-sans mx-0.5">→</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {idx < (currentStep?.islandsCount || 0) - 1 && (
+                      <span className="text-[var(--border-color)] mx-1">│</span>
                     )}
                   </div>
                 );
               })}
 
               {isPlaybackFinished && (
-                <div className="mt-2 text-sm font-bold text-[#00C896] animate-[nodeCurrentPulse_0.6s_ease-in-out_1] flex items-center gap-1">
-                  <span>✓ Total: {currentStep?.islandsCount} islands found</span>
-                </div>
+                <span className="text-[12px] font-semibold text-[#00C896] font-mono ml-2">
+                  ✓ {currentStep?.islandsCount} islands found
+                </span>
               )}
             </div>
           )}

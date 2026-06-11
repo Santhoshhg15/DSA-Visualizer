@@ -29,6 +29,7 @@ export interface BipartiteStep {
   group1Nodes: string[]; // orange group
   description: string;
   codeLineActive: number;
+  auxiliaryState?: any;
 }
 
 export interface BipartiteState {

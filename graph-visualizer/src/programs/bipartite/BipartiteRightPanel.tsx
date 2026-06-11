@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBipartiteStore } from '../../stores/useBipartiteStore';
+import { VisitedArrayPanel } from '../../components/VisitedArrayPanel';
+import { QueuePanel } from '../../components/QueuePanel';
+import { CopyDownloadButtons } from '../../components/CopyDownloadButtons';
 
 const pseudoCode = [
   "isBipartite(V, adj):",
@@ -96,41 +99,208 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
   const cur = useBipartiteStore((state) => state.cur);
 
   const [isPseudoCode, setIsPseudoCode] = useState(true);
+  const [adjCollapsed, setAdjCollapsed] = useState(true);
+  const [panelWidth, setPanelWidth] = useState(350);
+
+  const [showTracePill, setShowTracePill] = useState(false);
+  const userScrolledUp = useRef<boolean>(false);
+  const scrollPositions = useRef({
+    graph: 0,
+    code: 0,
+    trace: 0
+  });
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const activeRowRef = useRef<HTMLTableRowElement>(null);
+  const graphContainerRef = useRef<HTMLDivElement>(null);
   const codeContainerRef = useRef<HTMLDivElement>(null);
   const activeCodeLineRef = useRef<HTMLDivElement>(null);
   const traceContainerRef = useRef<HTMLDivElement>(null);
+  const outerContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!outerContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setPanelWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(outerContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const isNarrow = panelWidth < 450;
 
   const currentStep = steps.length > 0 && cur >= 0 && cur < steps.length ? steps[cur] : null;
 
   // Auto-scroll table row
   useEffect(() => {
     if (activeRowRef.current && tableContainerRef.current) {
-      activeRowRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
+      const row = activeRowRef.current;
+      const container = tableContainerRef.current;
+      const elementTop = row.offsetTop;
+      const elementHeight = row.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+        container.scrollTo({
+          top: elementTop - containerHeight + elementHeight,
+          behavior: 'smooth'
+        });
+      } else if (elementTop < container.scrollTop) {
+        container.scrollTo({
+          top: elementTop,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [currentStep?.currentNode]);
 
-  // Auto-scroll active code line
-  useEffect(() => {
-    if (activeCodeLineRef.current && codeContainerRef.current) {
-      activeCodeLineRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
-    }
-  }, [currentStep?.codeLineActive, isPseudoCode]);
+  // Handle manual scroll in TRACE tab
+  const handleTraceScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    scrollPositions.current.trace = el.scrollTop;
+    
+    const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 40;
+    userScrolledUp.current = !isAtBottom;
+    setShowTracePill(!isAtBottom);
+  };
 
-  // Auto-scroll trace log to bottom
-  useEffect(() => {
+  // Scroll to active trace step
+  const handleScrollToActiveTrace = () => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
     if (traceContainerRef.current) {
-      traceContainerRef.current.scrollTop = traceContainerRef.current.scrollHeight;
+      const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+      if (activeEntry) {
+        const container = traceContainerRef.current;
+        const elementTop = activeEntry.offsetTop;
+        const elementHeight = activeEntry.offsetHeight;
+        const containerHeight = container.clientHeight;
+        
+        if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+          container.scrollTo({
+            top: elementTop - containerHeight + elementHeight,
+            behavior: 'smooth'
+          });
+        } else if (elementTop < container.scrollTop) {
+          container.scrollTo({
+            top: elementTop,
+            behavior: 'smooth'
+          });
+        }
+      }
     }
-  }, [cur, steps.length]);
+  };
+
+  // Auto-scroll trace when step changes
+  useEffect(() => {
+    if (!traceContainerRef.current) return;
+    if (userScrolledUp.current) return;
+    
+    const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+    if (activeEntry) {
+      const container = traceContainerRef.current;
+      const elementTop = activeEntry.offsetTop;
+      const elementHeight = activeEntry.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+        container.scrollTo({
+          top: elementTop - containerHeight + elementHeight,
+          behavior: 'smooth'
+        });
+      } else if (elementTop < container.scrollTop) {
+        container.scrollTo({
+          top: elementTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [cur]);
+
+  // Reset userScrolledUp when a new algorithm starts
+  const stepsLength = steps.length;
+  const firstStepId = stepsLength > 0 ? steps[0].id : null;
+  useEffect(() => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
+    if (traceContainerRef.current) {
+      traceContainerRef.current.scrollTop = 0;
+    }
+  }, [firstStepId]);
+
+  // Reset userScrolledUp when user switches to TRACE tab
+  useEffect(() => {
+    if (activeRightTab === 'trace') {
+      userScrolledUp.current = false;
+      setShowTracePill(false);
+    }
+  }, [activeRightTab]);
+
+  // Smooth scroll active line during normal playback
+  const activeLineCode = currentStep?.codeLineActive || 0;
+  useEffect(() => {
+    if (activeRightTab === 'code' && codeContainerRef.current) {
+      const activeLineEl = codeContainerRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+      if (activeLineEl) {
+        const container = codeContainerRef.current;
+        const targetScrollTop = activeLineEl.offsetTop - (container.clientHeight / 2) + (activeLineEl.offsetHeight / 2);
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeLineCode]);
+
+  // Tab Switch Scroll Memory and Restoration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeRightTab === 'graph' && graphContainerRef.current) {
+        graphContainerRef.current.scrollTop = scrollPositions.current.graph;
+      } else if (activeRightTab === 'code' && codeContainerRef.current) {
+        const activeLineEl = codeContainerRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+        if (activeLineEl) {
+          const container = codeContainerRef.current;
+          const targetScrollTop = activeLineEl.offsetTop - (container.clientHeight / 2) + (activeLineEl.offsetHeight / 2);
+          container.scrollTo({
+            top: targetScrollTop,
+            behavior: 'instant' as any
+          });
+        } else {
+          codeContainerRef.current.scrollTop = scrollPositions.current.code;
+        }
+      } else if (activeRightTab === 'trace' && traceContainerRef.current) {
+        if (!userScrolledUp.current) {
+          const activeEntry = traceContainerRef.current.querySelector('[data-active="true"]') as HTMLElement;
+          if (activeEntry) {
+            const container = traceContainerRef.current;
+            const elementTop = activeEntry.offsetTop;
+            const elementHeight = activeEntry.offsetHeight;
+            const containerHeight = container.clientHeight;
+            
+            if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+              container.scrollTo({
+                top: elementTop - containerHeight + elementHeight,
+                behavior: 'instant' as any
+              });
+            } else if (elementTop < container.scrollTop) {
+              container.scrollTo({
+                top: elementTop,
+                behavior: 'instant' as any
+              });
+            }
+          } else {
+            traceContainerRef.current.scrollTop = traceContainerRef.current.scrollHeight;
+          }
+        } else {
+          traceContainerRef.current.scrollTop = scrollPositions.current.trace;
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [activeRightTab]);
 
   // Adjacency list mapping
   const adjList: Record<string, string[]> = {};
@@ -142,7 +312,6 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
   Object.keys(adjList).forEach((k) => adjList[k].sort());
 
   // BFS Queue pills helper
-  const queueSnapshot = currentStep?.queueSnapshot || [];
   const colorMap = currentStep?.colorSnapshot || {};
   const group0 = currentStep?.group0Nodes || [];
   const group1 = currentStep?.group1Nodes || [];
@@ -161,10 +330,17 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
     }
 
     return (
-      <div className="flex-grow flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar h-full">
-        {/* GRAPH INFO */}
+      <div 
+        ref={graphContainerRef}
+        onScroll={(e) => {
+          scrollPositions.current.graph = e.currentTarget.scrollTop;
+        }}
+        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6 custom-scrollbar min-h-0 bg-[var(--panel-bg)]"
+        style={{ height: 0 }}
+      >
+        {/* GRAPH DETAILS */}
         <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] border-b border-[var(--border-color)] pb-1">
             Graph Info
           </h3>
           <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[var(--input-bg)] p-3 rounded-lg border border-[var(--border-color)]">
@@ -187,9 +363,33 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
           </div>
         </div>
 
+        {/* UNIFIED VISITED (COLOR) ARRAY */}
+        <VisitedArrayPanel
+          title="COLOR ASSIGNED ORDER"
+          nodes={nodes.map(n => ({ id: n.id, label: n.label || n.id }))}
+          visitedOrder={currentStep?.auxiliaryState?.visitedOrder || []}
+          currentNode={currentStep?.currentNode || null}
+          mode="color"
+          extraData={colorMap}
+        />
+
+        {/* UNIFIED BFS QUEUE */}
+        <QueuePanel
+          type="bipartite"
+          items={currentStep?.queueSnapshot || []}
+          formatItem={({node}) => node}
+          colorItem={({color}) =>
+            color === 0
+              ? {bg:'rgba(255,184,0,0.25)', border:'#FFB800', text:'#FFB800'}
+              : color === 1
+              ? {bg:'rgba(255,107,0,0.25)', border:'#FF6B00', text:'#FF6B00'}
+              : {bg:'rgba(255,68,68,0.2)', border:'#FF4444', text:'#FF4444'}
+          }
+        />
+
         {/* COLOR ASSIGNMENT TABLE */}
         <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
+          <h3 className="text-[10px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em] border-b border-[var(--border-color)] pb-1">
             Color Assignment
           </h3>
           <div
@@ -197,7 +397,7 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
             className="overflow-x-auto border border-[var(--border-color)] rounded-lg max-h-[160px] custom-scrollbar"
           >
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-[#111] text-[var(--muted-color)] border-b border-[var(--border-color)]">
+              <thead className="bg-[var(--input-bg)] text-[var(--muted-color)] border-b border-[var(--border-color)] font-sans font-semibold uppercase text-[10px] tracking-[0.06em]">
                 <tr>
                   <th className="px-3 py-1.5 font-bold uppercase tracking-wider">Node</th>
                   <th className="px-3 py-1.5 font-bold uppercase tracking-wider">Color</th>
@@ -251,46 +451,6 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
                 })}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* BFS QUEUE */}
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center border-b border-[var(--border-color)] pb-1">
-            <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">
-              BFS Queue
-            </h3>
-            {queueSnapshot.length > 0 && (
-              <span className="text-[10px] font-bold text-blue-400 font-mono bg-blue-500/10 px-1.5 py-0.5 rounded">
-                Size: {queueSnapshot.length}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 p-3 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg min-h-[48px] overflow-x-auto custom-scrollbar">
-            {queueSnapshot.length > 0 ? (
-              queueSnapshot.map((nodeId, idx) => {
-                const colorVal = colorMap[nodeId];
-                let pillClass = 'border-[var(--border-color)] bg-black/30';
-                if (colorVal === 0) {
-                  pillClass = 'border-[#FFB800] bg-[#FFB800]/20 text-[#FFB800]';
-                } else if (colorVal === 1) {
-                  pillClass = 'border-[#FF6B00] bg-[#FF6B00]/20 text-[#FF6B00]';
-                }
-
-                return (
-                  <div key={`queue-pill-${nodeId}-${idx}`} className="flex items-center gap-1.5 shrink-0">
-                    <span className={`px-2.5 py-1 rounded-md border text-xs font-bold font-mono ${pillClass}`}>
-                      {nodeId}
-                    </span>
-                    {idx < queueSnapshot.length - 1 && (
-                      <span className="text-gray-600 text-xs">←</span>
-                    )}
-                  </div>
-                );
-              })
-            ) : (
-              <span className="text-[11px] text-[var(--muted-color)] italic">Queue empty</span>
-            )}
           </div>
         </div>
 
@@ -356,84 +516,101 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
               {colorMap[currentStep.currentNode!] === 0 ? 'Yellow group' : 'Orange group'}!
             </div>
           )}
-        </div>
 
-        {/* ADJACENCY LIST */}
-        <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em] border-b border-[var(--border-color)] pb-1">
-            Adjacency List
-          </h3>
-          <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-            {nodes.map((node) => {
-              const neighbors = adjList[node.id] || [];
-              const isCurrent = currentStep?.currentNode === node.id;
-              const nodeColorVal = colorMap[node.id] !== undefined ? colorMap[node.id] : -1;
-
-              let bgClass = 'bg-[var(--input-bg)]';
-              let borderStyle = {};
-              if (isCurrent) {
-                bgClass = 'bg-[#FFB800]/10';
-                borderStyle = { borderLeft: '3px solid #FFB800' };
-              }
-
-              let nodeLabelColor = 'text-white';
-              if (nodeColorVal === 0) nodeLabelColor = 'text-[#FFB800]';
-              else if (nodeColorVal === 1) nodeLabelColor = 'text-[#FF6B00]';
-
-              return (
-                <div
-                  key={`adj-${node.id}`}
-                  className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-xs font-mono transition-all duration-200 ${bgClass}`}
-                  style={borderStyle}
+          {/* ADJACENCY LIST */}
+          <div className="w-full flex flex-col bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden shrink-0">
+            <div
+              className="h-[36px] px-3 flex items-center justify-between bg-[var(--pill-bg)] cursor-pointer hover:bg-[var(--border-color)]/30 transition-colors select-none"
+              onClick={() => setAdjCollapsed(c => !c)}
+            >
+              <h3 className="text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-widest flex items-center gap-2">
+                <span>🔗</span> ADJACENCY LIST
+              </h3>
+              <button className="text-[var(--muted-color)] hover:text-[var(--text-color)] transition-colors">
+                <svg
+                  className={`w-3.5 h-3.5 transform transition-transform duration-200 ${adjCollapsed ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <span className={`font-bold ${nodeLabelColor}`}>{node.id}</span>
-                  <span className="text-[var(--muted-color)]">→</span>
-                  <div className="flex flex-wrap gap-1 justify-end max-w-[70%]">
-                    {neighbors.length > 0 ? (
-                      neighbors.map((neighbor) => {
-                        const neighborColorVal =
-                          colorMap[neighbor] !== undefined ? colorMap[neighbor] : -1;
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {!adjCollapsed && (
+              <div className="p-2 flex flex-col gap-1.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                {nodes.map((node) => {
+                  const neighbors = adjList[node.id] || [];
+                  const isCurrent = currentStep?.currentNode === node.id;
+                  const nodeColorVal = colorMap[node.id] !== undefined ? colorMap[node.id] : -1;
 
-                        const isEdgeActive = currentStep?.highlightNodes?.includes(node.id) &&
-                          currentStep?.highlightNodes?.includes(neighbor) &&
-                          (currentStep?.type === 'check-neighbor' ||
-                           currentStep?.type === 'color-neighbor' ||
-                           currentStep?.type === 'conflict-found') &&
-                          currentStep?.currentNode === node.id &&
-                          currentStep?.neighborNode === neighbor;
+                  let bgClass = 'bg-[var(--input-bg)]';
+                  let borderStyle = {};
+                  if (isCurrent) {
+                    bgClass = 'bg-[#FFB800]/10';
+                    borderStyle = { borderLeft: '3px solid #FFB800' };
+                  }
 
-                        let pillBg = 'bg-black/30';
-                        let pillColor = 'text-[var(--muted-color)]';
+                  let nodeLabelColor = 'text-white';
+                  if (nodeColorVal === 0) nodeLabelColor = 'text-[#FFB800]';
+                  else if (nodeColorVal === 1) nodeLabelColor = 'text-[#FF6B00]';
 
-                        if (neighborColorVal === 0) {
-                          pillColor = 'text-[#FFB800]';
-                          pillBg = 'bg-[#FFB800]/10 border-[#FFB800]/30';
-                        } else if (neighborColorVal === 1) {
-                          pillColor = 'text-[#FF6B00]';
-                          pillBg = 'bg-[#FF6B00]/10 border-[#FF6B00]/30';
-                        }
+                  return (
+                    <div
+                      key={`adj-${node.id}`}
+                      className={`flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] text-xs font-mono transition-all duration-200 ${bgClass}`}
+                      style={borderStyle}
+                    >
+                      <span className={`font-bold ${nodeLabelColor}`}>{node.id}</span>
+                      <span className="text-[var(--muted-color)]">→</span>
+                      <div className="flex flex-wrap gap-1 justify-end max-w-[70%]">
+                        {neighbors.length > 0 ? (
+                          neighbors.map((neighbor) => {
+                            const neighborColorVal =
+                              colorMap[neighbor] !== undefined ? colorMap[neighbor] : -1;
 
-                        if (isEdgeActive) {
-                          pillBg = 'bg-[#FFB800]/25 border-[#FFB800]';
-                          pillColor = 'text-[#FFB800] font-bold';
-                        }
+                            const isEdgeActive = currentStep?.highlightNodes?.includes(node.id) &&
+                              currentStep?.highlightNodes?.includes(neighbor) &&
+                              (currentStep?.type === 'check-neighbor' ||
+                               currentStep?.type === 'color-neighbor' ||
+                               currentStep?.type === 'conflict-found') &&
+                              currentStep?.currentNode === node.id &&
+                              currentStep?.neighborNode === neighbor;
 
-                        return (
-                          <span
-                            key={`n-${neighbor}`}
-                            className={`px-1.5 py-0.5 rounded text-[10px] border border-[var(--border-color)] ${pillColor} ${pillBg}`}
-                          >
-                            {neighbor}
-                          </span>
-                        );
-                      })
-                    ) : (
-                      <span className="text-[10px] text-gray-600 italic">none</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                            let pillBg = 'bg-black/30';
+                            let pillColor = 'text-[var(--muted-color)]';
+
+                            if (neighborColorVal === 0) {
+                              pillColor = 'text-[#FFB800]';
+                              pillBg = 'bg-[#FFB800]/10 border-[#FFB800]/30';
+                            } else if (neighborColorVal === 1) {
+                              pillColor = 'text-[#FF6B00]';
+                              pillBg = 'bg-[#FF6B00]/10 border-[#FF6B00]/30';
+                            }
+
+                            if (isEdgeActive) {
+                              pillBg = 'bg-[#FFB800]/25 border-[#FFB800]';
+                              pillColor = 'text-[#FFB800] font-bold';
+                            }
+
+                            return (
+                              <span
+                                key={`n-${neighbor}`}
+                                className={`px-1.5 py-0.5 rounded text-[10px] border border-[var(--border-color)] ${pillColor} ${pillBg}`}
+                              >
+                                {neighbor}
+                              </span>
+                            );
+                          })
+                        ) : (
+                          <span className="text-[10px] text-gray-600 italic">none</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -441,57 +618,128 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
   }
 
   if (activeRightTab === 'code') {
+    const codeLines = isPseudoCode ? pseudoCode : javaCode;
     const activeLine = currentStep?.codeLineActive || 0;
     const mappedActiveLine = isPseudoCode ? mapJavaToPseudo(activeLine) : activeLine;
-    const codeLines = isPseudoCode ? pseudoCode : javaCode;
 
     return (
-      <div className="flex-grow flex flex-col bg-[#0d0d0d] h-full overflow-hidden">
+      <div ref={outerContainerRef} className="flex-grow flex flex-col bg-[var(--panel-bg)] min-h-0 overflow-hidden font-sans" style={{ height: 0 }}>
         {/* Toggle + Complexity Badges Header */}
-        <div className="h-[40px] px-3 flex items-center justify-between border-b border-[var(--border-color)] bg-[#111] shrink-0">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setIsPseudoCode(true)}
-              className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${
-                isPseudoCode
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'text-[var(--muted-color)] hover:text-white'
-              }`}
-            >
-              Pseudo
-            </button>
-            <button
-              onClick={() => setIsPseudoCode(false)}
-              className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${
-                !isPseudoCode
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'text-[var(--muted-color)] hover:text-white'
-              }`}
-            >
-              Java
-            </button>
-          </div>
+        <div 
+          className={`px-3 flex border-b border-[var(--border-color)] bg-[var(--panel-bg)] shrink-0 ${
+            isNarrow ? 'flex-col gap-2 py-2.5 h-auto' : 'h-[40px] flex-row items-center justify-between'
+          }`}
+        >
+          {isNarrow ? (
+            <>
+              {/* Row 1 */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-500">💻</span>
+                  <span className="text-[11px] font-semibold text-[var(--muted-color)] uppercase tracking-[0.08em]">
+                    {isPseudoCode ? 'Pseudo Code' : 'Java Source'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="px-1.5 py-0.5 rounded border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[9px] uppercase font-bold tracking-wider"
+                    title="Time Complexity"
+                  >
+                    O(V + E)
+                  </div>
+                  <div
+                    className="px-1.5 py-0.5 rounded border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[9px] uppercase font-bold tracking-wider"
+                    title="Space Complexity"
+                  >
+                    O(V)
+                  </div>
+                </div>
+              </div>
+              
+              {/* Row 2 */}
+              <div className="flex items-center justify-between w-full border-t border-[var(--border-color)]/50 pt-2">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setIsPseudoCode(true)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-all ${
+                      isPseudoCode
+                        ? 'bg-[var(--surface-elevated)] text-blue-400 border border-blue-500/30'
+                        : 'text-[var(--muted-color)] hover:text-white'
+                    }`}
+                  >
+                    Pseudo
+                  </button>
+                  <button
+                    onClick={() => setIsPseudoCode(false)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-all ${
+                      !isPseudoCode
+                        ? 'bg-[var(--surface-elevated)] text-emerald-400 border border-emerald-500/30'
+                        : 'text-[var(--muted-color)] hover:text-white'
+                    }`}
+                  >
+                    Java
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-[1px] bg-[var(--border-color)]" />
+                  <CopyDownloadButtons algorithmKey="bipartite" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setIsPseudoCode(true)}
+                  className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-all ${
+                    isPseudoCode
+                      ? 'bg-[var(--surface-elevated)] text-blue-400 border border-blue-500/30'
+                      : 'text-[var(--muted-color)] hover:text-white'
+                  }`}
+                >
+                  Pseudo
+                </button>
+                <button
+                  onClick={() => setIsPseudoCode(false)}
+                  className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-[3px] transition-all ${
+                    !isPseudoCode
+                      ? 'bg-[var(--surface-elevated)] text-emerald-400 border border-blue-500/30'
+                      : 'text-[var(--muted-color)] hover:text-white'
+                  }`}
+                >
+                  Java
+                </button>
+              </div>
 
-          <div className="flex items-center gap-1.5">
-            <div
-              className="px-1.5 py-0.5 rounded border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[9px] uppercase font-bold tracking-wider"
-              title="Time Complexity"
-            >
-              O(V + E)
-            </div>
-            <div
-              className="px-1.5 py-0.5 rounded border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[9px] uppercase font-bold tracking-wider"
-              title="Space Complexity"
-            >
-              O(V)
-            </div>
-          </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="px-1.5 py-0.5 rounded border border-[#FFB800]/40 bg-[#FFB800]/15 text-[#FFB800] font-mono text-[9px] uppercase font-bold tracking-wider"
+                    title="Time Complexity"
+                  >
+                    O(V + E)
+                  </div>
+                  <div
+                    className="px-1.5 py-0.5 rounded border border-[#A855F7]/40 bg-[#A855F7]/15 text-[#A855F7] font-mono text-[9px] uppercase font-bold tracking-wider"
+                    title="Space Complexity"
+                  >
+                    O(V)
+                  </div>
+                </div>
+                <div className="h-4 w-[1px] bg-[var(--border-color)]" />
+                <CopyDownloadButtons algorithmKey="bipartite" />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Code Content */}
         <div
           ref={codeContainerRef}
-          className="flex-1 overflow-y-auto p-4 font-mono text-xs leading-relaxed text-gray-300 custom-scrollbar select-text selection:bg-blue-500/30"
+          onScroll={(e) => {
+            scrollPositions.current.code = e.currentTarget.scrollTop;
+          }}
+          className="flex-1 overflow-y-auto p-4 font-mono text-[13px] font-normal leading-[1.7] text-gray-300 custom-scrollbar select-text selection:bg-blue-500/30 bg-[var(--bg-primary)]"
         >
           {codeLines.map((line, idx) => {
             const lineNum = idx + 1;
@@ -500,11 +748,13 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
               <div
                 key={`code-line-${lineNum}`}
                 ref={isActive ? activeCodeLineRef : null}
+                data-active={isActive}
+                data-active-line={isActive}
                 className={`flex w-full items-start py-0.5 px-2 rounded transition-colors duration-150 ${
                   isActive ? 'bg-[#FFB800]/15 border-l-2 border-[#FFB800] text-white' : ''
                 }`}
               >
-                <span className="w-8 shrink-0 text-right pr-3 text-gray-600 select-none text-[10px]">
+                <span className="w-8 shrink-0 text-right pr-3 text-[var(--muted-color)] select-none text-[11px] font-mono">
                   {lineNum}
                 </span>
                 <span className="whitespace-pre">{line}</span>
@@ -518,16 +768,17 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
 
   if (activeRightTab === 'trace') {
     return (
-      <div className="flex-grow flex flex-col bg-[#0f0f12] h-full overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" style={{ height: 0 }}>
         {/* Header */}
-        <div className="h-[36px] px-3 flex items-center border-b border-[var(--border-color)] bg-[#131317] shrink-0 text-[10px] font-bold text-[var(--muted-color)] uppercase tracking-[0.06em]">
+        <div className="h-[36px] px-3 flex items-center border-b border-[var(--border-color)] bg-[var(--panel-bg)] shrink-0 text-[10px] font-semibold font-sans text-[var(--muted-color)] uppercase tracking-[0.08em]">
           Algorithm Steps Trace
         </div>
 
         {/* Trace List */}
         <div
           ref={traceContainerRef}
-          className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar"
+          onScroll={handleTraceScroll}
+          className="flex-grow overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar bg-[var(--panel-bg)] min-h-0"
         >
           {steps.length > 0 ? (
             steps.slice(0, cur + 1).map((step, idx) => {
@@ -548,17 +799,18 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
               return (
                 <div
                   key={`trace-step-${idx}`}
+                  data-active={isActive}
                   className={`flex flex-col p-2.5 rounded-lg border text-xs font-mono transition-all duration-200 ${
                     isActive
                       ? 'bg-[#FFB800]/10 border-[#FFB800] border-l-[3px]'
-                      : 'bg-[#181822]/40 border-[var(--border-color)]/60'
+                      : 'bg-[var(--input-bg)] border-[var(--border-color)]/60'
                   }`}
                 >
                   <div className="flex justify-between items-center mb-1">
                     <span className={`px-1.5 py-0.5 rounded border text-[9px] uppercase font-bold ${stepBadgeColor}`}>
                       {step.type}
                     </span>
-                    <span className="text-[9px] text-[var(--muted-color)]">
+                    <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.06em] text-[var(--muted-color)]">
                       Step {idx + 1} of {steps.length}
                     </span>
                   </div>
@@ -569,11 +821,20 @@ export function BipartiteRightPanel({ activeRightTab }: { activeRightTab: 'graph
               );
             })
           ) : (
-            <div className="flex-1 flex items-center justify-center text-[var(--muted-color)] text-xs italic">
+            <div className="flex-grow flex items-center justify-center text-[var(--muted-color)] text-xs italic">
               Run algorithm to see trace output log
             </div>
           )}
         </div>
+        {showTracePill && (
+          <button
+            onClick={handleScrollToActiveTrace}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#3b82f6]/90 border border-[#3b82f6] rounded-full px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-[0.06em] cursor-pointer z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:bg-[#3b82f6] transition-colors"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            ↓ Jump to current step
+          </button>
+        )}
       </div>
     );
   }

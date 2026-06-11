@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from './store';
 import { EducationPanel } from './components/EducationPanel';
 import { PresetSelector } from './components/PresetSelector';
@@ -28,20 +28,79 @@ import { BipartitePanel } from './programs/bipartite/BipartitePanel';
 import { BipartiteRightPanel } from './programs/bipartite/BipartiteRightPanel';
 import { BipartiteBottomPanel } from './programs/bipartite/BipartiteBottomPanel';
 import { useBipartiteStore } from './stores/useBipartiteStore';
+import { GraphLandingPage } from './pages/GraphLandingPage';
 
 
 export default function App() {
   const { darkMode, setDarkMode } = useStore();
-  const { playing, isEditingGraph, setSteps, setStats } = useGraphStore();
+  const { playing, isEditingGraph, setSteps, setStats, steps, cur } = useGraphStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeView, setActiveView] = useState<'education' | 'workspace'>('education');
   const [activeWorkspaceMode, setActiveWorkspaceMode] = useState<'operations' | 'algorithms' | 'programs'>('operations');
   const [activeRightTab, setActiveRightTab] = useState<'graph' | 'code' | 'trace'>('graph');
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
+  const [showTracePill, setShowTracePill] = useState(false);
+
+  const graphScrollRef = useRef<HTMLDivElement>(null);
+  const codeScrollRef = useRef<HTMLDivElement>(null);
+  const traceScrollRef = useRef<HTMLDivElement>(null);
+  const userScrolledUp = useRef<boolean>(false);
+  const scrollPositions = useRef({
+    graph: 0,
+    code: 0,
+    trace: 0
+  });
   
   // Selected Program under PROGRAMS tab ('islands' | 'cycle' | 'bipartite')
   const [selectedProgram, setSelectedProgram] = useState<'islands' | 'cycle' | 'bipartite'>('islands');
+
+  const handleSelectAlgorithm = (algoId: string, dijkstraImpl?: 'pq' | 'set') => {
+    // Stop any current playbacks
+    useGraphStore.getState().setPlaying(false);
+    
+    // Set workspace mode and selected algorithm
+    setActiveWorkspaceMode('algorithms');
+    setActiveView('workspace');
+    
+    if (algoId === 'dijkstra' && dijkstraImpl) {
+      useGraphStore.getState().setDijkstraImpl(dijkstraImpl);
+    }
+    
+    useGraphStore.getState().setSelectedAlgorithm(algoId);
+    setActiveRightTab('graph');
+    setShowLanding(false);
+  };
+
+  const handleSelectProgram = (programId: 'islands' | 'cycle' | 'bipartite', variant?: string) => {
+    // Stop playbacks in all program stores
+    useIslandsStore.getState().setPlaying(false);
+    useCycleStore.getState().setPlaying(false);
+    useBipartiteStore.getState().setPlaying(false);
+
+    setActiveWorkspaceMode('programs');
+    setSelectedProgram(programId);
+    setActiveView('workspace');
+
+    if (programId === 'islands') {
+      if (variant === 'leetcode') {
+        useIslandsStore.getState().setVersion('leetcode');
+      } else if (variant === 'gfg') {
+        useIslandsStore.getState().setVersion('gfg');
+      }
+    } else if (programId === 'cycle' && variant) {
+      useCycleStore.getState().setAlgorithmType(variant as any);
+    }
+
+    setActiveRightTab('graph');
+    setShowLanding(false);
+  };
+
+  const handleOpenVisualizer = () => {
+    setActiveView('workspace');
+    setShowLanding(false);
+  };
 
   // Auto-switch right tab to TRACE when algorithm plays
   const islandsPlaying = useIslandsStore(state => state.playing);
@@ -92,13 +151,168 @@ export default function App() {
     };
   }, [isResizingRight]);
 
+  // Handle manual scroll in TRACE tab
+  const handleTraceScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    scrollPositions.current.trace = el.scrollTop;
+    
+    const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 40;
+    userScrolledUp.current = !isAtBottom;
+    setShowTracePill(!isAtBottom);
+  };
+
+  // Scroll to active trace step
+  const handleScrollToActiveTrace = () => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
+    if (traceScrollRef.current) {
+      const activeEntry = traceScrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
+      if (activeEntry) {
+        const container = traceScrollRef.current;
+        const elementTop = activeEntry.offsetTop;
+        const elementHeight = activeEntry.offsetHeight;
+        const containerHeight = container.clientHeight;
+        
+        if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+          container.scrollTo({
+            top: elementTop - containerHeight + elementHeight,
+            behavior: 'smooth'
+          });
+        } else if (elementTop < container.scrollTop) {
+          container.scrollTo({
+            top: elementTop,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+  };
+
+  // Auto-scroll trace when step changes during playback
+  useEffect(() => {
+    if (!traceScrollRef.current) return;
+    if (userScrolledUp.current) return;
+    
+    const activeEntry = traceScrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
+    if (activeEntry) {
+      const container = traceScrollRef.current;
+      const elementTop = activeEntry.offsetTop;
+      const elementHeight = activeEntry.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+        container.scrollTo({
+          top: elementTop - containerHeight + elementHeight,
+          behavior: 'smooth'
+        });
+      } else if (elementTop < container.scrollTop) {
+        container.scrollTo({
+          top: elementTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [cur]);
+
+  // Reset userScrolledUp and scroll to top when new algorithm starts
+  const stepsLength = steps.length;
+  const firstStepId = stepsLength > 0 ? steps[0].id : null;
+  useEffect(() => {
+    userScrolledUp.current = false;
+    setShowTracePill(false);
+    if (traceScrollRef.current) {
+      traceScrollRef.current.scrollTop = 0;
+    }
+  }, [firstStepId]);
+
+  // Reset userScrolledUp when user switches to TRACE tab
+  useEffect(() => {
+    if (activeRightTab === 'trace') {
+      userScrolledUp.current = false;
+      setShowTracePill(false);
+    }
+  }, [activeRightTab]);
+
+  const codeLineActive = steps[cur]?.codeLineActive || 0;
+
+  // Smooth scroll active line during normal playback
+  useEffect(() => {
+    if (activeRightTab === 'code' && codeScrollRef.current) {
+      const activeLine = codeScrollRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+      if (activeLine) {
+        const container = codeScrollRef.current;
+        const targetScrollTop = activeLine.offsetTop - (container.clientHeight / 2) + (activeLine.offsetHeight / 2);
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [codeLineActive]);
+
+  // Tab Switch Scroll Memory and Restoration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeRightTab === 'graph' && graphScrollRef.current) {
+        graphScrollRef.current.scrollTop = scrollPositions.current.graph;
+      } else if (activeRightTab === 'code' && codeScrollRef.current) {
+        const activeLine = codeScrollRef.current.querySelector('[data-active-line="true"]') as HTMLElement;
+        if (activeLine) {
+          const container = codeScrollRef.current;
+          const targetScrollTop = activeLine.offsetTop - (container.clientHeight / 2) + (activeLine.offsetHeight / 2);
+          container.scrollTo({
+            top: targetScrollTop,
+            behavior: 'instant' as any
+          });
+        } else {
+          codeScrollRef.current.scrollTop = scrollPositions.current.code;
+        }
+      } else if (activeRightTab === 'trace' && traceScrollRef.current) {
+        if (!userScrolledUp.current) {
+          const activeEntry = traceScrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
+          if (activeEntry) {
+            const container = traceScrollRef.current;
+            const elementTop = activeEntry.offsetTop;
+            const elementHeight = activeEntry.offsetHeight;
+            const containerHeight = container.clientHeight;
+            
+            if (elementTop + elementHeight > container.scrollTop + containerHeight) {
+              container.scrollTo({
+                top: elementTop - containerHeight + elementHeight,
+                behavior: 'instant' as any
+              });
+            } else if (elementTop < container.scrollTop) {
+              container.scrollTo({
+                top: elementTop,
+                behavior: 'instant' as any
+              });
+            }
+          } else {
+            traceScrollRef.current.scrollTop = 0;
+          }
+        } else {
+          traceScrollRef.current.scrollTop = scrollPositions.current.trace;
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [activeRightTab]);
+
+  // Scroll window to top when switching views or entering workspace
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as any });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [showLanding, activeView]);
+
   // Sync theme class to document body
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
   }, [darkMode]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--bg-gradient-1)] via-[var(--bg-gradient-2)] to-[var(--bg-gradient-3)] text-[var(--text-color)] relative flex flex-col transition-all duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--bg-gradient-1)] via-[var(--bg-gradient-2)] to-[var(--bg-gradient-3)] text-[var(--text-color)] relative flex flex-col transition-all duration-300 overflow-x-hidden">
       {/* Dynamic Background glows */}
       {darkMode && (
         <>
@@ -109,7 +323,7 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <div className="flex flex-grow relative z-10 pt-16 min-h-screen items-start flex-col">
+      <div className="w-full flex flex-grow relative z-10 pt-16 min-h-screen items-start flex-col">
         
         {/* TOP NAV BAR */}
         <header className="fixed top-0 left-0 right-0 h-16 border-b border-[var(--border-color)] bg-[var(--panel-bg)] backdrop-blur-md flex items-center justify-between px-6 z-40 transition-all">
@@ -149,8 +363,15 @@ export default function App() {
         </header>
 
         {/* HERO HEADER */}
-        <main className="w-full flex-grow p-6 pb-32 flex flex-col items-center">
-          <div className="max-w-6xl w-full">
+        {showLanding ? (
+          <GraphLandingPage
+            onSelectAlgorithm={handleSelectAlgorithm}
+            onSelectProgram={handleSelectProgram}
+            onOpenVisualizer={handleOpenVisualizer}
+          />
+        ) : (
+          <main className="w-full flex-grow p-6 pb-32 flex flex-col items-center">
+            <div className="max-w-6xl w-full">
             {/* VIEW TOGGLE & HEADER */}
             <div className="text-center py-12">
               <h1 className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-r from-[var(--text-color)] via-emerald-400 to-teal-400 bg-clip-text text-transparent leading-tight">
@@ -229,6 +450,22 @@ export default function App() {
                     {isDrawerOpen && (
                       <div className="fixed inset-0 bg-black/50 z-[-1] lg:hidden" onClick={() => setIsDrawerOpen(false)} />
                     )}
+
+                    {/* Back Button */}
+                    <div className="flex items-center shrink-0">
+                      <button
+                        onClick={() => {
+                          useGraphStore.getState().setPlaying(false);
+                          useIslandsStore.getState().setPlaying(false);
+                          useCycleStore.getState().setPlaying(false);
+                          useBipartiteStore.getState().setPlaying(false);
+                          setShowLanding(true);
+                        }}
+                        className="px-3 py-2 text-[10px] font-sans uppercase tracking-[0.06em] text-[var(--muted-color)] hover:text-blue-400 transition-colors bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                      >
+                        ← GRAPH HOME
+                      </button>
+                    </div>
                     
                     {/* Header with Workspace Mode Toggle */}
                     <div className="flex items-center justify-between w-full flex-shrink-0 gap-2">
@@ -357,7 +594,7 @@ export default function App() {
 
                 {/* Right Panel: Data View + Source Code + Trace Log */}
                 <div 
-                  className="flex-shrink-0 flex bg-[var(--panel-bg)] transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] min-h-[400px] lg:min-h-0 relative z-20 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
+                  className="flex-shrink-0 flex flex-col h-[450px] lg:h-full bg-[var(--panel-bg)] transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] min-h-[400px] lg:min-h-0 relative z-20 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
                   style={{ 
                     width: rightPanelOpen ? (isFullscreen ? rightPanelWidth : (window.innerWidth >= 1024 ? rightPanelWidth : '100%')) : '0px',
                     opacity: rightPanelOpen ? 1 : 0
@@ -473,33 +710,55 @@ export default function App() {
                       ) : (
                         <>
                           {activeRightTab === 'graph' && (
-                            <div className="h-full overflow-y-auto flex flex-col custom-scrollbar">
-                              <AdjacencyListPanel 
-                                collapsed={false} 
-                                onToggle={() => {}} 
-                              />
+                            <div 
+                              ref={graphScrollRef}
+                              onScroll={(e) => {
+                                scrollPositions.current.graph = e.currentTarget.scrollTop;
+                              }}
+                              className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar"
+                              style={{ height: 0 }}
+                            >
                               {activeWorkspaceMode === 'algorithms' && (
                                 <AuxiliaryDataPanel 
                                   collapsed={false} 
                                   onToggle={() => {}} 
                                 />
                               )}
+                              <AdjacencyListPanel 
+                                collapsed={false} 
+                                onToggle={() => {}} 
+                              />
                             </div>
                           )}
                           {activeRightTab === 'code' && (
-                            <div className="h-full overflow-y-auto flex flex-col custom-scrollbar">
+                            <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ height: 0 }}>
                               <CodePanel 
                                 collapsed={false} 
                                 onToggle={() => {}} 
+                                codeScrollRef={codeScrollRef}
+                                onScroll={(e) => {
+                                  scrollPositions.current.code = e.currentTarget.scrollTop;
+                                }}
                               />
                             </div>
                           )}
                           {activeRightTab === 'trace' && (
-                            <div className="h-full overflow-y-auto flex flex-col custom-scrollbar">
+                            <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" style={{ height: 0 }}>
                               <TraceLogPanel 
                                 collapsed={false} 
                                 onToggle={() => {}} 
+                                traceScrollRef={traceScrollRef}
+                                onScroll={handleTraceScroll}
                               />
+                              {showTracePill && (
+                                <button
+                                  onClick={handleScrollToActiveTrace}
+                                  className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#3b82f6]/90 border border-[#3b82f6] rounded-full px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-[0.06em] cursor-pointer z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:bg-[#3b82f6] transition-colors"
+                                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                                >
+                                  ↓ Jump to current step
+                                </button>
+                              )}
                             </div>
                           )}
                         </>
@@ -522,6 +781,7 @@ export default function App() {
             )}
           </div>
         </main>
+        )}
       </div>
     </div>
   );

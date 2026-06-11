@@ -49,6 +49,7 @@ export interface CycleStep {
   topoOrder?: string[];
   stuckNodes?: string[];
   queueSnapshot?: any[];
+  auxiliaryState?: any;
 }
 
 export interface CycleState {

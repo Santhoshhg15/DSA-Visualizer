@@ -51,12 +51,14 @@ export function generateKruskalSteps(nodes: Node[], edges: Edge[]): { steps: Ste
   const mstEdges: typeof allEdges = [];
   let mstCost = 0;
   let rejectedCount = 0;
+  const mstNodes = new Set<string>();
 
   const getAuxState = () => {
     return {
       sortedEdges: allEdges.map(e => ({ ...e })),
       unionFind: uf.getSets(),
-      mstCost
+      mstCost,
+      visitedOrder: Array.from(mstNodes)
     };
   };
 
@@ -100,6 +102,8 @@ export function generateKruskalSteps(nodes: Node[], edges: Edge[]): { steps: Ste
       mstEdges.push(edge);
       mstCost += edge.weight;
       uf.union(edge.src, edge.dest);
+      mstNodes.add(edge.src);
+      mstNodes.add(edge.dest);
       currentMstEdgeIds.push(edge.id);
       
       addStep(`No cycle! Adding edge to MST and merging sets. New MST Cost: ${mstCost}`, 10, [edge.src, edge.dest], currentMstEdgeIds);

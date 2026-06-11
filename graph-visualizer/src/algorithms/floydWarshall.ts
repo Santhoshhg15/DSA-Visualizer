@@ -28,11 +28,13 @@ export function generateFloydWarshallSteps(nodes: Node[], edges: Edge[], directe
   });
 
   let totalUpdates = 0;
+  let currentK = -1;
 
   const getAuxState = () => {
     // deep copy matrix
     const matrix = dist.map(row => [...row]);
-    return { matrix, nodes: indexNode };
+    const visited = currentK >= 0 ? indexNode.slice(0, currentK + 1) : [];
+    return { matrix, nodes: indexNode, visitedOrder: visited };
   };
 
   const addStep = (desc: string, codeLine: number, hNodes: string[] = []) => {
@@ -51,6 +53,7 @@ export function generateFloydWarshallSteps(nodes: Node[], edges: Edge[], directe
   addStep(`Initializing Floyd-Warshall distance matrix with edge weights.`, 5);
 
   for (let k = 0; k < V; k++) {
+    currentK = k;
     addStep(`Considering node ${indexNode[k]} as an intermediate point.`, 6, [indexNode[k]]);
     
     for (let i = 0; i < V; i++) {

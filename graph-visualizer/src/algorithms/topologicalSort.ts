@@ -34,7 +34,8 @@ export function generateTopologicalSortSteps(nodes: Node[], edges: Edge[]): { st
       description: desc,
       codeLineActive: codeLine,
       adjacencySnapshot: {},
-      auxiliaryState: getAuxState()
+      auxiliaryState: getAuxState(),
+      queueSnapshot: [...queue]
     });
   };
 

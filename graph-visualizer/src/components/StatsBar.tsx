@@ -39,28 +39,28 @@ export function StatsBar() {
   }
 
   return (
-    <div className="w-full h-[40px] flex-shrink-0 flex border-y border-[var(--border-color)] bg-[var(--input-bg)] select-none">
-      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--muted-color)] mb-[2px] leading-none">Time</span>
-        <span key={`time-${stats?.timeComplexity}`} className="text-[14px] font-mono text-orange-400 font-bold leading-none animate-pulse-accent">{stats ? stats.timeComplexity : '—'}</span>
+    <div className="w-full h-[40px] flex-shrink-0 flex border-y border-[var(--border-color)] bg-[var(--input-bg)] select-none font-sans">
+      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)] bg-[var(--panel-bg)]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-color)] mb-[2px] leading-none">Time</span>
+        <span key={`time-${stats?.timeComplexity}`} className="text-[11px] font-mono text-orange-400 font-medium leading-none animate-pulse-accent">{stats ? stats.timeComplexity : '—'}</span>
       </div>
       
-      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--muted-color)] mb-[2px] leading-none">Space</span>
-        <span key={`space-${stats?.spaceComplexity}`} className="text-[14px] font-mono text-purple-400 font-bold leading-none animate-pulse-accent">{stats ? stats.spaceComplexity : '—'}</span>
+      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)] bg-[var(--panel-bg)]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-color)] mb-[2px] leading-none">Space</span>
+        <span key={`space-${stats?.spaceComplexity}`} className="text-[11px] font-mono text-purple-400 font-medium leading-none animate-pulse-accent">{stats ? stats.spaceComplexity : '—'}</span>
       </div>
       
-      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--muted-color)] mb-[2px] leading-none">Steps</span>
-        <span key={`step-${cur}`} className="text-[14px] font-mono text-[var(--text-color)] font-bold leading-none animate-pulse-accent">
+      <div className="flex-1 flex flex-col items-center justify-center border-r border-[var(--border-color)] bg-[var(--panel-bg)]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-color)] mb-[2px] leading-none">Steps</span>
+        <span key={`step-${cur}`} className="text-[13px] font-mono text-[var(--text-color)] font-medium leading-none animate-pulse-accent">
           {steps.length > 0 ? `${cur + 1} / ${steps.length}` : '— / —'}
         </span>
       </div>
       
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center bg-[var(--panel-bg)]">
         <div className="flex flex-col items-center justify-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--muted-color)] mb-[2px] leading-none">Status</span>
-          <span key={`status-${statusText}`} className={`text-[14px] font-bold leading-none ${statusColor} ${statusPulse ? 'animate-pulse' : 'animate-pulse-accent'}`}>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-color)] mb-[2px] leading-none">Status</span>
+          <span key={`status-${statusText}`} className={`text-[11px] font-semibold uppercase tracking-[0.06em] leading-none ${statusColor} ${statusPulse ? 'animate-pulse' : 'animate-pulse-accent'}`}>
             {statusText}
           </span>
         </div>

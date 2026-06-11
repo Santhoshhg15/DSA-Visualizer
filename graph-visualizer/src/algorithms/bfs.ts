@@ -35,7 +35,8 @@ export function generateBfsSteps(nodes: Node[], edges: Edge[], startNodeId: stri
       auxiliaryState: {
         collection: [...queue],
         visitedOrder: [...result]
-      }
+      },
+      queueSnapshot: [...queue]
     });
   };
 

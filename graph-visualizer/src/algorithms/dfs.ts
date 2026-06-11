@@ -35,7 +35,8 @@ export function generateDfsSteps(nodes: Node[], edges: Edge[], startNodeId: stri
       auxiliaryState: {
         collection: [...stack],
         visitedOrder: [...result]
-      }
+      },
+      queueSnapshot: [...stack]
     });
   };
 

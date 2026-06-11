@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -10,21 +10,38 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', sans-serif;
 
-  /* Theme variables - DARK (Default) */
-  --bg-gradient-1: #0c091d;
-  --bg-gradient-2: #070b19;
-  --bg-gradient-3: #05060f;
-  --panel-bg: rgba(19, 18, 38, 0.45);
-  --border-color: rgba(43, 41, 77, 0.6);
-  --border-hover: rgba(58, 56, 107, 0.85);
-  --text-color: #e6edf3;
-  --muted-color: #8b94b0;
-  --input-bg: rgba(22, 27, 48, 0.5);
+  /* Theme variables - DARK (Default Warm Charcoal Black) */
+  --bg-primary: #0D0D0F;
+  --bg-gradient-1: #0D0D0F;
+  --bg-gradient-2: #0D0D0F;
+  --bg-gradient-3: #0D0D0F;
+  --panel-bg: #131316;
+  --input-bg: #1C1C21;
+  --surface-elevated: #1F1F25;
+  --surface-overlay: #252530;
 
-  /* CharCell States - DARK */
-  --cell-default-bg: rgba(22, 27, 48, 0.3);
-  --cell-default-border: rgba(48, 54, 77, 0.6);
-  --cell-default-text: #8b94b0;
+  --border-color: #2A2A35;
+  --border-hover: #3A3A48;
+  --border-focus: #3b82f6;
+
+  --text-color: #F0F0F5;
+  --text-secondary: #B8B8C8;
+  --muted-color: #6B6B80;
+  --text-accent: #60a5fa;
+
+  --node-default-bg: #1C1C21;
+  --node-default-border: #3A3A48;
+  --node-default-text: #F0F0F5;
+  --link-default-color: #2A2A35;
+
+  --scrollbar-thumb: #2A2A35;
+  --scrollbar-thumb-hover: #3A3A48;
+  --scrollbar-track: transparent;
+
+  /* CharCell States - DARK (Graph algorithms) */
+  --cell-default-bg: #1C1C21;
+  --cell-default-border: #2A2A35;
+  --cell-default-text: #6B6B80;
   --cell-window-bg: rgba(29, 39, 63, 0.65);
   --cell-window-border: #388bfd;
   --cell-window-text: #ffffff;
@@ -45,73 +62,78 @@
   --cell-path-text: #e5d5ff;
 
   /* Controls Overlay Pill - DARK */
-  --pill-bg: rgba(19, 18, 38, 0.95);
-  --pill-btn-bg: #161b2d;
-  --pill-btn-border: #30364d;
-  --pill-btn-hover: #21263d;
-
-  /* Node & Link Defaults - DARK */
-  --node-default-bg: rgba(99, 102, 241, 0.06);
-  --node-default-border: rgba(99, 102, 241, 0.45);
-  --node-default-text: #a5b4fc;
-  --link-default-color: rgba(99, 102, 241, 0.25);
+  --pill-bg: #131316;
+  --pill-btn-bg: #1C1C21;
+  --pill-btn-border: #2A2A35;
+  --pill-btn-hover: #1F1F25;
 }
 
 body.light {
   /* Theme variables - LIGHT */
-  --bg-gradient-1: #eef2f7;
-  --bg-gradient-2: #f3f4f6;
-  --bg-gradient-3: #e5e7eb;
-  --panel-bg: rgba(255, 255, 255, 0.85);
-  --border-color: rgba(209, 213, 219, 0.8);
-  --border-hover: rgba(156, 163, 175, 0.85);
-  --text-color: #1f2937;
-  --muted-color: #555c6d;
-  --input-bg: rgba(255, 255, 255, 0.9);
-
-  /* CharCell States - LIGHT */
-  --cell-default-bg: rgba(243, 244, 246, 0.7);
-  --cell-default-border: rgba(209, 213, 219, 0.8);
-  --cell-default-text: #4b5563;
-  --cell-window-bg: rgba(219, 234, 254, 0.85);
-  --cell-window-border: #2563eb;
-  --cell-window-text: #1e3a8a;
-  --cell-active-bg: rgba(239, 246, 255, 0.9);
-  --cell-active-border: #3b82f6;
-  --cell-active-text: #1d4ed8;
-  --cell-match-bg: rgba(209, 250, 229, 0.95);
-  --cell-match-border: #10b981;
-  --cell-match-text: #065f46;
-  --cell-mismatch-bg: rgba(254, 226, 226, 0.95);
-  --cell-mismatch-border: #ef4444;
-  --cell-mismatch-text: #991b1b;
-  --cell-found-bg: rgba(254, 243, 199, 0.95);
-  --cell-found-border: #d97706;
-  --cell-found-text: #78350f;
-  --cell-path-bg: rgba(243, 232, 255, 0.95);
-  --cell-path-border: #8b5cf6;
-  --cell-path-text: #581c87;
+  --bg-primary: #F8F8FC;
+  --bg-gradient-1: #F8F8FC;
+  --bg-gradient-2: #F8F8FC;
+  --bg-gradient-3: #F8F8FC;
+  --panel-bg: #FFFFFF;
+  --input-bg: #F0F0F5;
+  --surface-elevated: #E8E8F0;
+  --surface-overlay: #F8F8FC;
+  --border-color: #E0E0EC;
+  --border-hover: #C8C8D8;
+  --text-color: #0D0D0F;
+  --text-secondary: #3A3A48;
+  --muted-color: #6B6B80;
+  --node-default-bg: #FFFFFF;
+  --node-default-border: #C8C8D8;
+  --link-default-color: #C8C8D8;
 
   /* Controls Overlay Pill - LIGHT */
-  --pill-bg: rgba(255, 255, 255, 0.95);
-  --pill-btn-bg: #f3f4f6;
-  --pill-btn-border: #d1d5db;
-  --pill-btn-hover: #e5e7eb;
-
-  /* Node & Link Defaults - LIGHT */
-  --node-default-bg: rgba(99, 102, 241, 0.03);
-  --node-default-border: rgba(99, 102, 241, 0.3);
-  --node-default-text: #4f46e5;
-  --link-default-color: rgba(99, 102, 241, 0.18);
+  --pill-bg: #FFFFFF;
+  --pill-btn-bg: #F0F0F5;
+  --pill-btn-border: #E0E0EC;
+  --pill-btn-hover: #E8E8F0;
 }
 
 * { box-sizing: border-box; }
-body { 
-  font-family: var(--font-sans); 
-  background-color: var(--bg-gradient-2); 
-  color: var(--text-color); 
-  margin: 0; 
+body {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background: var(--bg-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s, color 0.3s;
+}
+
+.font-mono, code, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: #F0F0F5;
+}
+
+/* Custom utility typography classes */
+.section-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-color);
+}
+
+.mono-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+.mono-bold {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
 }
 
 /* Custom thin scrollbar for side panels */
@@ -120,16 +142,14 @@ body {
   height: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--muted-color);
-  opacity: 0.4;
+  background: var(--scrollbar-thumb);
   border-radius: 2px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-color);
-  opacity: 0.7;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Sleek modern custom scrollbars globally */
@@ -138,16 +158,14 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-color);
-  opacity: 0.4;
+  background: var(--scrollbar-thumb);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-color);
-  opacity: 0.7;
+  background: var(--scrollbar-thumb-hover);
 }
 .scrollbar-thin {
   scrollbar-width: thin;
@@ -165,8 +183,17 @@ body {
 
 /* Premium Visual workbench canvas grid background */
 .canvas-grid {
-  background-image: radial-gradient(var(--border-color) 1.2px, transparent 1.2px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+#dot-grid circle {
+  fill: #F0F0F5 !important;
+  opacity: 0.04 !important;
+}
+body.light #dot-grid circle {
+  fill: #0D0D0F !important;
+  opacity: 0.06 !important;
 }
 
 .bst-node-group {

@@ -14,9 +14,10 @@ export interface Edge {
 
 export interface Step {
   id: number;
-  type: 'highlight-node' | 'highlight-edge' | 'add-node' | 'add-edge' | 'remove-node' | 'remove-edge' | 'update-adjacency' | 'found' | 'not-found' | 'complete';
+  type: 'highlight-node' | 'highlight-edge' | 'add-node' | 'add-edge' | 'remove-node' | 'remove-edge' | 'update-adjacency' | 'found' | 'not-found' | 'complete' | 'set-remove-old' | 'set-add-updated' | 'set-first';
   nodeId?: string;
   edgeId?: string;
+  currentNode?: string;
   highlightNodes: string[];
   highlightEdges: string[];
   pathEdges?: string[];
@@ -27,6 +28,7 @@ export interface Step {
   nodesSnapshot?: Node[];
   edgesSnapshot?: Edge[];
   auxiliaryState?: any;
+  queueSnapshot?: any[];
 }
 
 export interface GraphState {
@@ -45,6 +47,7 @@ export interface GraphState {
 
   // Algorithm / Playback
   selectedAlgorithm: string | null;
+  dijkstraImpl: 'pq' | 'set';
   steps: Step[];
   cur: number; // mapped to currentStep to match Controls component
   playing: boolean;
@@ -69,6 +72,7 @@ export interface GraphState {
   setIsEditingGraph: (val: boolean) => void;
   resetGraph: () => void;
   setSelectedAlgorithm: (algo: string) => void;
+  setDijkstraImpl: (impl: 'pq' | 'set') => void;
   
   // Playback Controls
   // Playback Controls
@@ -107,6 +111,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   isEditingGraph: false,
 
   selectedAlgorithm: null,
+  dijkstraImpl: 'pq',
   steps: [],
   cur: 0,
   playing: false,
@@ -127,6 +132,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     },
     nodePositions: data.positions,
     selectedAlgorithm: null,
+    dijkstraImpl: 'pq',
     steps: [],
     cur: 0,
     playing: false,
@@ -159,6 +165,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   }),
 
   setSelectedAlgorithm: (algo) => set({ selectedAlgorithm: algo }),
+  setDijkstraImpl: (impl) => set({ dijkstraImpl: impl }),
   
   setSteps: (steps) => set({ steps, cur: 0, playing: true, speed: 1 }),
   setCur: (step) => set({ cur: step }),
