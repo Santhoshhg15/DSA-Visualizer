@@ -2,9 +2,13 @@ import { useGraphStore } from '../stores/useGraphStore';
 import { useIslandsStore } from '../stores/useIslandsStore';
 import { useCycleStore } from '../stores/useCycleStore';
 import { useBipartiteStore } from '../stores/useBipartiteStore';
+import { useSortingStore } from '../sorting/stores/useSortingStore';
 import { useEffect, useRef } from 'react';
 
 export function Controls({ activeWorkspaceMode, selectedProgram }: { activeWorkspaceMode?: string; selectedProgram?: string }) {
+  if (activeWorkspaceMode === 'sorting') {
+    return <SortingControlsInner />;
+  }
   if (activeWorkspaceMode === 'programs') {
     if (selectedProgram === 'cycle') {
       return <CycleControlsInner />;
@@ -36,6 +40,11 @@ function BipartiteControlsInner() {
   return <BaseControls steps={steps} cur={cur} playing={playing} speed={speed} setCur={setCur} setPlaying={setPlaying} setSpeed={setSpeed} storeName="bipartite" />;
 }
 
+function SortingControlsInner() {
+  const { steps, cur, playing, speed, setCur, setPlaying, setSpeed } = useSortingStore();
+  return <BaseControls steps={steps} cur={cur} playing={playing} speed={speed} setCur={setCur} setPlaying={setPlaying} setSpeed={setSpeed} storeName="sorting" />;
+}
+
 function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed, storeName }: any) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -55,6 +64,8 @@ function BaseControls({ steps, cur, playing, speed, setCur, setPlaying, setSpeed
           state = useCycleStore.getState();
         } else if (storeName === 'bipartite') {
           state = useBipartiteStore.getState();
+        } else if (storeName === 'sorting') {
+          state = useSortingStore.getState();
         } else {
           state = useIslandsStore.getState();
         }

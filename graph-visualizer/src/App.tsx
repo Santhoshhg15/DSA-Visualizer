@@ -29,11 +29,22 @@ import { BipartiteRightPanel } from './programs/bipartite/BipartiteRightPanel';
 import { BipartiteBottomPanel } from './programs/bipartite/BipartiteBottomPanel';
 import { useBipartiteStore } from './stores/useBipartiteStore';
 import { GraphLandingPage } from './pages/GraphLandingPage';
+import { SortingLandingPage } from './pages/SortingLandingPage';
+import { SortingCanvas } from './sorting/components/SortingCanvas';
+import { SortingLeftPanel } from './sorting/components/SortingLeftPanel';
+import { SortingRightPanel } from './sorting/components/SortingRightPanel';
+import { useSortingStore } from './sorting/stores/useSortingStore';
+import { generateBubbleSortSteps } from './sorting/algorithms/bubbleSort';
+import { generateSelectionSortSteps } from './sorting/algorithms/selectionSort';
+import { generateInsertionSortSteps } from './sorting/algorithms/insertionSort';
+import { generateMergeSortSteps } from './sorting/algorithms/mergeSort';
+import { generateQuickSortSteps } from './sorting/algorithms/quickSort';
 
 
 export default function App() {
   const { darkMode, setDarkMode } = useStore();
   const { playing, isEditingGraph, setSteps, setStats, steps, cur } = useGraphStore();
+  const [currentSection, setCurrentSection] = useState<'hub' | 'graph' | 'sorting'>('hub');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeView, setActiveView] = useState<'education' | 'workspace'>('education');
   const [activeWorkspaceMode, setActiveWorkspaceMode] = useState<'operations' | 'algorithms' | 'programs'>('operations');
@@ -98,20 +109,84 @@ export default function App() {
   };
 
   const handleOpenVisualizer = () => {
+    window.history.pushState(null, '', '/graph/visualizer');
+    window.dispatchEvent(new Event('popstate'));
     setActiveView('workspace');
     setShowLanding(false);
   };
+
+  const handleSelectSortingAlgorithm = (algoId: string) => {
+    useGraphStore.getState().setPlaying(false);
+    useSortingStore.getState().setPlaying(false);
+
+    window.history.pushState(null, '', '/sorting/visualizer');
+    window.dispatchEvent(new Event('popstate'));
+
+    useSortingStore.getState().setSelectedAlgorithm(algoId);
+
+    const array = useSortingStore.getState().array;
+    let steps: any[] = [];
+    if (algoId === 'bubble') steps = generateBubbleSortSteps(array);
+    else if (algoId === 'selection') steps = generateSelectionSortSteps(array);
+    else if (algoId === 'insertion') steps = generateInsertionSortSteps(array);
+    else if (algoId === 'merge') steps = generateMergeSortSteps(array);
+    else if (algoId === 'quick') steps = generateQuickSortSteps(array);
+    
+    useSortingStore.getState().setSteps(steps);
+    useSortingStore.getState().setCur(0);
+
+    setActiveView('workspace');
+    setShowLanding(false);
+  };
+
+  const handleOpenSortingVisualizer = () => {
+    window.history.pushState(null, '', '/sorting/visualizer');
+    window.dispatchEvent(new Event('popstate'));
+    setActiveView('workspace');
+    setShowLanding(false);
+  };
+
+  // Location listener for routing
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/sorting')) {
+        setCurrentSection('sorting');
+        if (path.includes('/visualizer')) {
+          setShowLanding(false);
+          setActiveView('workspace');
+        } else {
+          setShowLanding(true);
+        }
+      } else if (path.startsWith('/graph')) {
+        setCurrentSection('graph');
+        if (path.includes('/visualizer')) {
+          setShowLanding(false);
+          setActiveView('workspace');
+        } else {
+          setShowLanding(true);
+        }
+      } else {
+        setCurrentSection('hub');
+        setShowLanding(true);
+      }
+    };
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
 
   // Auto-switch right tab to TRACE when algorithm plays
   const islandsPlaying = useIslandsStore(state => state.playing);
   const cyclePlaying = useCycleStore(state => state.playing);
   const bipartitePlaying = useBipartiteStore(state => state.playing);
+  const sortingPlaying = useSortingStore(state => state.playing);
   
   useEffect(() => {
-    if (playing || islandsPlaying || cyclePlaying || bipartitePlaying) {
+    if (playing || islandsPlaying || cyclePlaying || bipartitePlaying || sortingPlaying) {
       setActiveRightTab('trace');
     }
-  }, [playing, islandsPlaying, cyclePlaying, bipartitePlaying]);
+  }, [playing, islandsPlaying, cyclePlaying, bipartitePlaying, sortingPlaying]);
   
   // Right Panel State
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
@@ -188,6 +263,16 @@ export default function App() {
     }
   };
 
+  const sortingCur = useSortingStore(state => state.cur);
+  const sortingSteps = useSortingStore(state => state.steps);
+  const sortingStepsLength = sortingSteps.length;
+  const sortingFirstStepId = sortingStepsLength > 0 ? sortingSteps[0].id : null;
+  const sortingCodeLineActive = sortingSteps[sortingCur]?.codeLineActive || 0;
+
+  const traceCurIndex = currentSection === 'sorting' ? sortingCur : cur;
+  const activeFirstStepId = currentSection === 'sorting' ? sortingFirstStepId : (steps.length > 0 ? steps[0].id : null);
+  const activeCodeLine = currentSection === 'sorting' ? sortingCodeLineActive : (steps[cur]?.codeLineActive || 0);
+
   // Auto-scroll trace when step changes during playback
   useEffect(() => {
     if (!traceScrollRef.current) return;
@@ -212,18 +297,16 @@ export default function App() {
         });
       }
     }
-  }, [cur]);
+  }, [traceCurIndex]);
 
   // Reset userScrolledUp and scroll to top when new algorithm starts
-  const stepsLength = steps.length;
-  const firstStepId = stepsLength > 0 ? steps[0].id : null;
   useEffect(() => {
     userScrolledUp.current = false;
     setShowTracePill(false);
     if (traceScrollRef.current) {
       traceScrollRef.current.scrollTop = 0;
     }
-  }, [firstStepId]);
+  }, [activeFirstStepId]);
 
   // Reset userScrolledUp when user switches to TRACE tab
   useEffect(() => {
@@ -232,8 +315,6 @@ export default function App() {
       setShowTracePill(false);
     }
   }, [activeRightTab]);
-
-  const codeLineActive = steps[cur]?.codeLineActive || 0;
 
   // Smooth scroll active line during normal playback
   useEffect(() => {
@@ -248,7 +329,7 @@ export default function App() {
         });
       }
     }
-  }, [codeLineActive]);
+  }, [activeCodeLine]);
 
   // Tab Switch Scroll Memory and Restoration
   useEffect(() => {
@@ -322,466 +403,592 @@ export default function App() {
         </>
       )}
 
-      {/* Main Container */}
-      <div className="w-full flex flex-grow relative z-10 pt-16 min-h-screen items-start flex-col">
-        
-        {/* TOP NAV BAR */}
-        <header className="fixed top-0 left-0 right-0 h-16 border-b border-[var(--border-color)] bg-[var(--panel-bg)] backdrop-blur-md flex items-center justify-between px-6 z-40 transition-all">
-          <div className="flex items-center gap-4">
-            {activeView === 'workspace' && (
-              <button 
-                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                className="lg:hidden p-2 text-[var(--muted-color)] hover:text-[var(--text-color)] transition-colors"
-                title="Toggle Panels"
+      {currentSection === 'hub' ? (
+        <MainHubPage onSelectModule={(mod) => {
+          window.history.pushState(null, '', mod === 'sorting' ? '/sorting' : '/graph');
+          window.dispatchEvent(new Event('popstate'));
+        }} />
+      ) : (
+        /* Main Container */
+        <div className="w-full flex flex-grow relative z-10 pt-16 min-h-screen items-start flex-col">
+          
+          {/* TOP NAV BAR */}
+          <header className="fixed top-0 left-0 right-0 h-16 border-b border-[var(--border-color)] bg-[var(--panel-bg)] backdrop-blur-md flex items-center justify-between px-6 z-40 transition-all">
+            <div className="flex items-center gap-4">
+              {activeView === 'workspace' && (
+                <button 
+                  onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                  className="lg:hidden p-2 text-[var(--muted-color)] hover:text-[var(--text-color)] transition-colors"
+                  title="Toggle Panels"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isDrawerOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                  </svg>
+                </button>
+              )}
+              <span className="text-[18px] sm:text-[22px] font-bold bg-gradient-to-r from-[var(--text-color)] to-[var(--muted-color)] bg-clip-text text-transparent select-none">
+                {currentSection === 'sorting' ? 'Sorting' : 'Graph'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 ml-auto">
+              {/* Theme switcher */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="px-3 py-1.5 rounded-lg border text-xs font-semibold bg-[var(--pill-btn-bg)] border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--pill-btn-hover)] transition-all hover:scale-105 active:scale-95"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isDrawerOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                </svg>
+                {darkMode ? '☀️ Light' : '🌙 Dark'}
               </button>
-            )}
-            <span className="text-[22px] font-bold bg-gradient-to-r from-[var(--text-color)] to-[var(--muted-color)] bg-clip-text text-transparent">
-              Graph Visualizer
+              
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  useGraphStore.getState().setPlaying(false);
+                  useSortingStore.getState().setPlaying(false);
+                  window.history.pushState(null, '', '/');
+                  window.dispatchEvent(new Event('popstate'));
+                }}
+                className="text-xs font-semibold text-[var(--muted-color)] hover:text-[#10b981] bg-[var(--pill-btn-bg)] border border-[var(--border-color)] px-4 py-2 rounded-xl transition-all hover:scale-105 flex items-center gap-1.5"
+              >
+                ← Portal
+              </a>
+            </div>
+          </header>
+
+          {/* HERO HEADER */}
+          {showLanding ? (
+            currentSection === 'sorting' ? (
+              <SortingLandingPage
+                onSelectAlgorithm={handleSelectSortingAlgorithm}
+                onOpenVisualizer={handleOpenSortingVisualizer}
+              />
+            ) : (
+              <GraphLandingPage
+                onSelectAlgorithm={handleSelectAlgorithm}
+                onSelectProgram={handleSelectProgram}
+                onOpenVisualizer={handleOpenVisualizer}
+              />
+            )
+          ) : (
+            <main className="w-full flex-grow p-6 pb-32 flex flex-col items-center">
+              <div className="max-w-6xl w-full">
+              {/* VIEW TOGGLE & HEADER */}
+              <div className="text-center py-12">
+                <h1 className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-r from-[var(--text-color)] via-emerald-400 to-teal-400 bg-clip-text text-transparent leading-tight">
+                  {currentSection === 'sorting' ? 'Sorting Visualizer' : 'Graph Visualizer'}
+                </h1>
+                <p className="text-[var(--muted-color)] text-lg md:text-xl font-medium max-w-2xl mx-auto mb-8">
+                  {currentSection === 'sorting' ? 'Visualize and trace sorting execution steps' : 'Learn, Build, and Explore Graph Algorithms'}
+                </p>
+                
+                {currentSection !== 'sorting' && (
+                  <div className="inline-flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full p-1 shadow-sm">
+                    <button
+                      onClick={() => setActiveView('education')}
+                      className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+                        activeView === 'education'
+                          ? 'bg-emerald-500/20 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
+                          : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                      }`}
+                    >
+                      📖 Education
+                    </button>
+                    <button
+                      onClick={() => setActiveView('workspace')}
+                      className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+                        activeView === 'workspace'
+                          ? 'bg-blue-500/20 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]'
+                          : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                      }`}
+                    >
+                      🛠️ Interactive Workspace
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* PHASE 1: EDUCATION PANEL */}
+              {activeView === 'education' && currentSection !== 'sorting' && (
+                <div className="animate-fadeInUp">
+                  <EducationPanel />
+                </div>
+              )}
+
+              {/* INTERACTIVE WORKSPACE (Phase 2 & 3 & 4 & 5) */}
+              {(activeView === 'workspace' || currentSection === 'sorting') && (
+                <div 
+                  id="interactive-workspace"
+                  className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col lg:flex-row bg-[var(--bg-gradient-1)] shadow-2xl animate-fadeInUp ${
+                    isFullscreen 
+                      ? 'fixed inset-0 z-50 w-full h-screen rounded-none m-0' 
+                      : 'w-full max-w-7xl mx-auto border border-[var(--border-color)] rounded-2xl h-auto lg:h-[750px] relative'
+                  }`}
+                >
+                  {/* Left Panel: Drawer on Mobile, Fixed on Desktop */}
+                  <div 
+                    className={`
+                      ${isDrawerOpen ? 'fixed inset-y-0 left-0 z-40 translate-x-0 w-[280px] shadow-2xl' : 'fixed inset-y-0 left-0 z-40 -translate-x-full w-[280px]'}
+                      lg:relative lg:translate-x-0 
+                      flex-shrink-0 flex flex-col border-r border-[var(--border-color)] bg-[var(--panel-bg)] 
+                      transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      min-h-screen lg:min-h-0 pt-20 lg:pt-5 gap-4 overflow-hidden
+                    `}
+                    style={{ 
+                      width: leftPanelOpen ? (isFullscreen ? '20rem' : '320px') : '0px',
+                      opacity: leftPanelOpen ? 1 : 0,
+                      paddingLeft: leftPanelOpen ? '1rem' : '0px',
+                      paddingRight: leftPanelOpen ? '1rem' : '0px',
+                      paddingBottom: leftPanelOpen ? '1.5rem' : '0px'
+                    }}
+                    onTransitionEnd={() => {
+                      if (window.dispatchEvent) {
+                        window.dispatchEvent(new Event('resize'));
+                      }
+                    }}
+                  >
+
+                    {currentSection === 'sorting' ? (
+                      <div className="w-full h-full flex flex-col gap-4 overflow-y-auto no-scrollbar relative">
+                        {/* Mobile Overlay */}
+                        {isDrawerOpen && (
+                          <div className="fixed inset-0 bg-black/50 z-[-1] lg:hidden" onClick={() => setIsDrawerOpen(false)} />
+                        )}
+                        
+                        {/* Collapse Button inside the header on desktop / drawer */}
+                        <div className="flex justify-end pr-1 pt-1 shrink-0">
+                          <button 
+                            onClick={() => setLeftPanelOpen(false)} 
+                            className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:border-[var(--text-color)]/50 transition-[color,border-color] duration-150"
+                            title="Collapse panel"
+                          >
+                            <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                        </div>
+
+                        <SortingLeftPanel />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex flex-col gap-4 overflow-y-auto no-scrollbar relative">
+                        {/* Mobile Overlay */}
+                        {isDrawerOpen && (
+                          <div className="fixed inset-0 bg-black/50 z-[-1] lg:hidden" onClick={() => setIsDrawerOpen(false)} />
+                        )}
+
+                        {/* Back Button */}
+                        <div className="flex items-center shrink-0">
+                          <button
+                            onClick={() => {
+                              useGraphStore.getState().setPlaying(false);
+                              useIslandsStore.getState().setPlaying(false);
+                              useCycleStore.getState().setPlaying(false);
+                              useBipartiteStore.getState().setPlaying(false);
+                              setShowLanding(true);
+                            }}
+                            className="px-3 py-2 text-[10px] font-sans uppercase tracking-[0.06em] text-[var(--muted-color)] hover:text-blue-400 transition-colors bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                          >
+                            ← GRAPH HOME
+                          </button>
+                        </div>
+                        
+                        {/* Header with Workspace Mode Toggle */}
+                        <div className="flex items-center justify-between w-full flex-shrink-0 gap-2">
+                          {!isEditingGraph ? (
+                            <div className="flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[8px] p-1 relative flex-grow">
+                              {/* Sliding active background */}
+                              <div className={`absolute top-1 bottom-1 w-[calc(33.33%-4px)] rounded-[6px] transition-all duration-300 ease-out shadow-sm ${
+                                activeWorkspaceMode === 'operations' 
+                                  ? 'left-1 bg-emerald-500' 
+                                  : activeWorkspaceMode === 'algorithms'
+                                    ? 'left-[calc(33.33%+2px)] bg-blue-500'
+                                    : 'left-[calc(66.66%+2px)] bg-purple-500'
+                              }`} />
+                              <button 
+                                onClick={() => setActiveWorkspaceMode('operations')}
+                                className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
+                                  activeWorkspaceMode === 'operations' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                                }`}
+                              >
+                                Operations
+                              </button>
+                              <button 
+                                onClick={() => setActiveWorkspaceMode('algorithms')}
+                                className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
+                                  activeWorkspaceMode === 'algorithms' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                                }`}
+                              >
+                                Algorithms
+                              </button>
+                              <button 
+                                onClick={() => setActiveWorkspaceMode('programs')}
+                                className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
+                                  activeWorkspaceMode === 'programs' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                                }`}
+                              >
+                                Programs
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex-grow"></div>
+                          )}
+                          
+                          {/* Collapse Button inside the header */}
+                          <button 
+                            onClick={() => setLeftPanelOpen(false)} 
+                            className="w-[28px] h-[28px] shrink-0 flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:border-[var(--text-color)]/50 transition-[color,border-color] duration-150"
+                            title="Collapse panel"
+                          >
+                            <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col gap-4 flex-grow relative">
+                          {isEditingGraph ? (
+                            <div className="animate-fadeInUp">
+                              <PresetSelector />
+                              <div className="h-px w-full bg-[var(--border-color)] opacity-50 my-4"></div>
+                              <ModifyPanel />
+                            </div>
+                          ) : activeWorkspaceMode === 'operations' ? (
+                            <div key="operations" className="flex flex-col gap-4 animate-slideInLeft">
+                              <PresetSelector />
+                              <div className="h-px w-full bg-[var(--border-color)] opacity-50"></div>
+                              <OperationsPanel />
+                            </div>
+                          ) : activeWorkspaceMode === 'algorithms' ? (
+                            <div key="algorithms" className="flex flex-col gap-4 animate-slideInRight">
+                              <AlgorithmsPanel />
+                            </div>
+                          ) : (
+                            <div key="programs" className="flex flex-col gap-4 animate-fadeInUp">
+                              {selectedProgram === 'cycle' ? (
+                                <CyclePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
+                              ) : selectedProgram === 'bipartite' ? (
+                                <BipartitePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
+                              ) : (
+                                <IslandsPanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Expand Left Tab Button (Visible when left panel is collapsed) */}
+                  {!leftPanelOpen && (
+                    <button 
+                      onClick={() => setLeftPanelOpen(true)}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-l-0 rounded-r-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-colors"
+                      title="Expand left panel"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  )}
+
+                  {/* Center Panel: Graph Canvas & Controls */}
+                  <div className="flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-[var(--border-color)] overflow-hidden bg-[var(--panel-bg)] min-h-[400px] lg:min-h-[300px] relative z-10">
+                    <div className="flex-1 relative min-h-[200px]">
+                      {currentSection === 'sorting' ? (
+                        <SortingCanvas />
+                      ) : activeWorkspaceMode === 'programs' ? (
+                        selectedProgram === 'cycle' ? (
+                          <CycleCanvas />
+                        ) : selectedProgram === 'bipartite' ? (
+                          <BipartiteCanvas />
+                        ) : (
+                          <IslandsCanvas />
+                        )
+                      ) : (
+                        <GraphCanvas />
+                      )}
+                    </div>
+                    {currentSection === 'sorting' ? null : (
+                      activeWorkspaceMode === 'programs' ? (
+                        selectedProgram === 'cycle' ? (
+                          <CycleBottomPanel />
+                        ) : selectedProgram === 'bipartite' ? (
+                          <BipartiteBottomPanel />
+                        ) : (
+                          <IslandsBottomPanel />
+                        )
+                      ) : (
+                        <AlgorithmOutput />
+                      )
+                    )}
+                    <div className="pb-4 shrink-0 bg-[var(--bg-gradient-1)] border-[var(--border-color)]">
+                      <Controls activeWorkspaceMode={currentSection === 'sorting' ? 'sorting' : activeWorkspaceMode} selectedProgram={selectedProgram} />
+                    </div>
+                  </div>
+
+                  {/* Right Panel: Data View + Source Code + Trace Log */}
+                  <div 
+                    className="flex-shrink-0 flex flex-col h-[450px] lg:h-full bg-[var(--panel-bg)] transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] min-h-[400px] lg:min-h-0 relative z-20 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
+                    style={{ 
+                      width: rightPanelOpen ? (isFullscreen ? rightPanelWidth : (window.innerWidth >= 1024 ? rightPanelWidth : '100%')) : '0px',
+                      opacity: rightPanelOpen ? 1 : 0
+                    }}
+                    onTransitionEnd={() => {
+                      if (window.dispatchEvent) {
+                        window.dispatchEvent(new Event('resize'));
+                      }
+                    }}
+                  >
+                    {/* Resizer Handle */}
+                    {rightPanelOpen && (
+                      <div 
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-transparent hover:bg-blue-500/50 cursor-col-resize z-50 transition-colors"
+                        onMouseDown={() => setIsResizingRight(true)}
+                      ></div>
+                    )}
+
+                    {currentSection === 'sorting' ? (
+                      <SortingRightPanel 
+                        isFullscreen={isFullscreen}
+                        setIsFullscreen={setIsFullscreen}
+                        setRightPanelOpen={setRightPanelOpen}
+                      />
+                    ) : (
+                      <div className="flex-1 flex flex-col h-full w-full min-w-[260px]">
+                        {/* ANALYSIS Header Bar */}
+                        <div className="h-[44px] border-b border-[var(--border-color)] bg-[var(--panel-bg)] px-3 flex justify-between items-center shrink-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-purple-500">🔬</span>
+                            <h2 className="text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--muted-color)]">Analysis</h2>
+                          </div>
+                          
+                          {/* Controls Row */}
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => {
+                                if (activeWorkspaceMode === 'programs') {
+                                  if (selectedProgram === 'cycle') {
+                                    useCycleStore.getState().setSteps([]);
+                                  } else if (selectedProgram === 'bipartite') {
+                                    useBipartiteStore.getState().setSteps([]);
+                                  } else {
+                                    useIslandsStore.getState().setSteps([]);
+                                  }
+                                } else {
+                                  setSteps([]);
+                                  setStats(null);
+                                }
+                              }}
+                              className="px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded-[6px] border border-[var(--border-color)] text-[var(--muted-color)] bg-transparent hover:border-red-400 hover:text-red-400 transition-[color,border-color] duration-150"
+                            >
+                              Clear
+                            </button>
+                            <button 
+                              onClick={() => setIsFullscreen(!isFullscreen)} 
+                              className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-blue-400 hover:border-blue-400/50 transition-[color,border-color] duration-150"
+                              title="Expand panel"
+                            >
+                              <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                            </button>
+                            <button 
+                              onClick={() => setRightPanelOpen(false)} 
+                              className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:border-[var(--text-color)]/50 transition-[color,border-color] duration-150"
+                              title="Collapse panel"
+                            >
+                              <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                          </div>
+                        </div>
+
+                         {/* Right Panel Tabs */}
+                        <div className="flex bg-[var(--input-bg)] border-b border-[var(--border-color)] p-2 flex-shrink-0 gap-1 relative">
+                          {/* Sliding active indicator */}
+                          <div 
+                            className={`absolute top-2 bottom-2 w-[calc(33.33%-6px)] rounded transition-all duration-300 ease-out shadow-sm ${
+                              activeRightTab === 'graph' 
+                                ? 'left-2 bg-purple-500/20 border border-purple-500/30' 
+                                : activeRightTab === 'code'
+                                  ? 'left-[calc(33.33%+1px)] bg-blue-500/20 border border-blue-500/30'
+                                  : 'left-[calc(66.66%+1px)] bg-orange-500/20 border border-orange-500/30'
+                            }`} 
+                          />
+                          <button 
+                            onClick={() => setActiveRightTab('graph')}
+                            className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
+                              activeRightTab === 'graph' ? 'text-purple-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                            }`}
+                          >
+                            Graph
+                          </button>
+                          <button 
+                            onClick={() => setActiveRightTab('code')}
+                            className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
+                              activeRightTab === 'code' ? 'text-blue-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                            }`}
+                          >
+                            Code
+                          </button>
+                          <button 
+                            onClick={() => setActiveRightTab('trace')}
+                            className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
+                              activeRightTab === 'trace' ? 'text-orange-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
+                            }`}
+                          >
+                            Trace
+                          </button>
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="flex-1 flex flex-col overflow-hidden relative">
+                          {activeWorkspaceMode === 'programs' ? (
+                            selectedProgram === 'cycle' ? (
+                              <CycleRightPanel activeRightTab={activeRightTab} />
+                            ) : selectedProgram === 'bipartite' ? (
+                              <BipartiteRightPanel activeRightTab={activeRightTab} />
+                            ) : (
+                              <IslandsRightPanel activeRightTab={activeRightTab} />
+                            )
+                          ) : (
+                            <>
+                              {activeRightTab === 'graph' && (
+                                <div 
+                                  ref={graphScrollRef}
+                                  onScroll={(e) => {
+                                    scrollPositions.current.graph = e.currentTarget.scrollTop;
+                                  }}
+                                  className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar"
+                                  style={{ height: 0 }}
+                                >
+                                  {activeWorkspaceMode === 'algorithms' && (
+                                    <AuxiliaryDataPanel 
+                                      collapsed={false} 
+                                      onToggle={() => {}} 
+                                    />
+                                  )}
+                                  <AdjacencyListPanel 
+                                    collapsed={false} 
+                                    onToggle={() => {}} 
+                                  />
+                                </div>
+                              )}
+                              {activeRightTab === 'code' && (
+                                <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ height: 0 }}>
+                                  <CodePanel 
+                                    collapsed={false} 
+                                    onToggle={() => {}} 
+                                    codeScrollRef={codeScrollRef}
+                                    onScroll={(e) => {
+                                      scrollPositions.current.code = e.currentTarget.scrollTop;
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              {activeRightTab === 'trace' && (
+                                <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" style={{ height: 0 }}>
+                                  <TraceLogPanel 
+                                    collapsed={false} 
+                                    onToggle={() => {}} 
+                                    traceScrollRef={traceScrollRef}
+                                    onScroll={handleTraceScroll}
+                                  />
+                                  {showTracePill && (
+                                    <button
+                                      onClick={handleScrollToActiveTrace}
+                                      className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#3b82f6]/90 border border-[#3b82f6] rounded-full px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-[0.06em] cursor-pointer z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:bg-[#3b82f6] transition-colors"
+                                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                                    >
+                                      ↓ Jump to current step
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Expand Right Tab Button (Visible when right panel is collapsed) */}
+                  {!rightPanelOpen && (
+                    <button 
+                      onClick={() => setRightPanelOpen(true)}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-r-0 rounded-l-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-50 flex items-center justify-center shadow-lg transition-colors"
+                      title="Expand right panel"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </main>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface MainHubPageProps {
+  onSelectModule: (module: 'graph' | 'sorting') => void;
+}
+
+function MainHubPage({ onSelectModule }: MainHubPageProps) {
+  return (
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-[var(--bg-gradient-1)] px-6 py-12 canvas-grid">
+      <div className="max-w-4xl w-full text-center space-y-8 animate-fadeInUp select-none">
+        {/* Badge */}
+        <div className="inline-flex bg-blue-500/10 border border-blue-500/30 rounded-full px-4 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#60a5fa]">
+          DSA Algorithms Visualizer
+        </div>
+        
+        {/* Hero title */}
+        <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[var(--text-color)] leading-tight">
+          Select <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent">Algorithm Module</span>
+        </h1>
+        
+        <p className="text-sm sm:text-base text-[var(--muted-color)] max-w-lg mx-auto leading-relaxed">
+          Interactive, step-by-step trace visualization engines for advanced data structures and algorithms.
+        </p>
+
+        {/* Tiles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 text-left">
+          {/* Tile 1: Graphs */}
+          <div 
+            onClick={() => onSelectModule('graph')}
+            className="group bg-[var(--panel-bg)] border border-[var(--border-color)] hover:border-emerald-500/50 rounded-2xl p-8 cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between min-h-[260px]"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-500 transition-all duration-300 group-hover:h-1.5" />
+            <div>
+              <div className="text-4xl mb-4 select-none">🕸️</div>
+              <h3 className="text-xl font-extrabold text-[var(--text-color)] group-hover:text-emerald-400 transition-colors mb-2">
+                Graph Algorithms
+              </h3>
+              <p className="text-xs text-[var(--muted-color)] leading-relaxed">
+                Explore traversals (BFS, DFS), shortest path finders (Dijkstra, Bellman-Ford, Floyd-Warshall), minimum spanning trees (Prim, Kruskal), and grid program checks.
+              </p>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mt-6">
+              Open Graph Module →
             </span>
           </div>
 
-          <div className="flex items-center gap-3 ml-auto">
-            {/* Theme switcher */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="px-3 py-1.5 rounded-lg border text-xs font-semibold bg-[var(--pill-btn-bg)] border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--pill-btn-hover)] transition-all hover:scale-105 active:scale-95"
-            >
-              {darkMode ? '☀️ Light' : '🌙 Dark'}
-            </button>
-            
-            <a
-              href="/"
-              className="text-xs font-semibold text-[var(--muted-color)] hover:text-[#10b981] bg-[var(--pill-btn-bg)] border border-[var(--border-color)] px-4 py-2 rounded-xl transition-all hover:scale-105 flex items-center gap-1.5"
-            >
-              ← Portal
-            </a>
-          </div>
-        </header>
-
-        {/* HERO HEADER */}
-        {showLanding ? (
-          <GraphLandingPage
-            onSelectAlgorithm={handleSelectAlgorithm}
-            onSelectProgram={handleSelectProgram}
-            onOpenVisualizer={handleOpenVisualizer}
-          />
-        ) : (
-          <main className="w-full flex-grow p-6 pb-32 flex flex-col items-center">
-            <div className="max-w-6xl w-full">
-            {/* VIEW TOGGLE & HEADER */}
-            <div className="text-center py-12">
-              <h1 className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-r from-[var(--text-color)] via-emerald-400 to-teal-400 bg-clip-text text-transparent leading-tight">
-                Graph Visualizer
-              </h1>
-              <p className="text-[var(--muted-color)] text-lg md:text-xl font-medium max-w-2xl mx-auto mb-8">
-                Learn, Build, and Explore Graph Algorithms
+          {/* Tile 2: Sorting */}
+          <div 
+            onClick={() => onSelectModule('sorting')}
+            className="group bg-[var(--panel-bg)] border border-[var(--border-color)] hover:border-blue-500/50 rounded-2xl p-8 cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between min-h-[260px]"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-blue-500 transition-all duration-300 group-hover:h-1.5" />
+            <div>
+              <div className="text-4xl mb-4 select-none">🔀</div>
+              <h3 className="text-xl font-extrabold text-[var(--text-color)] group-hover:text-blue-400 transition-colors mb-2">
+                Sorting Algorithms
+              </h3>
+              <p className="text-xs text-[var(--muted-color)] leading-relaxed">
+                Visualize O(n log n) and O(n²) comparison sorting steps (Bubble, Selection, Insertion, Merge, Quick Sort) with auxiliary data counters and stack trace logs.
               </p>
-              
-              <div className="inline-flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full p-1 shadow-sm">
-                <button
-                  onClick={() => setActiveView('education')}
-                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-                    activeView === 'education'
-                      ? 'bg-emerald-500/20 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-                      : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                  }`}
-                >
-                  📖 Education
-                </button>
-                <button
-                  onClick={() => setActiveView('workspace')}
-                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-                    activeView === 'workspace'
-                      ? 'bg-blue-500/20 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]'
-                      : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                  }`}
-                >
-                  🛠️ Interactive Workspace
-                </button>
-              </div>
             </div>
-
-            {/* PHASE 1: EDUCATION PANEL */}
-            {activeView === 'education' && (
-              <div className="animate-fadeInUp">
-                <EducationPanel />
-              </div>
-            )}
-
-            {/* INTERACTIVE WORKSPACE (Phase 2 & 3 & 4 & 5) */}
-            {activeView === 'workspace' && (
-              <div 
-                id="interactive-workspace"
-                className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col lg:flex-row bg-[var(--bg-gradient-1)] shadow-2xl animate-fadeInUp ${
-                  isFullscreen 
-                    ? 'fixed inset-0 z-50 w-full h-screen rounded-none m-0' 
-                    : 'w-full max-w-7xl mx-auto border border-[var(--border-color)] rounded-2xl h-auto lg:h-[750px] relative'
-                }`}
-              >
-                {/* Left Panel: Drawer on Mobile, Fixed on Desktop */}
-                <div 
-                  className={`
-                    ${isDrawerOpen ? 'fixed inset-y-0 left-0 z-40 translate-x-0 w-[280px] shadow-2xl' : 'fixed inset-y-0 left-0 z-40 -translate-x-full w-[280px]'}
-                    lg:relative lg:translate-x-0 
-                    flex-shrink-0 flex flex-col border-r border-[var(--border-color)] bg-[var(--panel-bg)] 
-                    transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                    min-h-screen lg:min-h-0 pt-20 lg:pt-5 gap-4 overflow-hidden
-                  `}
-                  style={{ 
-                    width: leftPanelOpen ? (isFullscreen ? '20rem' : '320px') : '0px',
-                    opacity: leftPanelOpen ? 1 : 0,
-                    paddingLeft: leftPanelOpen ? '1rem' : '0px',
-                    paddingRight: leftPanelOpen ? '1rem' : '0px',
-                    paddingBottom: leftPanelOpen ? '1.5rem' : '0px'
-                  }}
-                  onTransitionEnd={() => {
-                    if (window.dispatchEvent) {
-                      window.dispatchEvent(new Event('resize'));
-                    }
-                  }}
-                >
-
-                  <div className="w-full h-full flex flex-col gap-4 overflow-y-auto no-scrollbar relative">
-                    {/* Mobile Overlay */}
-                    {isDrawerOpen && (
-                      <div className="fixed inset-0 bg-black/50 z-[-1] lg:hidden" onClick={() => setIsDrawerOpen(false)} />
-                    )}
-
-                    {/* Back Button */}
-                    <div className="flex items-center shrink-0">
-                      <button
-                        onClick={() => {
-                          useGraphStore.getState().setPlaying(false);
-                          useIslandsStore.getState().setPlaying(false);
-                          useCycleStore.getState().setPlaying(false);
-                          useBipartiteStore.getState().setPlaying(false);
-                          setShowLanding(true);
-                        }}
-                        className="px-3 py-2 text-[10px] font-sans uppercase tracking-[0.06em] text-[var(--muted-color)] hover:text-blue-400 transition-colors bg-transparent border-0 cursor-pointer flex items-center gap-1"
-                      >
-                        ← GRAPH HOME
-                      </button>
-                    </div>
-                    
-                    {/* Header with Workspace Mode Toggle */}
-                    <div className="flex items-center justify-between w-full flex-shrink-0 gap-2">
-                      {!isEditingGraph ? (
-                        <div className="flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-[8px] p-1 relative flex-grow">
-                          {/* Sliding active background */}
-                          <div className={`absolute top-1 bottom-1 w-[calc(33.33%-4px)] rounded-[6px] transition-all duration-300 ease-out shadow-sm ${
-                            activeWorkspaceMode === 'operations' 
-                              ? 'left-1 bg-emerald-500' 
-                              : activeWorkspaceMode === 'algorithms'
-                                ? 'left-[calc(33.33%+2px)] bg-blue-500'
-                                : 'left-[calc(66.66%+2px)] bg-purple-500'
-                          }`} />
-                          <button 
-                            onClick={() => setActiveWorkspaceMode('operations')}
-                            className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
-                              activeWorkspaceMode === 'operations' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                            }`}
-                          >
-                            Operations
-                          </button>
-                          <button 
-                            onClick={() => setActiveWorkspaceMode('algorithms')}
-                            className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
-                              activeWorkspaceMode === 'algorithms' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                            }`}
-                          >
-                            Algorithms
-                          </button>
-                          <button 
-                            onClick={() => setActiveWorkspaceMode('programs')}
-                            className={`flex-1 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors duration-300 rounded-[6px] relative z-10 ${
-                              activeWorkspaceMode === 'programs' ? 'text-white' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                            }`}
-                          >
-                            Programs
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex-grow"></div>
-                      )}
-                      
-                      {/* Collapse Button inside the header */}
-                      <button 
-                        onClick={() => setLeftPanelOpen(false)} 
-                        className="w-[28px] h-[28px] shrink-0 flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:border-[var(--text-color)]/50 transition-[color,border-color] duration-150"
-                        title="Collapse panel"
-                      >
-                        <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg>
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col gap-4 flex-grow relative">
-                      {isEditingGraph ? (
-                        <div className="animate-fadeInUp">
-                          <PresetSelector />
-                          <div className="h-px w-full bg-[var(--border-color)] opacity-50 my-4"></div>
-                          <ModifyPanel />
-                        </div>
-                      ) : activeWorkspaceMode === 'operations' ? (
-                        <div key="operations" className="flex flex-col gap-4 animate-slideInLeft">
-                          <PresetSelector />
-                          <div className="h-px w-full bg-[var(--border-color)] opacity-50"></div>
-                          <OperationsPanel />
-                        </div>
-                      ) : activeWorkspaceMode === 'algorithms' ? (
-                        <div key="algorithms" className="flex flex-col gap-4 animate-slideInRight">
-                          <AlgorithmsPanel />
-                        </div>
-                      ) : (
-                        <div key="programs" className="flex flex-col gap-4 animate-fadeInUp">
-                          {selectedProgram === 'cycle' ? (
-                            <CyclePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
-                          ) : selectedProgram === 'bipartite' ? (
-                            <BipartitePanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
-                          ) : (
-                            <IslandsPanel selectedProgram={selectedProgram} setSelectedProgram={setSelectedProgram} />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Expand Left Tab Button (Visible when left panel is collapsed) */}
-                {!leftPanelOpen && (
-                  <button 
-                    onClick={() => setLeftPanelOpen(true)}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-l-0 rounded-r-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-colors"
-                    title="Expand left panel"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                  </button>
-                )}
-
-                {/* Center Panel: Graph Canvas & Controls */}
-                <div className="flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-[var(--border-color)] overflow-hidden bg-[var(--panel-bg)] min-h-[400px] lg:min-h-[300px] relative z-10">
-                  <div className="flex-1 relative min-h-[200px]">
-                    {activeWorkspaceMode === 'programs' ? (
-                      selectedProgram === 'cycle' ? (
-                        <CycleCanvas />
-                      ) : selectedProgram === 'bipartite' ? (
-                        <BipartiteCanvas />
-                      ) : (
-                        <IslandsCanvas />
-                      )
-                    ) : (
-                      <GraphCanvas />
-                    )}
-                  </div>
-                  {activeWorkspaceMode === 'programs' ? (
-                    selectedProgram === 'cycle' ? (
-                      <CycleBottomPanel />
-                    ) : selectedProgram === 'bipartite' ? (
-                      <BipartiteBottomPanel />
-                    ) : (
-                      <IslandsBottomPanel />
-                    )
-                  ) : (
-                    <AlgorithmOutput />
-                  )}
-                  <div className="pb-4 shrink-0 bg-[var(--bg-gradient-1)] border-[var(--border-color)]">
-                    <Controls activeWorkspaceMode={activeWorkspaceMode} selectedProgram={selectedProgram} />
-                  </div>
-                </div>
-
-                {/* Right Panel: Data View + Source Code + Trace Log */}
-                <div 
-                  className="flex-shrink-0 flex flex-col h-[450px] lg:h-full bg-[var(--panel-bg)] transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] min-h-[400px] lg:min-h-0 relative z-20 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
-                  style={{ 
-                    width: rightPanelOpen ? (isFullscreen ? rightPanelWidth : (window.innerWidth >= 1024 ? rightPanelWidth : '100%')) : '0px',
-                    opacity: rightPanelOpen ? 1 : 0
-                  }}
-                  onTransitionEnd={() => {
-                    if (window.dispatchEvent) {
-                      window.dispatchEvent(new Event('resize'));
-                    }
-                  }}
-                >
-                  {/* Resizer Handle */}
-                  {rightPanelOpen && (
-                    <div 
-                      className="absolute left-0 top-0 bottom-0 w-1 bg-transparent hover:bg-blue-500/50 cursor-col-resize z-50 transition-colors"
-                      onMouseDown={() => setIsResizingRight(true)}
-                    ></div>
-                  )}
-
-                  <div className="flex-1 flex flex-col h-full w-full min-w-[260px]">
-                    {/* ANALYSIS Header Bar */}
-                    <div className="h-[44px] border-b border-[var(--border-color)] bg-[var(--panel-bg)] px-3 flex justify-between items-center shrink-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-purple-500">🔬</span>
-                        <h2 className="text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--muted-color)]">Analysis</h2>
-                      </div>
-                      
-                      {/* Controls Row */}
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => {
-                            if (activeWorkspaceMode === 'programs') {
-                              if (selectedProgram === 'cycle') {
-                                useCycleStore.getState().setSteps([]);
-                              } else if (selectedProgram === 'bipartite') {
-                                useBipartiteStore.getState().setSteps([]);
-                              } else {
-                                useIslandsStore.getState().setSteps([]);
-                              }
-                            } else {
-                              setSteps([]);
-                              setStats(null);
-                            }
-                          }}
-                          className="px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded-[6px] border border-[var(--border-color)] text-[var(--muted-color)] bg-transparent hover:border-red-400 hover:text-red-400 transition-[color,border-color] duration-150"
-                        >
-                          Clear
-                        </button>
-                        <button 
-                          onClick={() => setIsFullscreen(!isFullscreen)} 
-                          className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-blue-400 hover:border-blue-400/50 transition-[color,border-color] duration-150"
-                          title="Expand panel"
-                        >
-                          <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                        </button>
-                        <button 
-                          onClick={() => setRightPanelOpen(false)} 
-                          className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:border-[var(--text-color)]/50 transition-[color,border-color] duration-150"
-                          title="Collapse panel"
-                        >
-                          <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
-                        </button>
-                      </div>
-                    </div>
-
-                     {/* Right Panel Tabs */}
-                    <div className="flex bg-[var(--input-bg)] border-b border-[var(--border-color)] p-2 flex-shrink-0 gap-1 relative">
-                      {/* Sliding active indicator */}
-                      <div 
-                        className={`absolute top-2 bottom-2 w-[calc(33.33%-6px)] rounded transition-all duration-300 ease-out shadow-sm ${
-                          activeRightTab === 'graph' 
-                            ? 'left-2 bg-purple-500/20 border border-purple-500/30' 
-                            : activeRightTab === 'code'
-                              ? 'left-[calc(33.33%+1px)] bg-blue-500/20 border border-blue-500/30'
-                              : 'left-[calc(66.66%+1px)] bg-orange-500/20 border border-orange-500/30'
-                        }`} 
-                      />
-                      <button 
-                        onClick={() => setActiveRightTab('graph')}
-                        className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
-                          activeRightTab === 'graph' ? 'text-purple-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                        }`}
-                      >
-                        Graph
-                      </button>
-                      <button 
-                        onClick={() => setActiveRightTab('code')}
-                        className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
-                          activeRightTab === 'code' ? 'text-blue-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                        }`}
-                      >
-                        Code
-                      </button>
-                      <button 
-                        onClick={() => setActiveRightTab('trace')}
-                        className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-[0.06em] rounded relative z-10 transition-colors duration-200 ${
-                          activeRightTab === 'trace' ? 'text-orange-400 font-extrabold' : 'text-[var(--muted-color)] hover:text-[var(--text-color)]'
-                        }`}
-                      >
-                        Trace
-                      </button>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="flex-1 flex flex-col overflow-hidden relative">
-                      {activeWorkspaceMode === 'programs' ? (
-                        selectedProgram === 'cycle' ? (
-                          <CycleRightPanel activeRightTab={activeRightTab} />
-                        ) : selectedProgram === 'bipartite' ? (
-                          <BipartiteRightPanel activeRightTab={activeRightTab} />
-                        ) : (
-                          <IslandsRightPanel activeRightTab={activeRightTab} />
-                        )
-                      ) : (
-                        <>
-                          {activeRightTab === 'graph' && (
-                            <div 
-                              ref={graphScrollRef}
-                              onScroll={(e) => {
-                                scrollPositions.current.graph = e.currentTarget.scrollTop;
-                              }}
-                              className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar"
-                              style={{ height: 0 }}
-                            >
-                              {activeWorkspaceMode === 'algorithms' && (
-                                <AuxiliaryDataPanel 
-                                  collapsed={false} 
-                                  onToggle={() => {}} 
-                                />
-                              )}
-                              <AdjacencyListPanel 
-                                collapsed={false} 
-                                onToggle={() => {}} 
-                              />
-                            </div>
-                          )}
-                          {activeRightTab === 'code' && (
-                            <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ height: 0 }}>
-                              <CodePanel 
-                                collapsed={false} 
-                                onToggle={() => {}} 
-                                codeScrollRef={codeScrollRef}
-                                onScroll={(e) => {
-                                  scrollPositions.current.code = e.currentTarget.scrollTop;
-                                }}
-                              />
-                            </div>
-                          )}
-                          {activeRightTab === 'trace' && (
-                            <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" style={{ height: 0 }}>
-                              <TraceLogPanel 
-                                collapsed={false} 
-                                onToggle={() => {}} 
-                                traceScrollRef={traceScrollRef}
-                                onScroll={handleTraceScroll}
-                              />
-                              {showTracePill && (
-                                <button
-                                  onClick={handleScrollToActiveTrace}
-                                  className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#3b82f6]/90 border border-[#3b82f6] rounded-full px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-[0.06em] cursor-pointer z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)] hover:bg-[#3b82f6] transition-colors"
-                                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                                >
-                                  ↓ Jump to current step
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Expand Right Tab Button (Visible when right panel is collapsed) */}
-                {!rightPanelOpen && (
-                  <button 
-                    onClick={() => setRightPanelOpen(true)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-r-0 rounded-l-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-50 flex items-center justify-center shadow-lg transition-colors"
-                    title="Expand right panel"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                  </button>
-                )}
-              </div>
-            )}
+            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1 mt-6">
+              Open Sorting Module →
+            </span>
           </div>
-        </main>
-        )}
+        </div>
       </div>
     </div>
   );

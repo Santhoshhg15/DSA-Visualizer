@@ -26,6 +26,9 @@
     --radius-lg: 24px;
     --radius: 12px;
 
+    --sorting-color: #3b82f6;
+    --sorting-dim: rgba(59, 130, 246, 0.12);
+
     /* Background Gradient Animation CSS vars */
     --color-bg-start: rgb(8, 6, 18);
     --color-bg-end: rgb(4, 4, 10);
@@ -280,6 +283,14 @@
   .portal-card.graph-card:hover {
     box-shadow: 0 20px 40px rgba(16, 185, 129, 0.05);
   }
+  .portal-card.sorting-card:hover {
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.05);
+  }
+  .sorting-icon {
+    background: var(--sorting-dim);
+    color: var(--sorting-color);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
 
   .card-header {
     display: flex;
@@ -407,6 +418,16 @@
   .btn-graph:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+  }
+
+  .btn-sorting {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: var(--bg);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+  }
+  .btn-sorting:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
   }
 
   footer {
@@ -562,19 +583,57 @@
       <ul class="feature-list">
         <li>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Rich Education Panel (7 Concepts)
+          BFS, DFS & Shortest Path Algorithms
         </li>
         <li>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Graph Canvas (Coming Soon)
+          Dijkstra, Bellman-Ford & Floyd-Warshall
         </li>
         <li>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Algorithms (Coming Soon)
+          Programs: Islands, Cycle Detection & Bipartite
         </li>
       </ul>
       <a href="/graph" class="btn-launch btn-graph">
         Launch Graph Visualizer
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Card 5: Sorting Algorithms -->
+    <div class="portal-card sorting-card">
+      <div class="card-header">
+        <div class="card-icon sorting-icon">🔀</div>
+        <h2>Sorting Algorithms</h2>
+      </div>
+      <p class="card-desc">
+        Visualize and trace comparison-based sorting algorithms step by step. Watch each comparison, swap, and partition happen in real time with full execution trace logs.
+      </p>
+      <ul class="feature-list">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Bubble, Selection & Insertion Sort
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Merge Sort & Quick Sort (Pivot Partition)
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Step-by-step Trace with Comparison Counter
+        </li>
+      </ul>
+      <a href="/sorting" class="btn-launch btn-sorting">
+        Launch Sorting Visualizer
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>

@@ -25,6 +25,9 @@ app.use('/tree-visualizer', express.static(path.join(__dirname, 'public', 'tree-
 // Serve Graph Visualizer static files at /graph prefix
 app.use('/graph', express.static(path.join(__dirname, 'public', 'graph')));
 
+// Serve Sorting Visualizer static files at /sorting prefix (built inside graph-visualizer)
+app.use('/sorting', express.static(path.join(__dirname, 'public', 'graph')));
+
 // Serve index at root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -53,6 +56,11 @@ app.get('/tree-visualizer/*any', (req, res) => {
 
 // Fallback for Graph Visualizer SPA router paths
 app.get('/graph/*any', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'graph', 'index.html'));
+});
+
+// Fallback for Sorting Visualizer SPA router paths
+app.get('/sorting*any', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'graph', 'index.html'));
 });
 
