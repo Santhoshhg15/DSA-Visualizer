@@ -3,37 +3,47 @@ const path = require('path');
 
 function copyDir(src, dest, name) {
   try {
-    // Remove destination if it exists
     if (fs.existsSync(dest)) {
       fs.rmSync(dest, { recursive: true, force: true });
     }
-
-    // Copy src to dest
     fs.cpSync(src, dest, { recursive: true });
-    console.log(`Successfully copied ${name} build files to ${dest}`);
+    console.log(`✓ Copied ${name} → ${dest}`);
   } catch (err) {
-    console.error(`Error during build copy for ${name}:`, err);
+    console.error(`✗ Error copying ${name}:`, err);
     process.exit(1);
   }
 }
 
-// Copy String Pattern Visualizer
+// Copy portal (static HTML)
 copyDir(
-  path.join(__dirname, 'string-pattern-visualizer', 'dist'),
-  path.join(__dirname, 'public', 'pattern'),
-  'string-pattern-visualizer'
+  path.join(__dirname, 'portal'),
+  path.join(__dirname, 'dist', 'portal'),
+  'portal'
 );
 
-// Copy Tree Visualizer
+// Copy built apps
 copyDir(
-  path.join(__dirname, 'tree-visualizer', 'dist'),
-  path.join(__dirname, 'public', 'tree-visualizer'),
+  path.join(__dirname, 'apps', 'pattern', 'dist'),
+  path.join(__dirname, 'dist', 'pattern'),
+  'pattern-visualizer'
+);
+
+copyDir(
+  path.join(__dirname, 'apps', 'tree', 'dist'),
+  path.join(__dirname, 'dist', 'tree'),
   'tree-visualizer'
 );
 
-// Copy Graph Visualizer
 copyDir(
-  path.join(__dirname, 'graph-visualizer', 'dist'),
-  path.join(__dirname, 'public', 'graph'),
+  path.join(__dirname, 'apps', 'graph', 'dist'),
+  path.join(__dirname, 'dist', 'graph'),
   'graph-visualizer'
 );
+
+copyDir(
+  path.join(__dirname, 'apps', 'sorting', 'dist'),
+  path.join(__dirname, 'dist', 'sorting'),
+  'sorting-visualizer'
+);
+
+console.log('\n✅ All builds copied to dist/');

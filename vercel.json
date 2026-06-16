@@ -1,8 +1,26 @@
 {
   "cleanUrls": true,
+  "outputDirectory": "dist/portal",
   "rewrites": [
-    { "source": "/stack", "destination": "/stack-visualizer" },
-    { "source": "/pattern", "destination": "/pattern/index.html" },
-    { "source": "/pattern/(.*)", "destination": "/pattern/index.html" }
+    {
+      "source": "/pattern/(.*)",
+      "destination": "/pattern/index.html"
+    },
+    {
+      "source": "/tree/(.*)",
+      "destination": "/tree/index.html"
+    },
+    {
+      "source": "/graph/(.*)",
+      "destination": "/graph/index.html"
+    },
+    {
+      "source": "/sorting/(.*)",
+      "destination": "/sorting/index.html"
+    },
+    {
+      "source": "/stack",
+      "destination": "/stack-visualizer.html"
+    }
   ]
 }

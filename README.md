@@ -1,110 +1,63 @@
-# Unified Algorithm Visualizer Portal
+# DSA Visualizer Suite
 
-Welcome to the **Unified Algorithm Visualizer Portal**—a premium, visually stunning, glassmorphic suite designed to animate complex computer science operations and algorithms in real time. 
+Interactive step-by-step visualization engine for Data Structures and Algorithms.
 
-The suite comprises two fully featured modules unified under a single animated portal landing page:
-1. **AI-Powered Stack Visualizer**: Translates and animates code traces dynamically using Gemini AI.
-2. **String & Pattern Visualizer Suite**: Renders real-time search match phases (Naive, KMP, Rabin-Karp) and a sandboxed Trie Prefix Tree playground.
-
----
-
-## 🎨 Design & Aesthetics
-
-The visualizer implements a state-of-the-art visual architecture:
-* **Interactive Backdrop**: A fluid, cursor-tracking radial gradient mesh animation floating on a deep space dark canvas (`index.html`).
-* **Glassmorphic Panels**: High-contrast, frosted glass surfaces (`backdrop-filter`) with harmonized accent glows for UI components.
-* **Modern Typography**: Clear geometric scaling powered by the Google Fonts font family `Outfit` and `JetBrains Mono` for precise code trace rendering.
-* **Smooth Micro-Animations**: Natural, spring-like layout transitions for Trie nodes and linear pathing shifts using CSS transforms.
-
----
-
-## 📁 Repository structure
+## Architecture
 
 ```
-├── .env.template                # Configuration environment template
-├── .gitignore                   # Git ignore files configuration
-├── README.md                    # Main developer documentation
-├── index.html                   # Interactive portals gateway index
-├── server.js                    # Node/Express API Key reverse-proxy & server
-├── stack-visualizer.html        # Interactive Stack visualizer frontend
-└── string-pattern-visualizer    # React / TypeScript / Vite Client App
-    ├── src/
-    │   ├── components/          # Reusable layout & visualization panels
-    │   ├── engines/             # Tracing algorithms (Naive, KMP, Rabin-Karp, Trie)
-    │   ├── store.ts             # Global visualizer state machine (Zustand)
-    │   └── main.tsx             # Entry mountpoint
-    ├── package.json             # Vite application configuration
-    └── tsconfig.json            # Strict TypeScript configuration
+dsa-visualizer/
+├── apps/           # All visualizer sub-apps
+│   ├── graph/      # Graph algorithms (BFS, DFS, Dijkstra...)
+│   ├── sorting/    # Sorting algorithms (Bubble, Merge, Quick...)
+│   ├── tree/       # Tree visualizer (BST operations)
+│   └── pattern/    # String pattern matching (KMP, Rabin-Karp)
+├── portal/         # Main landing page (static HTML)
+├── dist/           # Built output (generated, do not edit)
+├── server.js       # Express server
+├── copy-dist.js    # Build copy script
+└── package.json    # Root orchestrator
 ```
 
----
+## Routes
 
-## 🚀 Module 1: AI-Powered Stack Visualizer
+| URL | App/Portal |
+|---|---|
+| `/` | Portal landing page |
+| `/graph` | Graph Visualizer |
+| `/sorting` | Sorting Visualizer |
+| `/tree` | Tree Visualizer |
+| `/pattern` | Pattern Matching Visualizer |
+| `/stack` | Stack Visualizer |
 
-A visual debugger for execution traces of stack operations (Push, Pop, Peek) supporting a custom reverse proxy API design to keep keys secure.
+## Development
 
-### Key Features
-* **AI Code Interpreter**: Input custom algorithms in Python, C++, Java, JS, or Go. The server proxies the request to **Gemini 2.5 Flash**, converting it into safe JavaScript execution instructions.
-* **Secure Key Handshake**: Handled via backend routes (`/api/translate`) to ensure your `GEMINI_API_KEY` is never exposed to public client inspector logs.
-* **Interactive Inspector**: Stepper buttons to step forward, step backward, or auto-run traces with adjustable speed.
+Install all dependencies:
+```bash
+npm run install:all
+```
 
-### Installation & Run (Local)
-1. Navigate to the root directory and install node modules:
-   ```bash
-   npm install
-   ```
-2. Copy `.env.template` to `.env` and paste your Google API key:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   PORT=3000
-   ```
-3. Start the node server:
-   ```bash
-   node server.js
-   ```
-4. Access the portal at `http://localhost:3000`.
+Build all apps:
+```bash
+npm run build
+```
 
----
+Run server:
+```bash
+npm run dev
+```
 
-## 🚀 Module 2: String & Pattern Visualizer Suite
+Build individual app:
+```bash
+npm run build:graph
+npm run build:sorting
+npm run build:tree
+npm run build:pattern
+```
 
-A responsive **React + TypeScript + Vite** application providing side-by-side pseudocode execution steps alongside visual data representations.
+## Tech Stack
 
-### Key Features
-* **Interactive Trie Sandbox (`triePlayground`)**:
-  * Build a Trie visually step-by-step by inserting, searching, or checking prefixes (`startsWith`) on custom words.
-  * Sibling nodes recursively calculate layout offsets to prevent overlap, adjusting heights smoothly on addition.
-  * Sleek debugger controls anchored directly inside the top header toolbar to ensure visual flow is never blocked.
-* **String Searching Algorithms**:
-  * **Naive Algorithm**: Highlights char-by-char comparisons and shifts.
-  * **Knuth-Morris-Pratt (KMP)**: Displays the calculation of the Failure Function (LPS table) in sync with string comparisons.
-  * **Rabin-Karp**: Displays hash matches, hashing slide formulas, and collisons in a dedicated display grid.
-* **Trace Tracer Sidebar**: Features side-by-side pseudocode highlight frames and step log descriptions (`StepLog`).
-
-### Run (Local)
-1. Navigate to the client directory:
-   ```bash
-   cd string-pattern-visualizer
-   ```
-2. Install client dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite hot-reloading development server:
-   ```bash
-   npm run dev
-   ```
-4. Access the suite at the provided local link (usually `http://localhost:5173`).
-
----
-
-## ☁️ Production Deployment
-
-When pushing to production environments:
-1. **GitHub Pushing**: Both modules reside inside the same repository. Ensure `.env` is omitted from commits (defined in `.gitignore`).
-2. **Web Host Environment Variables**: Define `GEMINI_API_KEY` on your production dashboard (e.g. Render, Railway, Vercel).
-3. **Vite Build Compilation**: Compile files before distribution:
-   ```bash
-   cd string-pattern-visualizer
-   npm run build
-   ```
+- React 19 + TypeScript
+- Vite 8
+- Tailwind CSS 4
+- Zustand 5
+- Express 5 (server)

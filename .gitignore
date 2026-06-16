@@ -1,23 +1,36 @@
 # Dependencies
 node_modules/
-package-lock.json
+apps/*/node_modules/
 
-# Local configurations
-.env
-.env.local
+# Build outputs
+dist/
+apps/*/dist/
 
-# Logs
-logs/
-*.log
-
-# OS Metadata
-.DS_Store
-Thumbs.db
-
-# Build output
+# Old public built files
+public/graph/
 public/pattern/
 public/tree-visualizer/
 
-# Temporary files
-temp_chrome_profile/
+# Environment
+.env
+.env.local
+.env.*.local
 
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo

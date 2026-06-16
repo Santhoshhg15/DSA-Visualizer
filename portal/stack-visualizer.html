@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stack Visualizer - Focus Mode</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-gradient: #0D0D0F;
+    --surface: #131316;
+    --surface-opacity: rgba(19, 19, 22, 0.5);
+    --border: #2A2A35;
+    --border-opacity: rgba(42, 42, 53, 0.6);
+    --border2: #3A3A48;
+    --text: #F0F0F5;
+    --muted: #6B6B80;
+    --accent: #4fffb0;
+    --accent-dim: rgba(79,255,176,0.12);
+    --red: #ff6eb4;
+    --red-dim: rgba(255,110,180,0.12);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.12);
+    --amber: #f5c242;
+    --amber-dim: rgba(245,194,66,0.12);
+    --radius: 12px;
+    --radius-lg: 20px;
+    --input-bg: #1C1C21;
+    --sidebar-bg: #131316;
+    
+    /* Header & Side elements - DARK */
+    --header-bg: #131316;
+    --header-border: #2A2A35;
+    --header-title-gradient: linear-gradient(120deg, #ffffff 0%, var(--muted) 100%);
+    --label-color: #60a5fa;
+    --log-entry-bg: #1C1C21;
+    
+    /* Stack element styles */
+    --num-bg: rgba(94, 168, 255, 0.08);
+    --num-text: #a5d1ff;
+    --num-border: rgba(94, 168, 255, 0.2);
+    --str-bg: rgba(79, 255, 176, 0.08);
+    --str-text: #aaffd0;
+    --str-border: rgba(79, 255, 176, 0.2);
+    --sym-bg: rgba(255, 110, 180, 0.08);
+    --sym-text: #ffb8d9;
+    --sym-border: rgba(255, 110, 180, 0.2);
+  }
+
+  body.light {
+    --bg-gradient: linear-gradient(135deg, #eef2f7 0%, #f5f7fa 50%, #e4e8f0 100%);
+    --surface: #ffffff;
+    --surface-opacity: rgba(255, 255, 255, 0.85);
+    --border: #dcdce6;
+    --border-opacity: rgba(200, 200, 220, 0.6);
+    --border2: #b4b4c8;
+    --text: #1f2937;
+    --muted: #4b5563;
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --sidebar-bg: rgba(255, 255, 255, 0.85);
+    
+    /* Header & Side elements - LIGHT */
+    --header-bg: rgba(255, 255, 255, 0.85);
+    --header-border: rgba(0, 0, 0, 0.08);
+    --header-title-gradient: linear-gradient(120deg, #111827 0%, #4b5563 100%);
+    --label-color: #1e3a8a;
+    --log-entry-bg: rgba(243, 244, 246, 0.8);
+    
+    /* Override glows for light mode */
+    --accent: #059669;
+    --accent-dim: rgba(5, 150, 105, 0.1);
+    --red: #dc2626;
+    --red-dim: rgba(220, 38, 38, 0.1);
+    --blue: #2563eb;
+    --blue-dim: rgba(37, 99, 235, 0.1);
+    --amber: #d97706;
+    --amber-dim: rgba(217, 119, 6, 0.1);
+    
+    /* Stack element styles */
+    --num-bg: rgba(37, 99, 235, 0.06);
+    --num-text: #1d4ed8;
+    --num-border: rgba(37, 99, 235, 0.15);
+    --str-bg: rgba(16, 185, 129, 0.06);
+    --str-text: #047857;
+    --str-border: rgba(16, 185, 129, 0.15);
+    --sym-bg: rgba(219, 39, 119, 0.06);
+    --sym-text: #be185d;
+    --sym-border: rgba(219, 39, 119, 0.15);
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* Deep Space Gradient + Blur Blobs */
+  .space-bg {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-gradient);
+    z-index: 0;
+    transition: background 0.3s;
+  }
+  .glow-blob {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(130px);
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { top: -10%; left: 10%; background: #7c3aed; }
+  .blob-2 { bottom: 15%; right: -5%; background: #0062ff; }
+
+  /* App Container Frame */
+  .app-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    height: 100vh;
+    padding-top: 64px;
+    overflow: hidden;
+  }
+
+  /* Header Navbar */
+  header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 64px;
+    background: var(--header-bg);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 30;
+    border-bottom: 1px solid var(--header-border);
+    transition: background 0.3s, border-bottom 0.3s;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #ffffff;
+  }
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: var(--header-title-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background 0.3s;
+  }
+
+  .nav-btn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--log-entry-bg);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-btn:hover {
+    color: var(--blue);
+    border-color: var(--blue);
+    transform: scale(1.05);
+  }
+
+  .btn-header-action {
+    background: var(--log-entry-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-header-action.active-btn {
+    background: rgba(31, 58, 82, 0.2);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .btn-header-action:hover {
+    transform: scale(1.05);
+  }
+
+  aside {
+    width: 320px;
+    height: 100%;
+    border-right: 1px solid var(--border-opacity);
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(20px);
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px;
+    gap: 20px;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s;
+  }
+  aside::-webkit-scrollbar { width: 4px; }
+  aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Input fields */
+  .sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--label-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: color 0.3s;
+  }
+  input[type=text], textarea, select {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: all 0.2s;
+    resize: none;
+  }
+  input[type=text]:focus, textarea:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(94, 168, 255, 0.15);
+  }
+  textarea { height: 76px; line-height: 1.5; }
+
+  /* Buttons formatting */
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  
+  button {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  button:hover { transform: translateY(-2px); }
+  button:active { transform: scale(0.96) translateY(0); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: none; }
+
+  .btn-push { background: linear-gradient(135deg, #4fffb0 0%, #10b981 100%); color: #07090e; }
+  .btn-push:hover { box-shadow: 0 6px 20px rgba(79, 255, 176, 0.35); }
+
+  .btn-pop { background: linear-gradient(135deg, #ff5e7e 0%, #dc2626 100%); color: #fff; }
+  .btn-pop:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35); }
+
+  .btn-peek { background: linear-gradient(135deg, #5ea8ff 0%, #2563eb 100%); color: #fff; }
+  .btn-peek:hover { box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); }
+
+  .btn-clear { background: rgba(31, 29, 56, 0.6); border: 1px solid var(--border); color: var(--muted); }
+  .btn-clear:hover { color: #fff; border-color: var(--border2); background: rgba(43, 41, 77, 0.6); }
+
+  .btn-auto { background: linear-gradient(135deg, #ffcc5e 0%, #d97706 100%); color: #07090e; width: 100%; margin-top: 4px; }
+  .btn-auto:hover { box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35); }
+  .btn-auto.running { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); color: #fff; }
+
+  /* Speed slider inside sidebar */
+  .speed-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .speed-row label { font-size: 0.7rem; color: var(--muted); }
+  input[type=range] { flex: 1; accent-color: var(--blue); height: 4px; cursor: pointer; }
+  .speed-val { font-size: 0.75rem; color: var(--blue); font-family: 'JetBrains Mono', monospace; font-weight: 700; min-width: 48px; text-align: right; }
+
+  /* Status Bar */
+  .status-bar {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: rgba(29, 27, 51, 0.4);
+    font-size: 0.75rem;
+    color: var(--muted);
+    min-height: 40px;
+    line-height: 1.4;
+    transition: all 0.3s;
+  }
+  .status-bar.ok { border-color: rgba(79,255,176,0.3); color: var(--accent); }
+  .status-bar.err { border-color: rgba(255,110,180,0.3); color: var(--red); }
+  .status-bar.info { border-color: rgba(94,168,255,0.3); color: var(--blue); }
+
+  /* Peek overlay display */
+  .peek-display {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(94,168,255,0.25);
+    background: var(--blue-dim);
+    color: var(--blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 8px;
+    animation: pulseGlow 1.5s infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.02); opacity: 1; }
+  }
+
+  /* MAIN CANVAS WORKSPACE */
+  main {
+    flex-grow: 1;
+    height: 100%;
+    overflow-y: auto;
+    padding: 24px;
+    padding-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  main::-webkit-scrollbar { display: none; }
+
+  /* Interactive visual flex layout side-by-side (Stack + Logs) */
+  .visual-flex {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 0;
+  }
+  .resizer-bar {
+    width: 16px;
+    cursor: col-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    transition: background 0.2s;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  .resizer-bar::after {
+    content: '';
+    width: 2px;
+    height: 48px;
+    background: var(--border);
+    border-radius: 1px;
+    transition: background 0.2s;
+  }
+  .resizer-bar:hover::after {
+    background: var(--blue);
+  }
+  .resizer-bar:hover {
+    background: rgba(94, 168, 255, 0.05);
+  }
+
+  /* Glassmorphism panels for Visual Stack Arena */
+  .visual-panel {
+    background: var(--surface-opacity);
+    border: 1px solid var(--border-opacity);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .stack-col { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+
+  .stack-shell {
+    width: 100%;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stack-shell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(79,255,176,0.05), transparent);
+    pointer-events: none;
+  }
+
+  .stack-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--border2);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .stack-empty svg { opacity: 0.3; }
+
+  /* Stack Element tiles */
+  .stack-el {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  .stack-el:hover {
+    transform: translateX(4px);
+  }
+  .stack-el .el-val { flex: 1; word-break: break-all; }
+  .stack-el .el-idx { font-size: 0.7rem; opacity: 0.4; margin-left: 8px; }
+  .stack-el .el-type { font-size: 0.62rem; opacity: 0.5; margin-left: 6px; letter-spacing: 0.08em; }
+
+  .el-num { 
+    background: var(--num-bg); 
+    color: var(--num-text); 
+    border: 1px solid var(--num-border);
+    border-left: 4px solid var(--blue);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+  }
+  .el-str { 
+    background: var(--str-bg); 
+    color: var(--str-text); 
+    border: 1px solid var(--str-border);
+    border-left: 4px solid var(--accent);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+  }
+  .el-sym { 
+    background: var(--sym-bg); 
+    color: var(--sym-text); 
+    border: 1px solid var(--sym-border);
+    border-left: 4px solid var(--red);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+  }
+
+  .top-badge {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #4fffb0 0%, #10b981 100%);
+    color: #07090e;
+    box-shadow: 0 0 10px rgba(79, 255, 176, 0.4);
+    margin-left: 8px;
+    text-transform: uppercase;
+  }
+
+  .stack-base {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, rgba(79,255,176,0.15), transparent);
+    border-top: 2px solid rgba(79,255,176,0.25);
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Animations for tiles */
+  @keyframes pushIn {
+    0%   { opacity: 0; transform: translateY(-40px) scaleY(0.7); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes popOut {
+    0%   { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(-50px) scaleY(0.5); }
+  }
+  @keyframes peekPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(94,168,255,0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(94,168,255,0.15); }
+  }
+  .anim-push { animation: pushIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .anim-pop  { animation: popOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .anim-peek { animation: peekPulse 0.8s ease 2; border-color: var(--blue) !important; }
+
+  /* stats underneath stack */
+  .stats-row { display: flex; gap: 10px; width: 100%; }
+  .stat-chip {
+    flex: 1;
+    background: rgba(19,18,38,0.4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .stat-chip .s-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: bold; }
+  .stat-chip .s-val { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 2px; font-family: 'Syne', sans-serif; }
+
+  /* Glassmorphism Inline Operation Logs Panel */
+  .log-panel {
+    background: var(--surface-opacity);
+    border: 1px solid var(--border-opacity);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-opacity);
+    padding-bottom: 8px;
+  }
+
+  .log-list { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; max-height: 380px; overflow-y: auto; pr: 2px; }
+  .log-list::-webkit-scrollbar { width: 4px; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--log-entry-bg);
+    border: 1px solid var(--border-opacity);
+    font-size: 0.72rem;
+    animation: fadeLog 0.25s ease;
+  }
+  @keyframes fadeLog { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; } }
+
+  .log-op { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.65rem; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px; white-space: nowrap; transition: color 0.3s, background 0.3s; }
+  .log-push .log-op { background: var(--accent-dim); color: var(--accent); }
+  .log-pop  .log-op { background: var(--red-dim); color: var(--red); }
+  .log-peek .log-op { background: var(--blue-dim); color: var(--blue); }
+  .log-err  .log-op { background: var(--red-dim); color: var(--red); }
+  .log-clear .log-op { background: rgba(139,148,176,0.15); color: var(--muted); }
+  .log-auto .log-op { background: var(--amber-dim); color: var(--amber); }
+
+  .log-msg { color: var(--text); flex: 1; line-height: 1.4; font-family: 'JetBrains Mono', monospace; }
+  .log-time { color: var(--muted); font-size: 0.62rem; white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
+
+  .auto-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .auto-progress-bar {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
+
+  /* Translating AI Overlay */
+  .ai-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 9, 29, 0.85);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-radius: var(--radius-lg);
+  }
+  .ai-overlay.show { opacity: 1; pointer-events: auto; }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(94, 168, 255, 0.1);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-overlay-text { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text); }
+  .ai-overlay-sub { font-size: 0.72rem; color: var(--muted); }
+
+  .lang-selector-row { display: flex; justify-content: space-between; align-items: center; }
+
+  /* ===== Progressive Disclosure Animations ===== */
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeInUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes heroPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  @keyframes gridReveal {
+    from { opacity: 0; }
+    to { opacity: 0.4; }
+  }
+
+  .animate-slideInLeft { animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-slideInRight { animation: slideInRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-fadeInUp { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-heroFloat { animation: heroFloat 4s ease-in-out infinite; }
+  .animate-heroPulse { animation: heroPulse 3s ease-in-out infinite; }
+  
+  /* Hero Empty State */
+  .hero-empty-state {
+    position: absolute;
+    top: 64px; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 4rem 2rem 2rem 2rem;
+    z-index: 25;
+    background: var(--bg-main);
+    transition: opacity 0.4s, visibility 0.4s;
+    overflow-y: auto;
+  }
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0;
+    animation: gridReveal 1.2s ease-out 0.3s forwards;
+    pointer-events: none;
+  }
+  
+  /* Hide workspace elements initially */
+  .workspace-inactive aside,
+  .workspace-inactive main,
+  .workspace-inactive #sidebarResizer {
+    display: none !important;
+  }
+  .workspace-active .hero-empty-state {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="space-bg"></div>
+<div class="glow-blob blob-1"></div>
+<div class="glow-blob blob-2"></div>
+
+<div class="app-container workspace-inactive" id="appContainer">
+
+  <!-- AI Translation Overlay -->
+  <div class="ai-overlay" id="aiOverlay">
+    <div class="spinner"></div>
+    <div class="ai-overlay-text">AI is Translating Code...</div>
+    <div class="ai-overlay-sub">Converting snippet into trace-compatible JavaScript</div>
+  </div>
+
+  <!-- Header Nav -->
+  <header>
+    <div class="header-left">
+      <button class="p-2 btn-header-action" onclick="toggleSidebar()" title="Toggle Configurations" id="headerSidebarBtn">⚙️</button>
+      <div class="logo-icon">🥞</div>
+      <span class="header-title">Stack Visualizer Module</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+
+      <button class="btn-header-action active-btn" id="consoleBtn" onclick="toggleLogs()">💻 Console Logs</button>
+      <a href="/" class="nav-btn">← Portal</a>
+    </div>
+  </header>
+
+  <!-- EMPTY STATE — HERO MODE -->
+  <div class="hero-empty-state" id="heroState">
+    <div class="hero-grid-bg"></div>
+    <div style="z-index: 10; max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;">
+      <div class="logo-icon animate-heroFloat" style="width: 96px; height: 96px; font-size: 3.5rem; border-radius: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+        🥞
+      </div>
+      <h1 style="font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 16px; line-height: 1.1;">
+        <span style="background: linear-gradient(to right, #ff6eb4, #5ea8ff); -webkit-background-clip: text; color: transparent; display: inline-block;" class="animate-heroPulse">Stack</span> Visualizer
+      </h1>
+      <p style="color: var(--muted); text-align: center; margin-bottom: 40px; font-size: 1rem; font-weight: 500; line-height: 1.6;">
+        Explore stack operations (LIFO), automatic string processing, and algorithmic code tracing with step-by-step visualizations.
+      </p>
+
+      <div style="background: var(--surface-opacity); border: 1px solid var(--border-opacity); border-radius: 24px; padding: 24px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); backdrop-filter: blur(20px);" class="animate-fadeInUp" style="animation-delay: 0.1s; opacity: 0;">
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Quick Start</h2>
+        
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="heroSingleInput" placeholder="Enter a value (e.g. 42)..." style="flex: 1; padding: 12px 16px; font-size: 0.9rem;" onkeydown="if(event.key === 'Enter') heroDoPush()" />
+          <button style="background: linear-gradient(to right, var(--accent), #059669); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroDoPush()">Push →</button>
+        </div>
+
+        <div style="height: 1px; background: var(--border-opacity); margin: 20px 0;"></div>
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Bulk / Auto Processing</h2>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="heroAutoInput" placeholder="String to process (e.g. HELLO)..." style="flex: 1; padding: 12px 16px; font-size: 0.9rem;" />
+          <button style="background: linear-gradient(to right, #5ea8ff, #0062ff); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroDoAuto()">Start Auto-Push</button>
+        </div>
+
+        <div style="height: 1px; background: var(--border-opacity); margin: 20px 0;"></div>
+        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Algorithm Code Trace</h2>
+
+        <div style="display: flex; gap: 12px;">
+          <textarea id="heroTraceInput" placeholder="Paste python/JS/java code..." style="flex: 1; padding: 12px 16px; font-size: 0.8rem; height: 60px; font-family: monospace; resize: none;"></textarea>
+          <button style="background: linear-gradient(to right, #a371f7, #7928ca); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroRunTrace()">Run Trace</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLAPSIBLE LEFT SIDEBAR -->
+  <aside id="sidebar" class="animate-slideInLeft">
+    <!-- Single Push -->
+    <div class="sidebar-section">
+      <div class="section-label">Push Element</div>
+      <input type="text" id="singleInput" placeholder="42 or hello or @..." />
+      <div class="btn-grid" style="margin-top:4px;">
+        <button class="btn-push" onclick="doPush()">▲ Push</button>
+        <button class="btn-pop"  onclick="doPop()">▼ Pop</button>
+        <button class="btn-peek" onclick="doPeek()">◎ Peek</button>
+        <button class="btn-clear" onclick="doClear()">✕ Clear</button>
+      </div>
+    </div>
+
+    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+
+    <!-- Auto String Mode -->
+    <div class="sidebar-section">
+      <div class="section-label">Auto-Push String</div>
+      <textarea id="autoInput" placeholder="Type a string like HELLO or 12345..."></textarea>
+      <div class="speed-row">
+        <label class="section-label" style="margin-bottom:0;">Speed</label>
+        <input type="range" id="speedSlider" min="100" max="1200" value="500" step="50" oninput="updateSpeed()" />
+        <span class="speed-val" id="speedVal">500ms</span>
+      </div>
+      <button class="btn-auto" id="autoBtn" onclick="toggleAuto()">▶ Start Auto-Push</button>
+      <div class="auto-progress"><div class="auto-progress-bar" id="autoBar" style="width:0%"></div></div>
+    </div>
+
+    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+
+    <!-- Code Trace input -->
+    <div class="sidebar-section">
+      <div class="lang-selector-row">
+        <div class="section-label">Algorithm Trace</div>
+        <select class="lang-select" id="langSelect" onchange="updatePlaceholder()" style="width:auto; padding: 2px 6px; font-size: 0.7rem;">
+          <option value="ai">✨ AI (Any Language)</option>
+          <option value="js">JavaScript (Direct)</option>
+          <option value="java">Java (Heuristic)</option>
+        </select>
+      </div>
+      <textarea id="traceInput" placeholder="Paste your algorithm in Python, C++, Java, JS, C# etc.&#10;For example, Python:&#10;s = '{[]}'&#10;for c in s:&#10;    if c == '{': stack.push(c)&#10;    else: stack.pop()" style="height: 110px; font-size: 0.78rem;"></textarea>
+      <div class="btn-row" style="margin-top:4px;">
+        <button class="btn-push" id="traceRunBtn" onclick="runTrace()">▶ Run</button>
+        <button class="btn-peek" id="traceStepBtn" onclick="stepTrace()">⏭ Step</button>
+        <button class="btn-pop" id="traceStopBtn" onclick="stopTrace()" disabled>■ Stop</button>
+      </div>
+    </div>
+
+    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+
+    <!-- Status panel -->
+    <div class="sidebar-section">
+      <div class="section-label">Status Output</div>
+      <div class="status-bar" id="statusBar">Ready — push something onto the stack.</div>
+      <div class="peek-display" id="peekDisplay" style="display:none;"></div>
+    </div>
+  </aside>
+
+  <!-- Sidebar Resizer Divider -->
+  <div class="resizer-bar" id="sidebarResizer" style="margin: 0; border-right: 1px solid var(--border-opacity);"></div>
+
+  <!-- MAIN WORKSPACE -->
+  <main id="mainContent">
+    <div class="visual-flex" id="visualFlex">
+      
+      <!-- Center: Stack representation visual panel -->
+      <div class="visual-panel" id="stackCol" style="flex: 0 0 55%;">
+        <div class="stack-col">
+          <div class="stack-shell" id="stackShell">
+            <div class="stack-empty" id="emptyMsg">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path d="M3 9h18M3 15h18"/>
+              </svg>
+              empty
+            </div>
+          </div>
+          <div class="stack-base"></div>
+          <div class="stats-row">
+            <div class="stat-chip">
+              <div class="s-label">Size</div>
+              <div class="s-val" id="statSize">0</div>
+            </div>
+            <div class="stat-chip">
+              <div class="s-label">Top</div>
+              <div class="s-val" id="statTop" style="font-size:0.85rem; word-break:break-all;">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resizer bar divider handle -->
+      <div class="resizer-bar" id="resizerBar"></div>
+
+      <!-- Right: Operations logs visual panel -->
+      <div class="log-panel" id="logCol" style="flex: 0 0 45%;">
+        <div class="panel-header">📝 Operations Log</div>
+        <div class="log-list" id="logList">
+          <div class="log-entry log-clear">
+            <span class="log-op">INFO</span>
+            <span class="log-msg">Visualizer ready.</span>
+            <span class="log-time">now</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<script>
+  let isWorkspaceActive = false;
+
+  function activateWorkspace() {
+    if (isWorkspaceActive) return;
+    isWorkspaceActive = true;
+    const app = document.getElementById('appContainer');
+    app.classList.remove('workspace-inactive');
+    app.classList.add('workspace-active');
+  }
+
+  function deactivateWorkspace() {
+    if (!isWorkspaceActive) return;
+    isWorkspaceActive = false;
+    const app = document.getElementById('appContainer');
+    app.classList.remove('workspace-active');
+    app.classList.add('workspace-inactive');
+  }
+
+  function heroDoPush() {
+    document.getElementById('singleInput').value = document.getElementById('heroSingleInput').value;
+    activateWorkspace();
+    doPush();
+  }
+
+  function heroDoAuto() {
+    const val = document.getElementById('heroAutoInput').value.trim();
+    if (!val) {
+      alert("Please enter a string to process (e.g., HELLO) before starting.");
+      return;
+    }
+    document.getElementById('autoInput').value = val;
+    activateWorkspace();
+    // Wait for the workspace transition to complete before starting auto-push
+    setTimeout(toggleAuto, 450);
+  }
+
+  function heroRunTrace() {
+    document.getElementById('traceInput').value = document.getElementById('heroTraceInput').value;
+    activateWorkspace();
+    runTrace();
+  }
+
+  const stack = [];
+  let autoTimer = null;
+  let autoChars = [];
+  let autoIdx = 0;
+  let autoDelay = 500;
+
+  const shell = document.getElementById('stackShell');
+  const emptyMsg = document.getElementById('emptyMsg');
+
+  // Sidebar collapsible state logic
+  let sidebarOpen = true;
+  let lastSidebarWidth = 320;
+  function toggleSidebar() {
+    sidebarOpen = !sidebarOpen;
+    const sidebar = document.getElementById('sidebar');
+    const sidebarResizer = document.getElementById('sidebarResizer');
+    if (sidebarOpen) {
+      sidebar.classList.remove('absolute');
+      sidebar.style.marginLeft = '0px';
+      sidebar.style.width = lastSidebarWidth + 'px';
+      sidebarResizer.style.display = 'flex';
+    } else {
+      sidebar.classList.add('absolute');
+      sidebar.style.marginLeft = `-${lastSidebarWidth}px`;
+      sidebarResizer.style.display = 'none';
+    }
+  }
+
+  // Console Logs panel drawer toggle
+  let logsOpen = true;
+  function toggleLogs() {
+    logsOpen = !logsOpen;
+    const logCol = document.getElementById('logCol');
+    const resizer = document.getElementById('resizerBar');
+    const stackCol = document.getElementById('stackCol');
+    const btn = document.getElementById('consoleBtn');
+    if (logsOpen) {
+      logCol.style.display = 'flex';
+      resizer.style.display = 'flex';
+      stackCol.style.flex = '0 0 55%';
+      logCol.style.flex = '0 0 45%';
+      btn.classList.add('active-btn');
+    } else {
+      logCol.style.display = 'none';
+      resizer.style.display = 'none';
+      stackCol.style.flex = '0 0 100%';
+      btn.classList.remove('active-btn');
+    }
+  }
+
+  let darkMode = true;
+  function toggleTheme() {
+    darkMode = !darkMode;
+    const btn = document.getElementById('themeBtn');
+    if (darkMode) {
+      document.body.classList.remove('light');
+      btn.textContent = '☀️ Light';
+    } else {
+      document.body.classList.add('light');
+      btn.textContent = '🌙 Dark';
+    }
+  }
+
+  function updatePlaceholder() {
+    const lang = document.getElementById('langSelect').value;
+    const ta = document.getElementById('traceInput');
+    if (lang === 'ai') {
+      ta.placeholder = "Paste your algorithm in Python, C++, Java, JS, C# etc.\nFor example, Python:\ns = '{[]}'\nfor c in s:\n    if c == '{': stack.push(c)\n    else: stack.pop()";
+    } else if (lang === 'js') {
+      ta.placeholder = "let s = '{[]}';\nfor(let i=0; i<s.length; i++){\n  if(s[i]=='{') stack.push(s[i]);\n  else stack.pop();\n}";
+    } else if (lang === 'java') {
+      ta.placeholder = "int[] a = {1, 2, 3};\nfor(int i=0; i<a.length; i++){\n  s1.push(a[i]);\n}";
+    }
+  }
+
+  function elClass(v) {
+    if (!isNaN(v) && String(v).trim() !== '') return 'el-num';
+    if (String(v).length === 1 && /[^a-zA-Z0-9]/.test(v)) return 'el-sym';
+    return 'el-str';
+  }
+  function elTypeLabel(v) {
+    if (!isNaN(v) && String(v).trim() !== '') return 'NUM';
+    if (String(v).length === 1 && /[^a-zA-Z0-9]/.test(v)) return 'SYM';
+    return 'STR';
+  }
+
+  function renderStack(highlightTop = false) {
+    Array.from(shell.querySelectorAll('.stack-el')).forEach(e => e.remove());
+    emptyMsg.style.opacity = stack.length ? '0' : '1';
+
+    for (let i = 0; i < stack.length; i++) {
+      const val = stack[i];
+      const isTop = i === stack.length - 1;
+      const div = document.createElement('div');
+      div.className = 'stack-el ' + elClass(val);
+      div.dataset.idx = i;
+      div.innerHTML =
+        `<span class="el-val">${escHtml(String(val))}</span>` +
+        `<span class="el-type">${elTypeLabel(String(val))}</span>` +
+        (isTop ? `<span class="top-badge">TOP</span>` : '') +
+        `<span class="el-idx">[${i}]</span>`;
+      if (isTop && highlightTop) div.classList.add('anim-peek');
+      shell.appendChild(div);
+    }
+
+    document.getElementById('statSize').textContent = stack.length;
+    document.getElementById('statTop').textContent = stack.length ? stack[stack.length - 1] : '—';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function animatePushTop() {
+    const els = shell.querySelectorAll('.stack-el');
+    const top = els[els.length - 1];
+    if (top) { top.classList.remove('anim-push'); void top.offsetWidth; top.classList.add('anim-push'); }
+  }
+
+  function scrollCanvas() {
+    setTimeout(() => {
+      const el = document.getElementById('visualFlex');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  function doPush(val, isAuto = false) {
+    let v = (val !== undefined) ? val : document.getElementById('singleInput').value;
+    v = String(v).trim();
+    if (!v) { setStatus('Enter a value to push.', 'err'); return; }
+
+    stack.push(v);
+    renderStack(false);
+    animatePushTop();
+    if (!isAuto) document.getElementById('singleInput').value = '';
+
+    setStatus(`Pushed "${v}" → stack size is now ${stack.length}.`, 'ok');
+    addLog('PUSH', `"${escHtml(v)}" at index ${stack.length - 1}`, 'log-push', isAuto ? 'log-auto' : '');
+    hidePeek();
+    scrollCanvas();
+  }
+
+  function doPop() {
+    if (!stack.length) { setStatus('Stack underflow — nothing to pop!', 'err'); addLog('POP', 'stack is empty', 'log-err'); return; }
+
+    const top = stack[stack.length - 1];
+    const topEl = shell.querySelectorAll('.stack-el');
+    const lastEl = topEl[topEl.length - 1];
+
+    if (lastEl) {
+      lastEl.classList.add('anim-pop');
+      setTimeout(() => { stack.pop(); renderStack(false); }, 200);
+    } else { stack.pop(); renderStack(false); }
+
+    setStatus(`Popped "${top}" — stack size is now ${stack.length - 1 < 0 ? 0 : stack.length}.`, 'ok');
+    addLog('POP', `"${escHtml(String(top))}" removed from top`, 'log-pop');
+    hidePeek();
+  }
+
+  function doPeek() {
+    if (!stack.length) { setStatus('Stack is empty — nothing to peek.', 'err'); addLog('PEEK', 'stack is empty', 'log-err'); return; }
+    const top = stack[stack.length - 1];
+    renderStack(true);
+    setStatus(`Peek → top element is "${top}"`, 'info');
+    addLog('PEEK', `top = "${escHtml(String(top))}" at index ${stack.length - 1}`, 'log-peek');
+    showPeek(top);
+    setTimeout(() => renderStack(false), 1700);
+  }
+
+  function doClear() {
+    stack.length = 0;
+    renderStack(false);
+    setStatus('Stack cleared.', '');
+    addLog('CLEAR', 'all elements removed', 'log-clear');
+    hidePeek();
+    deactivateWorkspace();
+  }
+
+  function toggleAuto() {
+    if (autoTimer) { stopAuto(); return; }
+
+    const str = document.getElementById('autoInput').value;
+    if (!str) { setStatus('Enter a string for auto-push.', 'err'); return; }
+
+    autoChars = str.split('');
+    autoIdx = 0;
+    document.getElementById('autoBtn').textContent = '■ Stop';
+    document.getElementById('autoBtn').classList.add('running');
+    addLog('AUTO', `Starting auto-push of "${escHtml(str)}" (${autoChars.length} chars)`, 'log-auto');
+
+    function pushNext() {
+      if (autoIdx >= autoChars.length) { stopAuto(); return; }
+      doPush(autoChars[autoIdx], true);
+      autoIdx++;
+      const pct = Math.round((autoIdx / autoChars.length) * 100);
+      document.getElementById('autoBar').style.width = pct + '%';
+      autoTimer = setTimeout(pushNext, autoDelay);
+    }
+    pushNext();
+    scrollCanvas();
+  }
+
+  function stopAuto() {
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    document.getElementById('autoBtn').textContent = '▶ Start Auto-Push';
+    document.getElementById('autoBtn').classList.remove('running');
+    document.getElementById('autoBar').style.width = '0%';
+    addLog('AUTO', 'Auto-push complete or stopped', 'log-auto');
+  }
+
+  function updateSpeed() {
+    const v = document.getElementById('speedSlider').value;
+    autoDelay = parseInt(v);
+    document.getElementById('speedVal').textContent = v + 'ms';
+  }
+
+  function setStatus(msg, type) {
+    const bar = document.getElementById('statusBar');
+    bar.textContent = msg;
+    bar.className = 'status-bar' + (type ? ' ' + type : '');
+  }
+
+  function showPeek(val) {
+    const d = document.getElementById('peekDisplay');
+    d.style.display = 'block';
+    d.textContent = `◎ Peek → "${val}"`;
+  }
+  function hidePeek() {
+    const d = document.getElementById('peekDisplay');
+    if (d) d.style.display = 'none';
+  }
+
+  function addLog(op, msg, cls, extraCls = '') {
+    const list = document.getElementById('logList');
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry ' + cls + (extraCls ? ' ' + extraCls : '');
+    entry.innerHTML = `<span class="log-op">${op}</span><span class="log-msg">${msg}</span><span class="log-time">${time}</span>`;
+    list.prepend(entry);
+    while (list.children.length > 60) list.removeChild(list.lastChild);
+  }
+
+  let actionQueue = [];
+  let traceIdx = 0;
+  let traceTimer = null;
+  let isTracing = false;
+  let cachedTranslatedJs = null;
+  let lastTracedCode = null;
+
+  async function translateCodeWithAI(code) {
+    const response = await fetch('/api/translate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      const errMsg = errData.error || response.statusText;
+      throw new Error(errMsg);
+    }
+
+    const data = await response.json();
+    return data.translated;
+  }
+
+  function transpileJava(code) {
+    let js = code;
+    js = js.replace(/\bStack\s*(?:<[^>]*>)?\s+([a-zA-Z_]\w*)\s*=\s*new\s+Stack\s*(?:<[^>]*>)?\s*\(\)\s*;/g, 'var $1 = stack;');
+    js = js.replace(/\b(int|char|boolean|String|float|double|long|short|byte)\s*\[\]\s+([a-zA-Z_]\w*)\s*=\s*\{([^}]*)\}\s*;/g, 'let $2 = [$3];');
+    js = js.replace(/\b(int|char|boolean|String|float|double|long|short|byte)\s+(?!\[)/g, 'let ');
+    js = js.replace(/System\.out\.print(ln)?/g, 'console.log');
+    js = js.replace(/\.length\(\)/g, '.length');
+    return js;
+  }
+
+  function runAlgorithm(jsCode) {
+    actionQueue = [];
+    let mockStackArr = [];
+    const mockStack = {
+      push: (val) => {
+        mockStackArr.push(val);
+        actionQueue.push({ cmd: 'push', arg: val });
+      },
+      pop: () => {
+        if (mockStackArr.length === 0) {
+          actionQueue.push({ cmd: 'error', arg: 'Pop on empty stack' });
+          return null;
+        }
+        let v = mockStackArr.pop();
+        actionQueue.push({ cmd: 'pop' });
+        return v;
+      },
+      peek: () => {
+        actionQueue.push({ cmd: 'peek' });
+        if (mockStackArr.length === 0) return null;
+        return mockStackArr[mockStackArr.length - 1];
+      },
+      size: () => mockStackArr.length,
+      isEmpty: () => mockStackArr.length === 0,
+      clear: () => {
+        mockStackArr = [];
+        actionQueue.push({ cmd: 'clear' });
+      }
+    };
+    Object.defineProperty(mockStack, 'top', {
+      get: function() { return this.peek(); }
+    });
+    
+    try {
+      const header = `
+        var s1 = stack;
+        var cs = stack;
+        var st = stack;
+      `;
+      const fn = new Function('stack', header + jsCode);
+      fn(mockStack);
+    } catch (err) {
+      actionQueue.push({ cmd: 'error', arg: 'Script Error: ' + err.message });
+    }
+  }
+
+  function executeQueueAction(idx) {
+    if (idx >= actionQueue.length) { stopTrace(); return false; }
+    
+    const action = actionQueue[idx];
+    if (action.cmd === 'push') doPush(action.arg, true);
+    else if (action.cmd === 'pop') doPop();
+    else if (action.cmd === 'peek') doPeek();
+    else if (action.cmd === 'clear') doClear();
+    else if (action.cmd === 'error') {
+      setStatus(action.arg, 'err');
+      stopTrace();
+    }
+    return true;
+  }
+
+  async function prepareExecution(sourceCode) {
+    const lang = document.getElementById('langSelect').value;
+    
+    if (sourceCode !== lastTracedCode) {
+      cachedTranslatedJs = null;
+      lastTracedCode = sourceCode;
+      traceIdx = 0;
+    }
+
+    if (traceIdx === 0) {
+      doClear();
+      if (lang === 'ai') {
+        if (cachedTranslatedJs) {
+          runAlgorithm(cachedTranslatedJs);
+        } else {
+          document.getElementById('aiOverlay').classList.add('show');
+          setStatus('AI is translating code...', 'info');
+          try {
+            const js = await translateCodeWithAI(sourceCode);
+            cachedTranslatedJs = js;
+            addLog('AI', 'Translated code successfully', 'log-auto');
+            runAlgorithm(js);
+          } catch (err) {
+            setStatus(err.message, 'err');
+            addLog('AI', 'Translation failed: ' + err.message, 'log-err');
+            document.getElementById('aiOverlay').classList.remove('show');
+            throw err;
+          } finally {
+            document.getElementById('aiOverlay').classList.remove('show');
+          }
+        }
+      } else if (lang === 'java') {
+        runAlgorithm(transpileJava(sourceCode));
+      } else {
+        runAlgorithm(sourceCode);
+      }
+    }
+  }
+
+  async function runTrace() {
+    activateWorkspace();
+    if (isTracing && traceTimer) return;
+    const ta = document.getElementById('traceInput');
+    const sourceCode = ta.value.trim();
+    if (!sourceCode) return setStatus('Enter an algorithm.', 'err');
+    
+    try {
+      await prepareExecution(sourceCode);
+    } catch (e) {
+      return; 
+    }
+    
+    isTracing = true;
+    
+    document.getElementById('traceRunBtn').disabled = true;
+    document.getElementById('traceStepBtn').disabled = true;
+    document.getElementById('traceStopBtn').disabled = false;
+    
+    function nextStep() {
+      if (!isTracing) return;
+      if (traceIdx >= actionQueue.length) { stopTrace(); setStatus('Algorithm finished successfully!', 'ok'); return; }
+      
+      executeQueueAction(traceIdx);
+      traceIdx++;
+      traceTimer = setTimeout(nextStep, autoDelay + 200);
+    }
+    nextStep();
+    scrollCanvas();
+  }
+
+  async function stepTrace() {
+    stopTrace(false);
+    const ta = document.getElementById('traceInput');
+    const sourceCode = ta.value.trim();
+    if (!sourceCode) return setStatus('Enter an algorithm.', 'err');
+    
+    try {
+      await prepareExecution(sourceCode);
+    } catch (e) {
+      return;
+    }
+    
+    if (traceIdx < actionQueue.length) {
+      executeQueueAction(traceIdx);
+      traceIdx++;
+      document.getElementById('traceStopBtn').disabled = false;
+    } else {
+      stopTrace();
+      setStatus('Algorithm finished successfully!', 'ok');
+    }
+  }
+
+  function stopTrace(resetIdx = true) {
+    clearTimeout(traceTimer);
+    traceTimer = null;
+    isTracing = false;
+    if (resetIdx) {
+      traceIdx = 0;
+      actionQueue = [];
+      cachedTranslatedJs = null;
+      lastTracedCode = null;
+    }
+    
+    document.getElementById('traceRunBtn').disabled = false;
+    document.getElementById('traceStepBtn').disabled = false;
+    document.getElementById('traceStopBtn').disabled = true;
+    
+    if (resetIdx) addLog('TRACE', 'Execution stopped', 'log-clear');
+    else addLog('TRACE', 'Execution paused', 'log-clear');
+  }
+
+  // Horizontal splitter dragging logic
+  const visualFlex = document.getElementById('visualFlex');
+  const resizer = document.getElementById('resizerBar');
+  const stackCol = document.getElementById('stackCol');
+  const logCol = document.getElementById('logCol');
+
+  let isDragging = false;
+
+  resizer.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+
+    const containerRect = visualFlex.getBoundingClientRect();
+    const relativeX = e.clientX - containerRect.left;
+
+    let leftPct = (relativeX / containerRect.width) * 100;
+    
+    // Constraint boundaries (minimum 25%, maximum 75%)
+    if (leftPct < 25) leftPct = 25;
+    if (leftPct > 75) leftPct = 75;
+
+    stackCol.style.flex = `0 0 ${leftPct}%`;
+    logCol.style.flex = `0 0 ${100 - leftPct}%`;
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (isDragging) {
+      isDragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+
+  // Sidebar resizer dragging logic
+  const sidebarResizer = document.getElementById('sidebarResizer');
+  let isSidebarDragging = false;
+
+  sidebarResizer.addEventListener('mousedown', function(e) {
+    isSidebarDragging = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isSidebarDragging) return;
+
+    let newWidth = e.clientX;
+
+    // Sizing boundaries (min 260px, max 480px)
+    if (newWidth < 260) newWidth = 260;
+    if (newWidth > 480) newWidth = 480;
+
+    lastSidebarWidth = newWidth;
+    sidebar.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (isSidebarDragging) {
+      isSidebarDragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+
+  document.getElementById('singleInput').addEventListener('keydown', e => { if (e.key === 'Enter') doPush(); });
+  renderStack(false);
+</script>
+</body>
+</html>

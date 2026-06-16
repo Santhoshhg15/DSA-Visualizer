@@ -2,69 +2,53 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
-
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DIST = path.join(__dirname, 'dist');
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Serve the static HTML frontend from public (for stack-visualizer, index, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
+// Portal (main landing page)
+app.use(express.static(path.join(DIST, 'portal')));
 
-// Serve String Pattern Visualizer static files at /pattern prefix
-app.use('/pattern', express.static(path.join(__dirname, 'public', 'pattern')));
+// Pattern Visualizer
+app.use('/pattern',
+  express.static(path.join(DIST, 'pattern')));
+app.get('/pattern/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'pattern', 'index.html')));
 
-// Serve Tree Visualizer static files at /tree-visualizer prefix
-app.use('/tree-visualizer', express.static(path.join(__dirname, 'public', 'tree-visualizer')));
+// Tree Visualizer
+app.use('/tree',
+  express.static(path.join(DIST, 'tree')));
+app.get('/tree/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'tree', 'index.html')));
 
-// Serve Graph Visualizer static files at /graph prefix
-app.use('/graph', express.static(path.join(__dirname, 'public', 'graph')));
+// Graph Visualizer
+app.use('/graph',
+  express.static(path.join(DIST, 'graph')));
+app.get('/graph/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'graph', 'index.html')));
 
-// Serve Sorting Visualizer static files at /sorting prefix (built inside graph-visualizer)
-app.use('/sorting', express.static(path.join(__dirname, 'public', 'graph')));
+// Sorting Visualizer (NOW STANDALONE)
+app.use('/sorting',
+  express.static(path.join(DIST, 'sorting')));
+app.get('/sorting/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'sorting', 'index.html')));
 
-// Serve index at root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Portal root
+app.get('/', (req, res) =>
+  res.sendFile(path.join(DIST, 'portal', 'index.html')));
 
-// Serve Stack Visualizer app at /stack, /stack-visualizer, and legacy /visualizer path
-app.get('/stack', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
-});
-app.get('/stack-visualizer', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
-});
-app.get('/visualizer', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'stack-visualizer.html'));
-});
+// Stack Visualizer
+app.get('/stack', (req, res) =>
+  res.sendFile(path.join(DIST, 'portal', 'stack-visualizer.html')));
+app.get('/stack-visualizer', (req, res) =>
+  res.sendFile(path.join(DIST, 'portal', 'stack-visualizer.html')));
 
-// Fallback for String Pattern Visualizer SPA router paths
-app.get('/pattern/*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'pattern', 'index.html'));
-});
-
-// Fallback for Tree Visualizer SPA router paths
-app.get('/tree-visualizer/*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'tree-visualizer', 'index.html'));
-});
-
-// Fallback for Graph Visualizer SPA router paths
-app.get('/graph/*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'graph', 'index.html'));
-});
-
-// Fallback for Sorting Visualizer SPA router paths
-app.get('/sorting*any', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'graph', 'index.html'));
-});
-
-// Translation API Endpoint
+// Translation API
 app.post('/api/translate', async (req, res) => {
   const { code } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
@@ -153,6 +137,11 @@ Now, translate the following source code into visualizer-compatible JavaScript. 
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} to access the Stack Visualizer securely`);
+  console.log(`\n🚀 DSA Visualizer Suite`);
+  console.log(`   Portal:   http://localhost:${PORT}`);
+  console.log(`   Graph:    http://localhost:${PORT}/graph`);
+  console.log(`   Sorting:  http://localhost:${PORT}/sorting`);
+  console.log(`   Tree:     http://localhost:${PORT}/tree`);
+  console.log(`   Pattern:  http://localhost:${PORT}/pattern`);
+  console.log(`   Stack:    http://localhost:${PORT}/stack`);
 });
