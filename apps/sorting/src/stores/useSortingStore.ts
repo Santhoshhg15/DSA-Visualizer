@@ -24,6 +24,7 @@ interface SortingState {
 
   // Recursion Tree
   showRecursionTree: boolean;
+  recursionTreeMaximized: boolean;
 
   // Actions
   setArray: (arr: number[]) => void;
@@ -41,6 +42,7 @@ interface SortingState {
   skipToStart: () => void;
   skipToEnd: () => void;
   setShowRecursionTree: (val: boolean) => void;
+  setRecursionTreeMaximized: (val: boolean) => void;
 }
 
 let playbackInterval: ReturnType<typeof setInterval> | null = null;
@@ -154,6 +156,7 @@ export const useSortingStore = create<SortingState>((set, get) => {
     arrayAccesses: 0,
     currentPass: 0,
     showRecursionTree: false,
+    recursionTreeMaximized: false,
 
     setArray: (arr) => {
       const { selectedAlgorithm } = get();
@@ -207,6 +210,7 @@ export const useSortingStore = create<SortingState>((set, get) => {
         swaps: 0,
         arrayAccesses: 0,
         currentPass: 0,
+        recursionTreeMaximized: false, // reset on algo change
       });
     },
     setSteps: (steps) => {
@@ -255,6 +259,7 @@ export const useSortingStore = create<SortingState>((set, get) => {
         swaps: 0,
         arrayAccesses: 0,
         currentPass: 0,
+        recursionTreeMaximized: false, // reset on new array
       });
       get().generateArray();
     },
@@ -327,5 +332,6 @@ export const useSortingStore = create<SortingState>((set, get) => {
       }
     },
     setShowRecursionTree: (val) => set({ showRecursionTree: val }),
+    setRecursionTreeMaximized: (val) => set({ recursionTreeMaximized: val }),
   };
 });

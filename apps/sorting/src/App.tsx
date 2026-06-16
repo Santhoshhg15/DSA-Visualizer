@@ -26,7 +26,7 @@ export default function App() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
 
-  const { selectedAlgorithm, showRecursionTree, setShowRecursionTree } = useSortingStore();
+  const { selectedAlgorithm, showRecursionTree, setShowRecursionTree, recursionTreeMaximized } = useSortingStore();
   const isRecursive = selectedAlgorithm === 'merge' || selectedAlgorithm === 'quick';
 
   // Resizable panel widths
@@ -164,51 +164,67 @@ export default function App() {
             <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden bg-[var(--bg-gradient-1)]">
 
               {/* ── LEFT PANEL ───────────────────────────────────────────── */}
-              {leftPanelOpen && (
-                <div
-                  className="flex-shrink-0 flex flex-col bg-[var(--panel-bg)] overflow-hidden"
-                  style={{ width: leftWidth }}
-                >
-                  <div className="w-full h-full flex flex-col p-4 overflow-y-auto no-scrollbar gap-3">
-                    <SortingLeftPanel onCollapse={() => setLeftPanelOpen(false)} />
-                  </div>
+              <div
+                className="flex-shrink-0 flex flex-col bg-[var(--panel-bg)] overflow-hidden transition-all duration-300 ease-in-out"
+                style={{
+                  width: leftPanelOpen ? leftWidth : 0,
+                  opacity: leftPanelOpen ? 1 : 0,
+                }}
+              >
+                <div className="w-full h-full flex flex-col p-4 overflow-y-auto no-scrollbar gap-3" style={{ minWidth: leftWidth }}>
+                  <SortingLeftPanel onCollapse={() => setLeftPanelOpen(false)} />
                 </div>
-              )}
+              </div>
 
               {/* ── LEFT RESIZE HANDLE ───────────────────────────────────── */}
-              {leftPanelOpen ? (
-                <div
-                  onMouseDown={onLeftDividerMouseDown}
-                  className="group relative flex-shrink-0 w-[5px] cursor-col-resize z-10 select-none"
-                  style={{ background: 'var(--border-color)' }}
-                  title="Drag to resize"
-                >
-                  {/* visible grip strip */}
-                  <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[5px] transition-colors group-hover:bg-blue-500/60 group-active:bg-blue-500" />
-                  {/* dotted grip icon in center */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-blue-400" />
-                    ))}
-                  </div>
+              <div
+                onMouseDown={onLeftDividerMouseDown}
+                className="group relative flex-shrink-0 cursor-col-resize z-10 select-none transition-all duration-300"
+                style={{
+                  background: 'var(--border-color)',
+                  width: leftPanelOpen ? 5 : 0,
+                  opacity: leftPanelOpen ? 1 : 0,
+                  pointerEvents: leftPanelOpen ? 'auto' : 'none',
+                }}
+                title="Drag to resize"
+              >
+                {/* visible grip strip */}
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[5px] transition-colors group-hover:bg-blue-500/60 group-active:bg-blue-500" />
+                {/* dotted grip icon in center */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-1 h-1 rounded-full bg-blue-400" />
+                  ))}
                 </div>
-              ) : (
-                /* Expand left tab */
-                <button
-                  onClick={() => setLeftPanelOpen(true)}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-l-0 rounded-r-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-colors"
-                  title="Expand left panel"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              )}
+              </div>
+
+              {/* Expand left tab */}
+              <button
+                onClick={() => setLeftPanelOpen(true)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-l-0 rounded-r-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-all duration-300 ease-in-out"
+                style={{
+                  opacity: leftPanelOpen ? 0 : 1,
+                  pointerEvents: leftPanelOpen ? 'none' : 'auto',
+                  transform: `translateY(-50%) translateX(${leftPanelOpen ? '-20px' : '0'})`,
+                }}
+                title="Expand left panel"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
 
               {/* ── CENTER — Canvas + Controls ───────────────────────────── */}
-              <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+              <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
                 {/* Canvas area — fills all space above tree panel + controls */}
-                <div className="flex-1 overflow-hidden relative">
+                <div
+                  className="overflow-hidden relative transition-all duration-500 ease-in-out"
+                  style={{
+                    flex: recursionTreeMaximized ? '0 0 0px' : '1 1 0%',
+                    opacity: recursionTreeMaximized ? 0 : 1,
+                    pointerEvents: recursionTreeMaximized ? 'none' : 'auto',
+                  }}
+                >
                   <SortingCanvas />
                 </div>
 
@@ -220,42 +236,53 @@ export default function App() {
               </div>
 
               {/* ── RIGHT RESIZE HANDLE ──────────────────────────────────── */}
-              {rightPanelOpen ? (
-                <div
-                  onMouseDown={onRightDividerMouseDown}
-                  className="group relative flex-shrink-0 w-[5px] cursor-col-resize z-10 select-none"
-                  style={{ background: 'var(--border-color)' }}
-                  title="Drag to resize"
-                >
-                  <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[5px] transition-colors group-hover:bg-blue-500/60 group-active:bg-blue-500" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-blue-400" />
-                    ))}
-                  </div>
+              <div
+                onMouseDown={onRightDividerMouseDown}
+                className="group relative flex-shrink-0 cursor-col-resize z-10 select-none transition-all duration-300"
+                style={{
+                  background: 'var(--border-color)',
+                  width: rightPanelOpen ? 5 : 0,
+                  opacity: rightPanelOpen ? 1 : 0,
+                  pointerEvents: rightPanelOpen ? 'auto' : 'none',
+                }}
+                title="Drag to resize"
+              >
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[5px] transition-colors group-hover:bg-blue-500/60 group-active:bg-blue-500" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-1 h-1 rounded-full bg-blue-400" />
+                  ))}
                 </div>
-              ) : (
-                /* Expand right tab */
-                <button
-                  onClick={() => setRightPanelOpen(true)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-r-0 rounded-l-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-colors"
-                  title="Expand right panel"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
+              </div>
+
+              {/* Expand right tab */}
+              <button
+                onClick={() => setRightPanelOpen(true)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)] border-r-0 rounded-l-md text-[var(--muted-color)] hover:text-blue-400 hover:bg-[var(--input-bg)] z-20 flex items-center justify-center shadow-lg transition-all duration-300 ease-in-out"
+                style={{
+                  opacity: rightPanelOpen ? 0 : 1,
+                  pointerEvents: rightPanelOpen ? 'none' : 'auto',
+                  transform: `translateY(-50%) translateX(${rightPanelOpen ? '20px' : '0'})`,
+                }}
+                title="Expand right panel"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
 
               {/* ── RIGHT PANEL ──────────────────────────────────────────── */}
-              {rightPanelOpen && (
-                <div
-                  className="flex-shrink-0 flex flex-col bg-[var(--panel-bg)] overflow-hidden"
-                  style={{ width: rightWidth }}
-                >
+              <div
+                className="flex-shrink-0 flex flex-col bg-[var(--panel-bg)] overflow-hidden transition-all duration-300 ease-in-out"
+                style={{
+                  width: rightPanelOpen ? rightWidth : 0,
+                  opacity: rightPanelOpen ? 1 : 0,
+                }}
+              >
+                <div className="w-full h-full flex flex-col overflow-hidden" style={{ minWidth: rightWidth }}>
                   <SortingRightPanel setRightPanelOpen={setRightPanelOpen} />
                 </div>
-              )}
+              </div>
 
             </div>
           </main>
