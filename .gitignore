@@ -2,9 +2,9 @@
 node_modules/
 apps/*/node_modules/
 
-# Build outputs
-dist/
-apps/*/dist/
+# Build outputs (committed for Vercel static deployment)
+# dist/
+# apps/*/dist/
 
 # Old public built files
 public/graph/
