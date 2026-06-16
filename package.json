@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node server.js",
     "build": "npm run build:pattern && npm run build:tree && npm run build:graph && npm run build:sorting && node copy-dist.js",
+    "vercel-build": "npm install --prefix apps/pattern && npm run build --prefix apps/pattern && npm install --prefix apps/tree && npm run build --prefix apps/tree && npm install --prefix apps/graph && npm run build --prefix apps/graph && npm install --prefix apps/sorting && npm run build --prefix apps/sorting && node copy-dist.js",
     "build:graph": "npm install --prefix apps/graph && npm run build --prefix apps/graph",
     "build:sorting": "npm install --prefix apps/sorting && npm run build --prefix apps/sorting",
     "build:tree": "npm install --prefix apps/tree && npm run build --prefix apps/tree",

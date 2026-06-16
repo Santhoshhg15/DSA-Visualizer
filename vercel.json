@@ -1,6 +1,7 @@
 {
-  "cleanUrls": true,
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist",
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/stack", "destination": "/stack-visualizer.html" },
     { "source": "/pattern", "destination": "/pattern/index.html" },
