@@ -47,4 +47,42 @@ export interface SortStep {
   pass?: number;
   arrayAccesses?: number;
   currentPass?: number;
+
+  // Recursion tree snapshot (merge sort / quick sort only)
+  recursionTree?: RecursionTreeSnapshot;
+}
+
+// ─── Recursion Tree Types ────────────────────────────────────────────────────
+
+export type RecursionNodeState =
+  | 'pending'        // not yet reached
+  | 'active'         // currently executing
+  | 'splitting'      // being divided
+  | 'left-done'      // left child complete
+  | 'merging'        // merge phase active
+  | 'partitioning'   // quick sort partition in progress
+  | 'done';          // fully sorted/placed
+
+export interface RecursionNode {
+  id: string;           // e.g. "merge-0-7", "quick-2-5"
+  type: 'merge' | 'quick';
+  left: number;         // left index
+  right: number;        // right index
+  mid?: number;         // mid index (merge only)
+  pivot?: number;       // pivot index (quick only)
+  pivotValue?: number;  // pivot value (quick only)
+  subarray: number[];   // values at this range
+  state: RecursionNodeState;
+  parentId: string | null;
+  leftChildId: string | null;
+  rightChildId: string | null;
+  depth: number;        // 0 = root
+  isBaseCase: boolean;  // single element
+}
+
+export interface RecursionTreeSnapshot {
+  nodes: Record<string, RecursionNode>;
+  activeNodeId: string | null;
+  rootId: string | null;
+  maxDepth: number;
 }

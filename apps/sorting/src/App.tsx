@@ -5,6 +5,7 @@ import { SortingCanvas } from './components/SortingCanvas';
 import { SortingLeftPanel } from './components/SortingLeftPanel';
 import { SortingRightPanel } from './components/SortingRightPanel';
 import { SortingControls } from './components/SortingControls';
+import { RecursionTreePanel } from './components/RecursionTreePanel';
 import { useSortingStore } from './stores/useSortingStore';
 import { generateBubbleSortSteps } from './algorithms/bubbleSort';
 import { generateSelectionSortSteps } from './algorithms/selectionSort';
@@ -24,6 +25,9 @@ export default function App() {
   const [showLanding, setShowLanding] = useState(true);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+
+  const { selectedAlgorithm, showRecursionTree, setShowRecursionTree } = useSortingStore();
+  const isRecursive = selectedAlgorithm === 'merge' || selectedAlgorithm === 'quick';
 
   // Resizable panel widths
   const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
@@ -131,7 +135,22 @@ export default function App() {
             Sorting <span className="font-medium opacity-70">Visualizer</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4" />
+        <div className="flex items-center gap-4">
+          {/* Recursion tree toggle — only visible for Merge/Quick sort in visualizer mode */}
+          {!showLanding && isRecursive && (
+            <button
+              onClick={() => setShowRecursionTree(!showRecursionTree)}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                showRecursionTree
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                  : 'bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--muted-color)] hover:border-emerald-500/40 hover:text-emerald-400'
+              }`}
+              title="Toggle recursion tree panel"
+            >
+              🌳 <span>Recursion Tree</span>
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="flex-1 flex flex-col relative overflow-hidden">
@@ -188,9 +207,15 @@ export default function App() {
 
               {/* ── CENTER — Canvas + Controls ───────────────────────────── */}
               <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                {/* Canvas area — fills all space above tree panel + controls */}
                 <div className="flex-1 overflow-hidden relative">
                   <SortingCanvas />
                 </div>
+
+                {/* Recursion tree panel — between canvas and playback controls */}
+                <RecursionTreePanel />
+
+                {/* Playback controls bar */}
                 <SortingControls />
               </div>
 

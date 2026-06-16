@@ -22,6 +22,9 @@ interface SortingState {
   arrayAccesses: number;
   currentPass: number;
 
+  // Recursion Tree
+  showRecursionTree: boolean;
+
   // Actions
   setArray: (arr: number[]) => void;
   setArraySize: (n: number) => void;
@@ -37,6 +40,7 @@ interface SortingState {
   stepBackward: () => void;
   skipToStart: () => void;
   skipToEnd: () => void;
+  setShowRecursionTree: (val: boolean) => void;
 }
 
 let playbackInterval: ReturnType<typeof setInterval> | null = null;
@@ -149,6 +153,7 @@ export const useSortingStore = create<SortingState>((set, get) => {
     swaps: 0,
     arrayAccesses: 0,
     currentPass: 0,
+    showRecursionTree: false,
 
     setArray: (arr) => {
       const { selectedAlgorithm } = get();
@@ -321,5 +326,6 @@ export const useSortingStore = create<SortingState>((set, get) => {
         });
       }
     },
+    setShowRecursionTree: (val) => set({ showRecursionTree: val }),
   };
 });
