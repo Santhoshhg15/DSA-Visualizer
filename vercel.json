@@ -1,26 +1,17 @@
 {
   "cleanUrls": true,
-  "outputDirectory": "dist/portal",
+  "outputDirectory": "dist",
   "rewrites": [
-    {
-      "source": "/pattern/(.*)",
-      "destination": "/pattern/index.html"
-    },
-    {
-      "source": "/tree/(.*)",
-      "destination": "/tree/index.html"
-    },
-    {
-      "source": "/graph/(.*)",
-      "destination": "/graph/index.html"
-    },
-    {
-      "source": "/sorting/(.*)",
-      "destination": "/sorting/index.html"
-    },
-    {
-      "source": "/stack",
-      "destination": "/stack-visualizer.html"
-    }
+    { "source": "/", "destination": "/portal/index.html" },
+    { "source": "/favicon.svg", "destination": "/portal/favicon.svg" },
+    { "source": "/stack", "destination": "/portal/stack-visualizer.html" },
+    { "source": "/pattern", "destination": "/pattern/index.html" },
+    { "source": "/pattern/(.*)", "destination": "/pattern/index.html" },
+    { "source": "/tree", "destination": "/tree/index.html" },
+    { "source": "/tree/(.*)", "destination": "/tree/index.html" },
+    { "source": "/graph", "destination": "/graph/index.html" },
+    { "source": "/graph/(.*)", "destination": "/graph/index.html" },
+    { "source": "/sorting", "destination": "/sorting/index.html" },
+    { "source": "/sorting/(.*)", "destination": "/sorting/index.html" }
   ]
 }
