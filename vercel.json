@@ -2,9 +2,7 @@
   "cleanUrls": true,
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/", "destination": "/portal/index.html" },
-    { "source": "/favicon.svg", "destination": "/portal/favicon.svg" },
-    { "source": "/stack", "destination": "/portal/stack-visualizer.html" },
+    { "source": "/stack", "destination": "/stack-visualizer.html" },
     { "source": "/pattern", "destination": "/pattern/index.html" },
     { "source": "/pattern/(.*)", "destination": "/pattern/index.html" },
     { "source": "/tree", "destination": "/tree/index.html" },
