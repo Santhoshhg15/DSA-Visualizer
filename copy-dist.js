@@ -46,6 +46,25 @@ copyFile(
   'portal/favicon.svg'
 );
 
+// Also copy portal files to dist/portal/ for local server.js
+const PORTAL_DIST = path.join(DIST, 'portal');
+if (!fs.existsSync(PORTAL_DIST)) fs.mkdirSync(PORTAL_DIST, { recursive: true });
+copyFile(
+  path.join(__dirname, 'portal', 'index.html'),
+  path.join(PORTAL_DIST, 'index.html'),
+  'portal/index.html to dist/portal'
+);
+copyFile(
+  path.join(__dirname, 'portal', 'stack-visualizer.html'),
+  path.join(PORTAL_DIST, 'stack-visualizer.html'),
+  'portal/stack-visualizer.html to dist/portal'
+);
+copyFile(
+  path.join(__dirname, 'portal', 'favicon.svg'),
+  path.join(PORTAL_DIST, 'favicon.svg'),
+  'portal/favicon.svg to dist/portal'
+);
+
 // Copy built apps into subdirectories
 copyDir(
   path.join(__dirname, 'apps', 'pattern', 'dist'),

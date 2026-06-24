@@ -1,689 +1,1609 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Algorithm & Data Structure Visualizer Suite</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algorithm & Data Structure Visualizer Suite</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ================================ */
+    /* LIGHT MODE (default)             */
+    /* ================================ */
+    :root,
+    [data-theme="light"] {
+      /* Surfaces */
+      --surface-base: #ffffff;
+      --surface-container: #f8f9fc;
+      --surface-card: #ffffff;
+      --surface-card-hover: #f8f9fc;
 
-  :root {
-    --bg: #0b0d12;
-    --surface: #13161e;
-    --surface2: #1a1e29;
-    --border: #252a38;
-    --border2: #2f3648;
-    --text: #e8eaf2;
-    --text-muted: #8b95b3;
-    --accent: #4fffb0;
-    --accent-dim: rgba(79,255,176,0.12);
-    --blue: #5ea8ff;
-    --blue-dim: rgba(94,168,255,0.12);
-    --pink: #ff6eb4;
-    --pink-dim: rgba(255,110,180,0.12);
-    --radius-lg: 24px;
-    --radius: 12px;
+      /* Text */
+      --text-primary: #121317;
+      --text-secondary: #45474d;
+      --text-muted: #808080;
+      --text-link: #0000ee;
 
-    --sorting-color: #3b82f6;
-    --sorting-dim: rgba(59, 130, 246, 0.12);
+      /* Borders */
+      --border-color: rgba(33, 34, 38, 0.12);
+      --border-hover: rgba(33, 34, 38, 0.35);
+      --border-strong: #212226;
 
-    /* Background Gradient Animation CSS vars */
-    --color-bg-start: rgb(8, 6, 18);
-    --color-bg-end: rgb(4, 4, 10);
-    --first-color: 18, 113, 255;      /* Blue */
-    --second-color: 107, 33, 168;    /* Purple */
-    --third-color: 79, 255, 176;     /* Teal */
-    --fourth-color: 236, 72, 153;    /* Pink/Magenta */
-    --fifth-color: 239, 68, 68;      /* Red/Orange */
-    --pointer-color: 140, 30, 255;   /* Interactive Violet */
-    --size: 80%;
-    --blending-value: hard-light;
-  }
+      /* Shadows */
+      --shadow-card: 0px 0px 0px 1px rgba(33, 34, 38, 0.12);
+      --shadow-card-hover: 0px 0px 0px 1px rgba(33, 34, 38, 0.35);
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    line-height: 1.6;
-  }
+      /* Button */
+      --btn-primary-bg: #121317;
+      --btn-primary-text: #ffffff;
+      --btn-secondary-bg: transparent;
+      --btn-secondary-border: rgba(33,34,38,0.25);
+      --btn-secondary-text: #121317;
 
-  /* Grid Background overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(79,255,176,0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,255,176,0.02) 1px, transparent 1px);
-    background-size: 50px 50px;
-    pointer-events: none;
-    z-index: 0;
-  }
+      /* Nav */
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-border: rgba(33, 34, 38, 0.12);
 
-  /* Animated Fluid Gradient Background (Aceternity style) */
-  .gradient-bg {
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    overflow: hidden;
-    background: linear-gradient(40deg, var(--color-bg-start), var(--color-bg-end));
-    top: 0;
-    left: 0;
-    z-index: 0;
-  }
-  .gradient-container {
-    filter: blur(80px);
-    width: 100%;
-    height: 100%;
-  }
-  .g1, .g2, .g3, .g4, .g5, .interactive {
-    position: absolute;
-    background: radial-gradient(circle at center, rgba(var(--bubble-color), 0.8) 0, rgba(var(--bubble-color), 0) 50%) no-repeat;
-    mix-blend-mode: var(--blending-value);
-    width: var(--size);
-    height: var(--size);
-    top: calc(50% - var(--size) / 2);
-    left: calc(50% - var(--size) / 2);
-    transform-origin: center center;
-    opacity: 1;
-  }
-  .g1 {
-    --bubble-color: var(--first-color);
-    animation: moveVertical 30s ease infinite;
-  }
-  .g2 {
-    --bubble-color: var(--second-color);
-    animation: moveInCircle 20s reverse infinite;
-    transform-origin: calc(50% - 400px);
-  }
-  .g3 {
-    --bubble-color: var(--third-color);
-    animation: moveInCircle 40s linear infinite;
-    transform-origin: calc(50% + 400px);
-  }
-  .g4 {
-    --bubble-color: var(--fourth-color);
-    animation: moveHorizontal 40s ease infinite;
-    opacity: 0.7;
-  }
-  .g5 {
-    --bubble-color: var(--fifth-color);
-    animation: moveInCircle 20s ease infinite;
-    transform-origin: calc(50% - 800px) calc(50% + 200px);
-  }
-  .interactive {
-    --bubble-color: var(--pointer-color);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: -50%;
-    left: -50%;
-    opacity: 0.6;
-    mix-blend-mode: var(--blending-value);
-  }
+      /* Toggle button */
+      --toggle-bg: #f8f9fc;
+      --toggle-border: rgba(33, 34, 38, 0.15);
+      --toggle-text: #45474d;
+      --toggle-icon: '🌙';
 
-  @keyframes moveInCircle {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(180deg); }
-    100% { transform: rotate(360deg); }
-  }
-  @keyframes moveVertical {
-    0% { transform: translateY(-50%); }
-    50% { transform: translateY(50%); }
-    100% { transform: translateY(-50%); }
-  }
-  @keyframes moveHorizontal {
-    0% { transform: translateX(-50%) translateY(-10%); }
-    50% { transform: translateX(50%) translateY(10%); }
-    100% { transform: translateX(-50%) translateY(-10%); }
-  }
+      /* Hover glow */
+      --hover-glow: rgba(0, 0, 0, 0.03);
 
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 2rem 6rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Header / Navbar */
-  header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1.5rem 0;
-    margin-bottom: 4rem;
-  }
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    background: linear-gradient(120deg, var(--accent) 0%, var(--blue) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo svg {
-    stroke: var(--accent);
-  }
-
-  /* Hero Section */
-  .hero {
-    text-align: center;
-    margin-bottom: 5rem;
-    position: relative;
-    z-index: 2;
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 1s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.4rem, 6.5vw, 4.2rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.6));
-    margin-bottom: 1.5rem;
-  }
-  .hero p {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    margin-bottom: 2.5rem;
-    max-width: 680px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* Portal Cards Grid */
-  .portal-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2.5rem;
-    margin-top: 2rem;
-  }
-  @media (max-width: 900px) {
-    .portal-grid {
-      grid-template-columns: 1fr;
+      /* Grid stroke & hover fill */
+      --grid-stroke: rgba(0, 0, 0, 0.08);
+      --grid-fill-hover: rgba(0, 0, 0, 0.05);
+      --grid-fill-active: rgba(0, 0, 0, 0.08);
     }
-  }
 
-  .portal-card {
-    background: rgba(19, 22, 30, 0.6);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 3rem 2.5rem;
-    backdrop-filter: blur(12px);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-  .portal-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255,255,255,0.06), transparent 40%);
-    z-index: 1;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-  .portal-card:hover::before {
-    opacity: 1;
-  }
-  
-  .portal-card:hover {
-    border-color: var(--border2);
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  }
+    /* ================================ */
+    /* DARK MODE                        */
+    /* ================================ */
+    [data-theme="dark"] {
+      /* Surfaces */
+      --surface-base: #0D0D0F;
+      --surface-container: #131316;
+      --surface-card: #131316;
+      --surface-card-hover: #1C1C21;
 
-  .portal-card.stack-card:hover {
-    box-shadow: 0 20px 40px rgba(79, 255, 176, 0.05);
-  }
-  .portal-card.pattern-card:hover {
-    box-shadow: 0 20px 40px rgba(94, 168, 255, 0.05);
-  }
-  .portal-card.tree-card:hover {
-    box-shadow: 0 20px 40px rgba(255, 110, 180, 0.05);
-  }
-  .portal-card.graph-card:hover {
-    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.05);
-  }
-  .portal-card.sorting-card:hover {
-    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.05);
-  }
-  .sorting-icon {
-    background: var(--sorting-dim);
-    color: var(--sorting-color);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-  }
+      /* Text */
+      --text-primary: #F0F0F5;
+      --text-secondary: #B8B8C8;
+      --text-muted: #6B6B80;
+      --text-link: #60a5fa;
 
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    z-index: 2;
-  }
+      /* Borders */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.18);
+      --border-strong: rgba(255, 255, 255, 0.15);
 
-  .card-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-  }
-  .stack-icon {
-    background: var(--accent-dim);
-    color: var(--accent);
-    border: 1px solid rgba(79, 255, 176, 0.2);
-  }
-  .pattern-icon {
-    background: var(--blue-dim);
-    color: var(--blue);
-    border: 1px solid rgba(94, 168, 255, 0.2);
-  }
-  .tree-icon {
-    background: var(--pink-dim);
-    color: var(--pink);
-    border: 1px solid rgba(255, 110, 180, 0.2);
-  }
-  .graph-icon {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-  }
+      /* Shadows */
+      --shadow-card: 0px 0px 0px 1px rgba(255, 255, 255, 0.06);
+      --shadow-card-hover: 0px 0px 0px 1px rgba(255, 255, 255, 0.15);
 
-  .card-header h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #fff;
-  }
+      /* Button */
+      --btn-primary-bg: #F0F0F5;
+      --btn-primary-text: #0D0D0F;
+      --btn-secondary-bg: transparent;
+      --btn-secondary-border: rgba(255,255,255,0.15);
+      --btn-secondary-text: #F0F0F5;
 
-  .card-desc {
-    color: var(--text-muted);
-    font-size: 1.05rem;
-    margin-bottom: 2rem;
-    line-height: 1.5;
-    flex-grow: 1;
-    z-index: 2;
-  }
+      /* Nav */
+      --nav-bg: rgba(13, 13, 15, 0.85);
+      --nav-border: rgba(255, 255, 255, 0.08);
 
-  .feature-list {
-    list-style: none;
-    margin-bottom: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    z-index: 2;
-  }
-  .feature-list li {
-    font-size: 0.95rem;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .feature-list li svg {
-    flex-shrink: 0;
-  }
+      /* Toggle button */
+      --toggle-bg: #1C1C21;
+      --toggle-border: rgba(255, 255, 255, 0.1);
+      --toggle-text: #B8B8C8;
+      --toggle-icon: '☀️';
 
-  .btn-launch {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    padding: 16px;
-    border-radius: 50px;
-    text-decoration: none;
-    transition: all 0.2s;
-    z-index: 2;
-  }
-  .btn-stack {
-    background: linear-gradient(135deg, var(--accent) 0%, #30df93 100%);
-    color: var(--bg);
-    box-shadow: 0 8px 24px rgba(79,255,176,0.25);
-  }
-  .btn-stack:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(79,255,176,0.4);
-  }
-  
-  .btn-pattern {
-    background: linear-gradient(135deg, var(--blue) 0%, #3d88eb 100%);
-    color: var(--bg);
-    box-shadow: 0 8px 24px rgba(94,168,255,0.25);
-  }
-  .btn-pattern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(94,168,255,0.4);
-  }
-  
-  .btn-tree {
-    background: linear-gradient(135deg, var(--pink) 0%, #eb4b96 100%);
-    color: var(--bg);
-    box-shadow: 0 8px 24px rgba(255, 110, 180, 0.25);
-  }
-  .btn-tree:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(255, 110, 180, 0.4);
-  }
+      /* Hover glow */
+      --hover-glow: rgba(255, 255, 255, 0.04);
 
-  .btn-graph {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: var(--bg);
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-  }
-  .btn-graph:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
-  }
+      /* Grid stroke & hover fill */
+      --grid-stroke: rgba(255, 255, 255, 0.07);
+      --grid-fill-hover: rgba(255, 255, 255, 0.05);
+      --grid-fill-active: rgba(255, 255, 255, 0.08);
+    }
 
-  .btn-sorting {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: var(--bg);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
-  }
-  .btn-sorting:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  footer {
-    text-align: center;
-    margin-top: 8rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-family: 'JetBrains Mono', monospace;
-  }
-</style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--surface-base);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 17.5px;
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: 0.012em;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 72px;
+      z-index: 100;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .nav-logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      color: var(--toggle-text);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--border-hover);
+      transform: scale(1.05);
+    }
+
+    .theme-toggle-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* HERO SECTION */
+    body {
+      background-color: var(--surface-base);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 17.5px;
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: 0.012em;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .hero {
+      padding: 120px 72px 72px;
+      max-width: 100%; /* Full width for ripple bg */
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      min-height: 520px; /* Ensures ripple grid has space */
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-container);
+      color: var(--text-secondary);
+      font-size: 14.5px;
+      font-weight: 400; /* Fallback for 450 */
+      letter-spacing: 0.02em;
+      margin-bottom: 36px;
+      transition: all 0.3s ease;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.98px;
+      color: var(--text-primary);
+      max-width: 680px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      color: var(--text-secondary);
+    }
+
+    .hero-description {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 9999px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      opacity: 1;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 9999px;
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      border: 1px solid var(--btn-secondary-border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-strong);
+      background: var(--surface-container);
+      transform: translateY(-1px);
+    }
+
+    /* STATS DASHBOARD ROW */
+    .dashboard-row {
+      padding: 0 72px 64px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .dashboard-card {
+      background: var(--surface-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .dashboard-card:hover {
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .dashboard-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .dashboard-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .dashboard-sublabel {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 2px;
+      opacity: 0.7;
+    }
+
+    /* CATEGORY FILTER PILLS */
+    .filter-section {
+      padding: 0 72px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .filter-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .filter-count {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-card);
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .filter-pill:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .filter-pill.active {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border-color: var(--btn-primary-bg);
+    }
+
+    .filter-pill .pill-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      color: inherit;
+    }
+
+    .filter-pill:not(.active) .pill-count {
+      background: var(--surface-container);
+      color: var(--text-muted);
+    }
+
+    /* VISUALIZER SECTION & GRID */
+    .visualizer-section {
+      padding: 0 72px 64px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .visualizer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* CARD DESIGN */
+    .portal-card {
+      background: var(--surface-card);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), var(--hover-glow), transparent 40%);
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .portal-card:hover::before {
+      opacity: 1;
+    }
+
+    .portal-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card-hover);
+      background: var(--surface-card-hover);
+    }
+
+    .card-category-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-container);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: var(--surface-container);
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .card-header h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feature-list li {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-list li svg {
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      opacity: 0.6;
+    }
+
+    .btn-launch {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 12px 20px;
+      border-radius: 9999px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      letter-spacing: -0.01em;
+      border: 1px solid var(--border-color);
+      background: var(--surface-container);
+      color: var(--text-primary);
+      margin-top: auto;
+    }
+
+    .btn-launch:hover {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border-color: var(--btn-primary-bg);
+      transform: translateY(-1px);
+    }
+
+    /* COMING SOON SECTION */
+    .coming-soon-section {
+      padding: 0 72px 96px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .coming-soon-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .coming-soon-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .coming-soon-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .coming-soon-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .coming-soon-card {
+      background: var(--surface-card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      opacity: 0.55;
+      cursor: not-allowed;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .coming-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .coming-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .coming-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: var(--surface-container);
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .coming-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .coming-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .coming-topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .coming-topic {
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 120px;
+      padding: 48px 72px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+
+    .footer-logo {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: -0.01em;
+    }
+
+    .footer-copy {
+      font-size: 14.5px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.01em;
+    }
+
+    @media (max-width: 600px) {
+      footer {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        padding: 32px 24px;
+      }
+    }
+
+    /* RESPONSIVE LAYOUT UPDATES */
+    @media (max-width: 1024px) {
+      nav {
+        padding: 0 36px;
+      }
+      .hero {
+        padding: 100px 36px 48px;
+      }
+      .dashboard-row {
+        padding: 0 36px 48px;
+      }
+      .filter-section {
+        padding: 0 36px 24px;
+      }
+      .visualizer-section {
+        padding: 0 36px 48px;
+      }
+      .visualizer-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .coming-soon-section {
+        padding: 0 36px 64px;
+      }
+      .coming-soon-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      footer {
+        padding: 48px 36px;
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 36px;
+        letter-spacing: -0.5px;
+      }
+      nav {
+        padding: 0 20px;
+      }
+      .hero {
+        padding: 90px 20px 36px;
+      }
+      .dashboard-row {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 20px 48px;
+      }
+      .filter-section {
+        padding: 0 20px 24px;
+      }
+      .visualizer-section {
+        padding: 0 20px 48px;
+      }
+      .coming-soon-section {
+        padding: 0 20px 64px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .visualizer-grid {
+        grid-template-columns: 1fr;
+      }
+      .coming-soon-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 28px;
+      }
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-primary,
+      .btn-secondary {
+        text-align: center;
+        justify-content: center;
+      }
+      .dashboard-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* ================================ */
+    /* Interactive Grid Pattern         */
+    /* ================================ */
+
+    #interactive-grid {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      contain: layout style size;
+      transform: translateZ(0); /* GPU layer */
+      mask-image: radial-gradient(
+        ellipse 80% 80% at 50% 50%,
+        black 60%,
+        transparent 100%
+      );
+      -webkit-mask-image: radial-gradient(
+        ellipse 80% 80% at 50% 50%,
+        black 60%,
+        transparent 100%
+      );
+    }
+
+    #interactive-grid rect {
+      fill: transparent;
+      stroke: var(--grid-stroke);
+      stroke-width: 1;
+      pointer-events: all;
+      cursor: crosshair;
+      transition: fill 100ms ease-in-out;
+      will-change: fill;
+      contain: strict;
+    }
+
+    #interactive-grid rect.hovered {
+      fill: var(--grid-fill-hover);
+      transition: fill 100ms ease-in-out;
+    }
+
+    #interactive-grid rect.fading {
+      fill: transparent;
+      transition: fill 1000ms ease-in-out;
+    }
+  </style>
 </head>
 <body>
-<div class="gradient-bg">
-  <div class="gradient-container">
-    <div class="g1"></div>
-    <div class="g2"></div>
-    <div class="g3"></div>
-    <div class="g4"></div>
-    <div class="g5"></div>
-    <div class="interactive"></div>
-  </div>
-</div>
 
-<div class="container">
-  <!-- Navigation Header -->
-  <header>
-    <div class="logo">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5M2 12l10 5 10-5"/>
       </svg>
-      Algorithm Suite Visualizer
+      Algorithm Suite
+    </a>
+    <div class="nav-actions">
+      <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span>
+      </button>
     </div>
-  </header>
+  </nav>
 
-  <!-- Hero Grid -->
+  <!-- HERO -->
   <section class="hero">
-    <div class="badge">Gradients X Animations</div>
-    <h1>Trace Code & Algorithms.</h1>
-    <p>
-      An interactive playground to visualize data structures, flow, and pattern matching execution in real-time. Choose a tool below to begin.
-    </p>
+
+    <!-- Interactive Grid Pattern Background -->
+    <svg
+      id="interactive-grid"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true">
+      <!-- Rect elements injected by JavaScript -->
+    </svg>
+
+    <!-- Bottom fade overlay -->
+    <div style="
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--surface-base)
+      );
+      z-index: 1;
+      pointer-events: none;
+    "></div>
+
+    <!-- Existing hero content — sits above grid -->
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;">
+      <div class="hero-badge">
+        ✦ Interactive DSA Visualizer Suite
+      </div>
+
+      <h1>
+        Trace Code &amp;<br>
+        <span>Understand Algorithms.</span>
+      </h1>
+
+      <p class="hero-description">
+        An interactive playground to visualize data structures, sorting algorithms, graph traversals, and pattern matching execution in real-time.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/graph" class="btn-primary">
+          Get Started →
+        </a>
+        <a href="#visualizers" class="btn-secondary">
+          Explore Tools
+        </a>
+      </div>
+    </div>
   </section>
 
-  <!-- Visualizer Portal Cards -->
-  <div class="portal-grid">
-    <!-- Card 1: Stack Visualizer -->
-    <div class="portal-card stack-card">
-      <div class="card-header">
-        <div class="card-icon stack-icon">🥞</div>
-        <h2>Stack Visualizer</h2>
-      </div>
-      <p class="card-desc">
-        Trace stack push, pop, and peek operations interactively. Paste algorithms in Python, C++, Java, or JS and watch them automatically compile.
-      </p>
-      <ul class="feature-list">
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          AI-Powered Algorithm Transpiler
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Dynamic 3D-like Stack Visualization
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Live Code Execution Operations Log
-        </li>
-      </ul>
-      <a href="/stack-visualizer" class="btn-launch btn-stack">
-        Launch Stack visualizer
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
+  <!-- STATS DASHBOARD ROW -->
+  <div class="dashboard-row">
+    <div class="dashboard-card">
+      <span class="dashboard-number">5</span>
+      <span class="dashboard-label">
+        Visualizers
+      </span>
+      <span class="dashboard-sublabel">
+        Ready to use
+      </span>
     </div>
 
-    <!-- Card 2: String Pattern Matching -->
-    <div class="portal-card pattern-card">
-      <div class="card-header">
-        <div class="card-icon pattern-icon">🔍</div>
-        <h2>Pattern Matching</h2>
-      </div>
-      <p class="card-desc">
-        Explore classical string-matching algorithms step-by-step. Visualize pre-computations, comparisons, rolling hashes, and tree paths.
-      </p>
-      <ul class="feature-list">
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Naive Search & KMP (LPS tables)
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Rabin-Karp Rolling Hashes & Collisions
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Trie Word Search II (Grid DFS routing)
-        </li>
-      </ul>
-      <a href="/pattern" class="btn-launch btn-pattern">
-        Launch Pattern Visualizer
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
+    <div class="dashboard-card">
+      <span class="dashboard-number">20+</span>
+      <span class="dashboard-label">
+        Algorithms
+      </span>
+      <span class="dashboard-sublabel">
+        Traced step by step
+      </span>
     </div>
 
-    <!-- Card 3: Tree Visualizer -->
-    <div class="portal-card tree-card">
-      <div class="card-header">
-        <div class="card-icon tree-icon">🌳</div>
-        <h2>Tree Visualizer</h2>
-      </div>
-      <p class="card-desc">
-        Construct and traverse binary search trees in real time. Animate insertions, deletions, and DFS/BFS traversals with call stack visualizations.
-      </p>
-      <ul class="feature-list">
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          BST Node Insert, Delete, and Search
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Animated DFS (In/Pre/Post-order) & BFS
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Interactive Recursion Stack & Queue Panel
-        </li>
-      </ul>
-      <a href="/tree" class="btn-launch btn-tree">
-        Launch Tree Visualizer
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
+    <div class="dashboard-card">
+      <span class="dashboard-number">3</span>
+      <span class="dashboard-label">
+        Grid Programs
+      </span>
+      <span class="dashboard-sublabel">
+        Islands · Cycle · Bipartite
+      </span>
     </div>
 
-    <!-- Card 4: Graph Visualizer -->
-    <div class="portal-card graph-card">
-      <div class="card-header">
-        <div class="card-icon graph-icon">🕸️</div>
-        <h2>Graph Visualizer</h2>
-      </div>
-      <p class="card-desc">
-        Learn, Build, and Explore Graph Algorithms. Start with fundamentals and progress to complex shortest path algorithms.
-      </p>
-      <ul class="feature-list">
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          BFS, DFS & Shortest Path Algorithms
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Dijkstra, Bellman-Ford & Floyd-Warshall
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Programs: Islands, Cycle Detection & Bipartite
-        </li>
-      </ul>
-      <a href="/graph" class="btn-launch btn-graph">
-        Launch Graph Visualizer
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
-    </div>
-
-    <!-- Card 5: Sorting Algorithms -->
-    <div class="portal-card sorting-card">
-      <div class="card-header">
-        <div class="card-icon sorting-icon">🔀</div>
-        <h2>Sorting Algorithms</h2>
-      </div>
-      <p class="card-desc">
-        Visualize and trace comparison-based sorting algorithms step by step. Watch each comparison, swap, and partition happen in real time with full execution trace logs.
-      </p>
-      <ul class="feature-list">
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Bubble, Selection & Insertion Sort
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Merge Sort & Quick Sort (Pivot Partition)
-        </li>
-        <li>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sorting-color)" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Step-by-step Trace with Comparison Counter
-        </li>
-      </ul>
-      <a href="/sorting" class="btn-launch btn-sorting">
-        Launch Sorting Visualizer
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
+    <div class="dashboard-card">
+      <span class="dashboard-number">4+</span>
+      <span class="dashboard-label">
+        Coming Soon
+      </span>
+      <span class="dashboard-sublabel">
+        Queue · LL · DP · Heap
+      </span>
     </div>
   </div>
 
+  <!-- CATEGORY FILTER PILLS -->
+  <div class="filter-section" id="visualizers">
+    <div class="filter-header">
+      <span class="filter-title">
+        Browse Visualizers
+      </span>
+      <span class="filter-count" id="visible-count">
+        Showing 5 tools
+      </span>
+    </div>
+    <div class="filter-pills">
+      <button class="filter-pill active" data-filter="all" onclick="filterCards('all')">
+        All
+        <span class="pill-count">5</span>
+      </button>
+      <button class="filter-pill" data-filter="graphs" onclick="filterCards('graphs')">
+        🕸️ Graphs
+        <span class="pill-count">1</span>
+      </button>
+      <button class="filter-pill" data-filter="sorting" onclick="filterCards('sorting')">
+        🔀 Sorting
+        <span class="pill-count">1</span>
+      </button>
+      <button class="filter-pill" data-filter="trees" onclick="filterCards('trees')">
+        🌳 Trees
+        <span class="pill-count">1</span>
+      </button>
+      <button class="filter-pill" data-filter="strings" onclick="filterCards('strings')">
+        🔍 Strings
+        <span class="pill-count">1</span>
+      </button>
+      <button class="filter-pill" data-filter="stack" onclick="filterCards('stack')">
+        📚 Stack
+        <span class="pill-count">1</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VISUALIZERS GRID SECTION -->
+  <div class="visualizer-section">
+    <div class="visualizer-grid" id="visualizer-grid">
+
+      <!-- Card 1: Stack -->
+      <div class="portal-card" data-category="stack">
+        <span class="card-category-tag">
+          Stack
+        </span>
+        <div class="card-header">
+          <div class="card-icon">🥞</div>
+          <h2>Stack Visualizer</h2>
+        </div>
+        <p class="card-desc">
+          Trace stack push, pop, and peek operations interactively. Paste algorithms in Python, C++, Java, or JS and watch them compile.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            AI-Powered Algorithm Transpiler
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Dynamic 3D-like Stack Visualization
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Live Code Execution Operations Log
+          </li>
+        </ul>
+        <a href="/stack-visualizer" class="btn-launch">
+          Launch Stack Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 2: Pattern -->
+      <div class="portal-card" data-category="strings">
+        <span class="card-category-tag">
+          Strings
+        </span>
+        <div class="card-header">
+          <div class="card-icon">🔍</div>
+          <h2>Pattern Matching</h2>
+        </div>
+        <p class="card-desc">
+          Explore classical string-matching algorithms step-by-step. Visualize pre-computations, comparisons, rolling hashes, and tree paths.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Naive Search & KMP (LPS tables)
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Rabin-Karp Rolling Hashes
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Trie Word Search II (Grid DFS)
+          </li>
+        </ul>
+        <a href="/pattern" class="btn-launch">
+          Launch Pattern Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 3: Tree -->
+      <div class="portal-card" data-category="trees">
+        <span class="card-category-tag">
+          Trees
+        </span>
+        <div class="card-header">
+          <div class="card-icon">🌳</div>
+          <h2>Tree Visualizer</h2>
+        </div>
+        <p class="card-desc">
+          Construct and traverse binary search trees in real time. Animate insertions, deletions, and DFS/BFS traversals with call stack views.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            BST Node Insert, Delete & Search
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Animated DFS & BFS Traversals
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Interactive Recursion Stack Panel
+          </li>
+        </ul>
+        <a href="/tree" class="btn-launch">
+          Launch Tree Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 4: Graph -->
+      <div class="portal-card" data-category="graphs">
+        <span class="card-category-tag">
+          Graphs
+        </span>
+        <div class="card-header">
+          <div class="card-icon">🕸️</div>
+          <h2>Graph Visualizer</h2>
+        </div>
+        <p class="card-desc">
+          Learn, Build, and Explore Graph Algorithms. From BFS/DFS traversals to Dijkstra, Kruskal and complex shortest path algorithms.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            BFS, DFS & Shortest Path
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Dijkstra, Bellman-Ford, Floyd-Warshall
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Islands, Cycle Detection & Bipartite
+          </li>
+        </ul>
+        <a href="/graph" class="btn-launch">
+          Launch Graph Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 5: Sorting -->
+      <div class="portal-card" data-category="sorting">
+        <span class="card-category-tag">
+          Sorting
+        </span>
+        <div class="card-header">
+          <div class="card-icon">🔀</div>
+          <h2>Sorting Algorithms</h2>
+        </div>
+        <p class="card-desc">
+          Visualize and trace comparison-based sorting algorithms step by step. Watch each comparison, swap, and partition in real time.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Bubble, Selection & Insertion
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Merge Sort & Quick Sort
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Recursion Tree Visualization
+          </li>
+        </ul>
+        <a href="/sorting" class="btn-launch">
+          Launch Sorting Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMING SOON SECTION -->
+  <div class="coming-soon-section">
+    <div class="coming-soon-header">
+      <span class="coming-soon-title">
+        Coming Soon
+      </span>
+      <div class="coming-soon-line"></div>
+    </div>
+
+    <div class="coming-soon-grid">
+
+      <!-- Queue -->
+      <div class="coming-soon-card">
+        <span class="coming-badge">
+          🔜 Planned
+        </span>
+        <div class="coming-card-header">
+          <div class="coming-icon">📦</div>
+          <span class="coming-name">
+            Queue Visualizer
+          </span>
+        </div>
+        <p class="coming-desc">
+          BFS queue, circular queue, priority queue operations.
+        </p>
+        <div class="coming-topics">
+          <span class="coming-topic">Enqueue</span>
+          <span class="coming-topic">Dequeue</span>
+          <span class="coming-topic">Priority</span>
+        </div>
+      </div>
+
+      <!-- Linked List -->
+      <div class="coming-soon-card">
+        <span class="coming-badge">
+          🔜 Planned
+        </span>
+        <div class="coming-card-header">
+          <div class="coming-icon">🔗</div>
+          <span class="coming-name">
+            Linked List
+          </span>
+        </div>
+        <p class="coming-desc">
+          Singly, doubly, and circular linked list operations.
+        </p>
+        <div class="coming-topics">
+          <span class="coming-topic">Insert</span>
+          <span class="coming-topic">Delete</span>
+          <span class="coming-topic">Reverse</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Programming -->
+      <div class="coming-soon-card">
+        <span class="coming-badge">
+          🔜 Planned
+        </span>
+        <div class="coming-card-header">
+          <div class="coming-icon">📊</div>
+          <span class="coming-name">
+            Dynamic Programming
+          </span>
+        </div>
+        <p class="coming-desc">
+          DP table visualizations with memoization and tabulation.
+        </p>
+        <div class="coming-topics">
+          <span class="coming-topic">Knapsack</span>
+          <span class="coming-topic">LCS</span>
+          <span class="coming-topic">Fibonacci</span>
+        </div>
+      </div>
+
+      <!-- Heap -->
+      <div class="coming-soon-card">
+        <span class="coming-badge">
+          🔜 Planned
+        </span>
+        <div class="coming-card-header">
+          <div class="coming-icon">🏔️</div>
+          <span class="coming-name">
+            Heap Visualizer
+          </span>
+        </div>
+        <p class="coming-desc">
+          Min-heap, max-heap with heapify and priority queue.
+        </p>
+        <div class="coming-topics">
+          <span class="coming-topic">Insert</span>
+          <span class="coming-topic">Heapify</span>
+          <span class="coming-topic">Extract</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
   <footer>
-    &copy; 2026 Developer Visualizer Suite. All rights reserved.
+    <span class="footer-logo">
+      Algorithm Suite Visualizer
+    </span>
+    <span class="footer-copy">
+      &copy; 2026 DSA Visualizer Suite. All rights reserved.
+    </span>
   </footer>
-</div>
 
-<script>
-  // Interactive 3D tilt/light effect
-  const cards = document.querySelectorAll('.portal-card');
-  cards.forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    });
-  });
+  <script>
+    // Theme system
+    const THEME_KEY = 'dsa-portal-theme';
 
-  // Background Gradient Animation interactive cursor tracking
-  const interBubble = document.querySelector('.interactive');
-  let curX = 0;
-  let curY = 0;
-  let tgX = 0;
-  let tgY = 0;
-
-  function move() {
-    curX += (tgX - curX) / 20;
-    curY += (tgY - curY) / 20;
-    if (interBubble) {
-      // Offset by half of bubble dimensions to center it under cursor
-      const offset = window.innerHeight * 0.8 / 2;
-      interBubble.style.transform = `translate(${Math.round(curX - offset)}px, ${Math.round(curY - offset)}px)`;
+    function getStoredTheme() {
+      return localStorage.getItem(THEME_KEY) || 'light';
     }
-    requestAnimationFrame(move);
-  }
 
-  window.addEventListener('mousemove', (e) => {
-    tgX = e.clientX;
-    tgY = e.clientY;
-  });
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+      localStorage.setItem(THEME_KEY, theme);
+    }
 
-  move();
-</script>
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    }
+
+    // Apply theme on load
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme(getStoredTheme());
+    });
+
+    // Subtle radial light effect on card hover
+    const cards = document.querySelectorAll('.portal-card');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    // Category filter logic
+    function filterCards(category) {
+      // Update active pill
+      document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.classList.toggle('active', pill.dataset.filter === category);
+      });
+
+      // Show/hide cards
+      const cards = document.querySelectorAll('.portal-card[data-category]');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cardCategory = card.dataset.category;
+        const matches = category === 'all' ||
+                        cardCategory === category ||
+                        cardCategory.split(',').includes(category);
+
+        if (matches) {
+          card.style.display = 'flex';
+          card.style.animation = 'cardFadeIn 0.2s ease forwards';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Update count text
+      const countEl = document.getElementById('visible-count');
+      if (countEl) {
+        countEl.textContent = `Showing ${visibleCount} tool${visibleCount !== 1 ? 's' : ''}`;
+      }
+    }
+
+    // Inject card fade-in keyframes dynamic style
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes cardFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // ================================
+    // Magic UI Interactive Grid Pattern
+    // Vanilla JS implementation
+    // Full-page fixed background
+    // ================================
+
+    (function() {
+      const isMobile = window.innerWidth < 768;
+      const SQUARE_SIZE = isMobile ? 60 : 40;
+      const svg = document.getElementById('interactive-grid');
+
+      if (!svg) return;
+
+      let cols = 0;
+      let rows = 0;
+      let rects = [];
+      let currentHovered = null;
+      let fadeTimers = {};
+
+      const ACCENT_COLORS = [
+        'rgba(59, 130, 246, 0.12)',   // blue
+        'rgba(16, 185, 129, 0.12)',   // emerald
+        'rgba(124, 58, 237, 0.12)',   // purple
+        'rgba(245, 158, 11, 0.12)',   // amber
+        'rgba(236, 72, 153, 0.12)',   // pink
+        'rgba(8, 145, 178, 0.12)',    // cyan
+      ];
+
+      function buildGrid() {
+        // Clear existing rects
+        while (svg.firstChild) {
+          svg.removeChild(svg.firstChild);
+        }
+        rects = [];
+        Object.values(fadeTimers).forEach(t => clearTimeout(t));
+        fadeTimers = {};
+        currentHovered = null;
+
+        // Calculate grid dimensions based on svg container bounds
+        const rect = svg.getBoundingClientRect();
+        const width = rect.width || svg.clientWidth || window.innerWidth;
+        const height = rect.height || svg.clientHeight || 520;
+
+        cols = Math.ceil(width / SQUARE_SIZE) + 1;
+        rows = Math.ceil(height / SQUARE_SIZE) + 1;
+
+        const fragment = document.createDocumentFragment();
+
+        for (let r = 0; r < rows; r++) {
+          rects[r] = [];
+          for (let c = 0; c < cols; c++) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+            rect.setAttribute('x', c * SQUARE_SIZE);
+            rect.setAttribute('y', r * SQUARE_SIZE);
+            rect.setAttribute('width', SQUARE_SIZE);
+            rect.setAttribute('height', SQUARE_SIZE);
+            rect.dataset.row = r;
+            rect.dataset.col = c;
+
+            // Hover in — highlight based on theme
+            rect.addEventListener('mouseenter', function() {
+              const key = `${r}-${c}`;
+
+              // Cancel any pending fade
+              if (fadeTimers[key]) {
+                clearTimeout(fadeTimers[key]);
+                delete fadeTimers[key];
+              }
+
+              const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+              if (isDark) {
+                const color = ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)];
+                this.style.fill = color;
+                this.style.transition = 'fill 100ms ease-in-out';
+              } else {
+                this.classList.remove('fading');
+                this.classList.add('hovered');
+              }
+              currentHovered = this;
+            }, { passive: true });
+
+            // Hover out — fade to transparent
+            rect.addEventListener('mouseleave', function() {
+              const key = `${r}-${c}`;
+              const el = this;
+              const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+              if (isDark) {
+                el.style.transition = 'fill 1000ms ease-in-out';
+                el.style.fill = 'transparent';
+              } else {
+                el.classList.remove('hovered');
+                el.classList.add('fading');
+
+                fadeTimers[key] = setTimeout(() => {
+                  el.classList.remove('fading');
+                  delete fadeTimers[key];
+                }, 1050);
+              }
+            }, { passive: true });
+
+            fragment.appendChild(rect);
+            rects[r][c] = rect;
+          }
+        }
+
+        svg.appendChild(fragment);
+
+        // Update SVG size
+        svg.setAttribute('width', cols * SQUARE_SIZE);
+        svg.setAttribute('height', rows * SQUARE_SIZE);
+      }
+
+      // Initial build
+      buildGrid();
+
+      // Rebuild on resize (debounced 200ms)
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(buildGrid, 200);
+      }, { passive: true });
+
+      // Update colors when theme changes
+      const observer = new MutationObserver(() => {
+        // CSS variables handle color updates automatically
+      });
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+      });
+    })();
+  </script>
 </body>
 </html>
