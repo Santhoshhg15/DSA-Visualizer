@@ -78,17 +78,19 @@ All actions should be run from the repository root (`d:/Dsa Visualizer/`):
 
 ---
 
-## 📅 Recent Work & Commit History (Branch: `UI-Design`)
+## 📅 Recent Work & Commit History (Branch: `main`)
 
-The project is currently checked out on the **`UI-Design`** branch. The working tree is clean. The latest commits include:
+The project is currently checked out on the **`main`** branch. The working tree is clean. The latest commits include:
 
-1.  **Commit `05e51af` (Latest - Santhosh HG):** *feat: Portal landing page redesign with Magic UI grid, filters, and dashboard layout*
+1.  **Commit `7b4dadb` (Latest - Santhosh HG):** *docs: add AI migration context file*
+    *   Added `ai_context.md` containing full details of architecture, dev instructions, feature mappings, and UI styles.
+2.  **Commit `05e51af` (Santhosh HG):** *feat: Portal landing page redesign with Magic UI grid, filters, and dashboard layout*
     *   Redesigned the gateway portal index page with a modern, cursor-tracking fluid background canvas.
     *   Implemented dashboard cards, category filters, and smooth interactive hover layouts for the sub-visualizers.
-2.  **Commit `8d7b922` & `a93056d` (Santhosh HG):** *feat(sorting): implement recursion tree panel with zoom/pan, maximize view, and smooth layout transitions*
+3.  **Commit `8d7b922` & `a93056d` (Santhosh HG):** *feat(sorting): implement recursion tree panel with zoom/pan, maximize view, and smooth layout transitions*
     *   Designed a live, interactive **Recursion Tree Visualizer** panel specifically for **Merge Sort** and **Quick Sort** within the Sorting Visualizer.
     *   Equipped it with custom SVG node layouts, zoom/pan controls, full-screen maximizing, and smooth step transitions.
-3.  **Commit `650e96f` (Santhosh HG):** *feat: Add draggable resize handles between left/center/right panels in Sorting Visualizer*
+4.  **Commit `650e96f` (Santhosh HG):** *feat: Add draggable resize handles between left/center/right panels in Sorting Visualizer*
     *   Added customized draggable split-panes to make the Sorting workspace resizable and responsive.
 
 ---
@@ -149,9 +151,58 @@ Combines traditional string search algorithms and a Trie builder sandbox.
 
 ---
 
+## 🎨 UI, Theme & Style Guidelines
+
+The UI redesign on `main` establishes a high-end, developer-centric aesthetic modeled after premium developer portals (similar to Magic UI/Linear design patterns). When modifying or building visualizer components in `apps/`, align them with these design specifications.
+
+### 1. Typography & Hierarchy
+*   **Primary Font Family:** `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
+*   **Base Text Size:** `17.5px` (line-height: `1.45`, letter-spacing: `0.012em`, font-weight: `400`)
+*   **Main Hero Title:** `48px` (line-height: `1.1`, letter-spacing: `-0.98px`, font-weight: `500`)
+*   **Card / Panel Title:** `17px` (letter-spacing: `-0.02em`, font-weight: `600`)
+*   **Dashboard Big Numbers:** `36px` (letter-spacing: `-0.04em`, font-weight: `600`)
+*   **Sublabels / Small Text:** `12px` to `13.5px` (font-weight: `400` or `500`)
+
+### 2. Color System (CSS Variables)
+
+#### ☀️ Light Mode Theme (`data-theme="light"`)
+*   **Base Background:** `#ffffff`
+*   **Container Background:** `#f8f9fc`
+*   **Card Background:** `#ffffff` (Hover state: `#f8f9fc`)
+*   **Text (Primary):** `#121317`
+*   **Text (Secondary):** `#45474d`
+*   **Text (Muted):** `#808080`
+*   **Borders:** `rgba(33, 34, 38, 0.12)` (Hover state: `rgba(33, 34, 38, 0.35)`)
+*   **Card Shadow (No heavy drops):** `0px 0px 0px 1px rgba(33, 34, 38, 0.12)` (Hover: `0px 0px 0px 1px rgba(33, 34, 38, 0.35)`)
+*   **Primary Button:** Background `#121317` with text `#ffffff`
+*   **Hover Glow / Ripple:** `rgba(0, 0, 0, 0.03)`
+*   **Background Grid Lines:** `rgba(0, 0, 0, 0.08)`
+
+#### 🌙 Dark Mode Theme (`data-theme="dark"`)
+*   **Base Background:** `#0D0D0F`
+*   **Container Background:** `#131316`
+*   **Card Background:** `#131316` (Hover state: `#1C1C21`)
+*   **Text (Primary):** `#F0F0F5`
+*   **Text (Secondary):** `#B8B8C8`
+*   **Text (Muted):** `#6B6B80`
+*   **Borders:** `rgba(255, 255, 255, 0.08)` (Hover state: `rgba(255, 255, 255, 0.18)`)
+*   **Card Shadow:** `0px 0px 0px 1px rgba(255, 255, 255, 0.06)` (Hover: `0px 0px 0px 1px rgba(255, 255, 255, 0.15)`)
+*   **Primary Button:** Background `#F0F0F5` with text `#0D0D0F`
+*   **Hover Glow / Ripple:** `rgba(255, 255, 255, 0.04)`
+*   **Background Grid Lines:** `rgba(255, 255, 255, 0.07)`
+
+### 3. Key Layout & Interactive Patterns
+*   **Glassmorphism Navbar:** Uses `backdrop-filter: blur(20px)` and semi-transparent backgrounds (`rgba(255, 255, 255, 0.85)` / `rgba(13, 13, 15, 0.85)`) to create a floating overlay.
+*   **Interactive Grids:** The main portal features a dynamic cursor-tracking hover grid where cells reveal a radial gradient glow following the mouse cursor.
+*   **Card Borders:** Prefer thin, 1px vector borders (`box-shadow` or standard `border`) that adapt to dark/light theme variables rather than heavy fuzzy drop shadows.
+*   **Border Radii:** Standard cards, headers, and control panels use `border-radius: 16px` to `20px`. Interactive action buttons use a capsule styling `border-radius: 9999px`.
+*   **Transitions:** Add `transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1)` or `transition: all 0.2s ease` to all hover interactions (cards, list items, pills, toggle switches) to ensure responsiveness and premium feel.
+
+---
+
 ## 🚀 Where to Continue Next
 
-The primary objective on the current `UI-Design` branch is to **upgrade the user interface of all sub-apps (`apps/`) to match the premium, modern, cohesive dark-mode aesthetic introduced on the portal landing page (`portal/index.html`)**.
+The primary objective on the `main` branch is to **upgrade the user interface of all sub-apps (`apps/`) to match the premium, modern, cohesive dark-mode aesthetic introduced on the portal landing page (`portal/index.html`)**.
 
 ### Recommended Tasks:
 1.  **UI/UX Alignment:**
