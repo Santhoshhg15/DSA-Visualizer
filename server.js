@@ -38,6 +38,12 @@ app.use('/sorting',
 app.get('/sorting/*any', (req, res) =>
   res.sendFile(path.join(DIST, 'sorting', 'index.html')));
 
+// DP Visualizer Suite
+app.use('/dp',
+  express.static(path.join(DIST, 'dp')));
+app.get('/dp/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'dp', 'index.html')));
+
 // Portal root
 app.get('/', (req, res) =>
   res.sendFile(path.join(DIST, 'portal', 'index.html')));
@@ -144,4 +150,5 @@ app.listen(PORT, () => {
   console.log(`   Tree:     http://localhost:${PORT}/tree`);
   console.log(`   Pattern:  http://localhost:${PORT}/pattern`);
   console.log(`   Stack:    http://localhost:${PORT}/stack`);
+  console.log(`   DP:       http://localhost:${PORT}/dp`);
 });

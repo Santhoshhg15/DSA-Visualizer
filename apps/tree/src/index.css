@@ -59,50 +59,50 @@
 
 body.light {
   /* Theme variables - LIGHT */
-  --bg-gradient-1: #eef2f7;
-  --bg-gradient-2: #f3f4f6;
-  --bg-gradient-3: #e5e7eb;
-  --panel-bg: rgba(255, 255, 255, 0.85);
-  --border-color: rgba(209, 213, 219, 0.8);
-  --border-hover: rgba(156, 163, 175, 0.85);
-  --text-color: #1f2937;
-  --muted-color: #555c6d;
-  --input-bg: rgba(255, 255, 255, 0.9);
+  --bg-gradient-1: #FAF6ED;
+  --bg-gradient-2: #FAF6ED;
+  --bg-gradient-3: #FAF6ED;
+  --panel-bg: #F3EDE0;
+  --border-color: rgba(43, 38, 32, 0.12);
+  --border-hover: rgba(43, 38, 32, 0.28);
+  --text-color: #2B2620;
+  --muted-color: #8A8270;
+  --input-bg: #FDFBF4;
 
   /* CharCell States - LIGHT */
-  --cell-default-bg: rgba(243, 244, 246, 0.7);
-  --cell-default-border: rgba(209, 213, 219, 0.8);
-  --cell-default-text: #4b5563;
-  --cell-window-bg: rgba(219, 234, 254, 0.85);
-  --cell-window-border: #2563eb;
-  --cell-window-text: #1e3a8a;
-  --cell-active-bg: rgba(239, 246, 255, 0.9);
-  --cell-active-border: #3b82f6;
-  --cell-active-text: #1d4ed8;
-  --cell-match-bg: rgba(209, 250, 229, 0.95);
-  --cell-match-border: #10b981;
-  --cell-match-text: #065f46;
-  --cell-mismatch-bg: rgba(254, 226, 226, 0.95);
-  --cell-mismatch-border: #ef4444;
-  --cell-mismatch-text: #991b1b;
-  --cell-found-bg: rgba(254, 243, 199, 0.95);
-  --cell-found-border: #d97706;
-  --cell-found-text: #78350f;
-  --cell-path-bg: rgba(243, 232, 255, 0.95);
-  --cell-path-border: #8b5cf6;
-  --cell-path-text: #581c87;
+  --cell-default-bg: #F3EDE0;
+  --cell-default-border: rgba(43, 38, 32, 0.12);
+  --cell-default-text: #8A8270;
+  --cell-window-bg: #E8F0FA;
+  --cell-window-border: #3574C5;
+  --cell-window-text: #1A4F8C;
+  --cell-active-bg: #EDEBFA;
+  --cell-active-border: #5B54D1;
+  --cell-active-text: #4A44B0;
+  --cell-match-bg: #E9F5EC;
+  --cell-match-border: #3E8E5A;
+  --cell-match-text: #1F5E35;
+  --cell-mismatch-bg: rgba(196, 87, 75, 0.08);
+  --cell-mismatch-border: #C4574B;
+  --cell-mismatch-text: #9A3028;
+  --cell-found-bg: rgba(184, 121, 31, 0.08);
+  --cell-found-border: #B8791F;
+  --cell-found-text: #7A4E12;
+  --cell-path-bg: #EDEBFA;
+  --cell-path-border: #5B54D1;
+  --cell-path-text: #4A44B0;
 
   /* Controls Overlay Pill - LIGHT */
-  --pill-bg: rgba(255, 255, 255, 0.95);
-  --pill-btn-bg: #f3f4f6;
-  --pill-btn-border: #d1d5db;
-  --pill-btn-hover: #e5e7eb;
+  --pill-bg: #F3EDE0;
+  --pill-btn-bg: #FDFBF4;
+  --pill-btn-border: rgba(43, 38, 32, 0.12);
+  --pill-btn-hover: #F6EFDF;
 
   /* Node & Link Defaults - LIGHT */
-  --node-default-bg: rgba(99, 102, 241, 0.03);
-  --node-default-border: rgba(99, 102, 241, 0.3);
-  --node-default-text: #4f46e5;
-  --link-default-color: rgba(99, 102, 241, 0.18);
+  --node-default-bg: #EDEBFA;
+  --node-default-border: #5B54D1;
+  --node-default-text: #4A44B0;
+  --link-default-color: rgba(91, 84, 209, 0.20);
 }
 
 * { box-sizing: border-box; }

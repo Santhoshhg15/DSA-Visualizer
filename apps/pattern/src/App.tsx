@@ -48,19 +48,19 @@ const ALGO_INFO: Record<string, { title: string; complexity: string; idea: strin
 };
 
 export default function App() {
-  const { algo, steps, cur, trieNodes } = useStore();
+  const { algo, steps, cur, trieNodes, darkMode, setDarkMode } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [logsOpen, setLogsOpen] = useState(true);
-  const [darkMode] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const prevIsActive = useRef(false);
   const prevStepsLength = useRef(steps.length);
 
-  // Sync theme class to document body
+  // Sync theme class & data-theme attribute to DOM
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   useEffect(() => {
@@ -164,6 +164,15 @@ export default function App() {
         )}
 
         <div className="flex items-center gap-3">
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded-lg border text-sm transition-all hover:scale-105 active:scale-95 bg-[var(--pill-btn-bg)] border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--pill-btn-hover)] flex items-center justify-center min-w-[36px]"
+            title="Toggle Theme"
+            aria-label="Toggle Theme"
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
 
           {steps.length > 0 && algo !== 'triePlayground' && (
             <button

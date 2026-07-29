@@ -21,7 +21,7 @@ const LEFT_DEFAULT = 300;
 const RIGHT_DEFAULT = 340;
 
 export default function App() {
-  const { darkMode } = useStore();
+  const { darkMode, setDarkMode } = useStore();
   const [showLanding, setShowLanding] = useState(true);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
@@ -124,6 +124,12 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Sync theme class & data-theme attribute to DOM
+  useEffect(() => {
+    document.body.classList.toggle('light', !darkMode);
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   return (
     <div className={`min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] font-sans flex flex-col transition-colors duration-300 ${!showLanding ? 'h-screen overflow-hidden' : ''}`}>
       <header className="w-full h-16 border-b border-[var(--border-color)] bg-[var(--panel-bg)]/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-6 shrink-0">
@@ -136,6 +142,16 @@ export default function App() {
           </h1>
         </div>
         <div className="flex items-center gap-4">
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded-lg border text-sm transition-all hover:scale-105 active:scale-95 bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--text-color)] flex items-center justify-center min-w-[36px]"
+            title="Toggle Theme"
+            aria-label="Toggle Theme"
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+
           {/* Recursion tree toggle — only visible for Merge/Quick sort in visualizer mode */}
           {!showLanding && isRecursive && (
             <button

@@ -90,6 +90,12 @@ copyDir(
   'sorting-visualizer'
 );
 
+copyDir(
+  path.join(__dirname, 'apps', 'dp', 'dist'),
+  path.join(DIST, 'dp'),
+  'dp-visualizer'
+);
+
 console.log('\n✅ All builds copied to dist/');
 console.log('   dist/index.html         → portal landing page');
 console.log('   dist/stack-visualizer.html → stack visualizer');
@@ -97,3 +103,4 @@ console.log('   dist/pattern/            → pattern app');
 console.log('   dist/tree/               → tree app');
 console.log('   dist/graph/              → graph app');
 console.log('   dist/sorting/            → sorting app');
+console.log('   dist/dp/                 → dp app');

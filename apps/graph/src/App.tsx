@@ -32,7 +32,7 @@ import { GraphLandingPage } from './pages/GraphLandingPage';
 
 
 export default function App() {
-  const { darkMode } = useStore();
+  const { darkMode, setDarkMode } = useStore();
   const { playing, isEditingGraph, setSteps, setStats, steps, cur } = useGraphStore();
   const [currentSection, setCurrentSection] = useState<'hub' | 'graph' | 'sorting'>('hub');
   const [isFullscreen] = useState(true);
@@ -341,9 +341,10 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [showLanding, activeView]);
 
-  // Sync theme class to document body
+  // Sync theme class & data-theme attribute to DOM
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   return (
@@ -380,7 +381,16 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3 ml-auto">
-              
+              {/* Theme Toggle Button */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-lg border text-sm transition-all hover:scale-105 active:scale-95 bg-[var(--pill-btn-bg)] border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--pill-btn-hover)] flex items-center justify-center min-w-[36px]"
+                title="Toggle Theme"
+                aria-label="Toggle Theme"
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+
               <a
                 href="/"
                 onClick={(e) => {

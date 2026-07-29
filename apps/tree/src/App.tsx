@@ -27,7 +27,7 @@ const ALGO_INFO = {
 export default function App() {
   const { algo, steps, cur, bstNodes, bstRootId, setBSTState, setStepsAndPlay, setSteps } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [darkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const infoRef = useRef<HTMLDivElement>(null);
@@ -60,9 +60,10 @@ export default function App() {
     prevHasTree.current = hasTree;
   }, [steps.length, hasTree]);
 
-  // Sync theme class to document body
+  // Sync theme class & data-theme attribute to DOM
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   // Close info popover when clicking outside
@@ -227,6 +228,16 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-lg border text-sm transition-all hover:scale-105 active:scale-95 bg-[var(--pill-btn-bg)] border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--pill-btn-hover)] flex items-center justify-center min-w-[36px]"
+              title="Toggle Theme"
+              aria-label="Toggle Theme"
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
 
             <a
               href="/"

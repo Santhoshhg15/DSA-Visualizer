@@ -14,6 +14,7 @@ interface VisualizerStore {
   wordsInput: string;
   tab: 'setup' | 'visualizer';
   codeLanguage: 'python' | 'java';
+  darkMode: boolean;
   
   // Persistent Trie Playground State
   trieWords: string[];
@@ -31,6 +32,7 @@ interface VisualizerStore {
   setWordsInput: (s: string) => void;
   setTab: (t: 'setup' | 'visualizer') => void;
   setCodeLanguage: (lang: 'python' | 'java') => void;
+  setDarkMode: (val: boolean) => void;
   reset: () => void;
   
   // Trie state updates
@@ -54,6 +56,7 @@ export const useStore = create<VisualizerStore>((set) => ({
   wordsInput: 'OAT,EAT,ATE,OATH',
   tab: 'setup',
   codeLanguage: 'python',
+  darkMode: true,
   
   trieWords: [],
   trieNodes: INITIAL_TRIE_NODES,
@@ -70,6 +73,7 @@ export const useStore = create<VisualizerStore>((set) => ({
   setWordsInput: (wordsInput) => set({ wordsInput }),
   setTab: (tab) => set({ tab }),
   setCodeLanguage: (codeLanguage) => set({ codeLanguage }),
+  setDarkMode: (darkMode) => set({ darkMode }),
   reset: () => set({ steps: [], cur: 0, playing: false, tab: 'setup' }),
   
   setTrieState: (trieWords, trieNodes) => set({ trieWords, trieNodes }),

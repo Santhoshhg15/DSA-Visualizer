@@ -15,50 +15,50 @@
     :root,
     [data-theme="light"] {
       /* Surfaces */
-      --surface-base: #ffffff;
-      --surface-container: #f8f9fc;
-      --surface-card: #ffffff;
-      --surface-card-hover: #f8f9fc;
+      --surface-base: #FAF6ED;
+      --surface-container: #F3EDE0;
+      --surface-card: #FDFBF4;
+      --surface-card-hover: #F6EFDF;
 
       /* Text */
-      --text-primary: #121317;
-      --text-secondary: #45474d;
-      --text-muted: #808080;
-      --text-link: #0000ee;
+      --text-primary: #2B2620;
+      --text-secondary: #5C5445;
+      --text-muted: #8A8270;
+      --text-link: #3574C5;
 
       /* Borders */
-      --border-color: rgba(33, 34, 38, 0.12);
-      --border-hover: rgba(33, 34, 38, 0.35);
-      --border-strong: #212226;
+      --border-color: rgba(43, 38, 32, 0.12);
+      --border-hover: rgba(43, 38, 32, 0.28);
+      --border-strong: rgba(43, 38, 32, 0.25);
 
       /* Shadows */
-      --shadow-card: 0px 0px 0px 1px rgba(33, 34, 38, 0.12);
-      --shadow-card-hover: 0px 0px 0px 1px rgba(33, 34, 38, 0.35);
+      --shadow-card: 0px 1px 2px rgba(43, 38, 32, 0.06);
+      --shadow-card-hover: 0px 2px 6px rgba(43, 38, 32, 0.10);
 
       /* Button */
-      --btn-primary-bg: #121317;
-      --btn-primary-text: #ffffff;
+      --btn-primary-bg: #2B2620;
+      --btn-primary-text: #FAF6ED;
       --btn-secondary-bg: transparent;
-      --btn-secondary-border: rgba(33,34,38,0.25);
-      --btn-secondary-text: #121317;
+      --btn-secondary-border: rgba(43, 38, 32, 0.25);
+      --btn-secondary-text: #2B2620;
 
       /* Nav */
-      --nav-bg: rgba(255, 255, 255, 0.85);
-      --nav-border: rgba(33, 34, 38, 0.12);
+      --nav-bg: rgba(250, 246, 237, 0.90);
+      --nav-border: rgba(43, 38, 32, 0.12);
 
       /* Toggle button */
-      --toggle-bg: #f8f9fc;
-      --toggle-border: rgba(33, 34, 38, 0.15);
-      --toggle-text: #45474d;
+      --toggle-bg: #F3EDE0;
+      --toggle-border: rgba(43, 38, 32, 0.15);
+      --toggle-text: #5C5445;
       --toggle-icon: '🌙';
 
       /* Hover glow */
-      --hover-glow: rgba(0, 0, 0, 0.03);
+      --hover-glow: rgba(43, 38, 32, 0.04);
 
       /* Grid stroke & hover fill */
-      --grid-stroke: rgba(0, 0, 0, 0.08);
-      --grid-fill-hover: rgba(0, 0, 0, 0.05);
-      --grid-fill-active: rgba(0, 0, 0, 0.08);
+      --grid-stroke: rgba(43, 38, 32, 0.08);
+      --grid-fill-hover: rgba(43, 38, 32, 0.04);
+      --grid-fill-active: rgba(43, 38, 32, 0.08);
     }
 
     /* ================================ */
@@ -1059,6 +1059,10 @@
         📚 Stack
         <span class="pill-count">1</span>
       </button>
+      <button class="filter-pill" data-filter="dp" onclick="filterCards('dp')">
+        ⚡ Dynamic Programming
+        <span class="pill-count">1</span>
+      </button>
     </div>
   </div>
 
@@ -1264,6 +1268,47 @@
         </ul>
         <a href="/sorting" class="btn-launch">
           Launch Sorting Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 6: Dynamic Programming -->
+      <div class="portal-card" data-category="dp">
+        <span class="card-category-tag">
+          Dynamic Programming
+        </span>
+        <div class="card-header">
+          <div class="card-icon">⚡</div>
+          <h2>DP Visualizer</h2>
+        </div>
+        <p class="card-desc">
+          Visualize 1D & 2D Dynamic Programming recurrences step-by-step. Feature model for Climbing Stairs with dependency cell arrows and staircase diagrams.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Climbing Stairs Recurrence Tracing
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Interactive 1D DP Memoization Tape
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            SVG Dependency Arrows & Staircase Model
+          </li>
+        </ul>
+        <a href="/dp" class="btn-launch">
+          Launch DP Visualizer
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>
