@@ -713,13 +713,6 @@
 
 <div class="app-container workspace-inactive" id="appContainer">
 
-  <!-- AI Translation Overlay -->
-  <div class="ai-overlay" id="aiOverlay">
-    <div class="spinner"></div>
-    <div class="ai-overlay-text">AI is Translating Code...</div>
-    <div class="ai-overlay-sub">Converting snippet into trace-compatible JavaScript</div>
-  </div>
-
   <!-- Header Nav -->
   <header>
     <div class="header-left">
@@ -765,14 +758,6 @@
           <input type="text" id="heroAutoInput" placeholder="String to process (e.g. HELLO)..." style="flex: 1; padding: 12px 16px; font-size: 0.9rem;" />
           <button style="background: linear-gradient(to right, #5ea8ff, #0062ff); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroDoAuto()">Start Auto-Push</button>
         </div>
-
-        <div style="height: 1px; background: var(--border-opacity); margin: 20px 0;"></div>
-        <h2 style="font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 16px;">Algorithm Code Trace</h2>
-
-        <div style="display: flex; gap: 12px;">
-          <textarea id="heroTraceInput" placeholder="Paste python/JS/java code..." style="flex: 1; padding: 12px 16px; font-size: 0.8rem; height: 60px; font-family: monospace; resize: none;"></textarea>
-          <button style="background: linear-gradient(to right, #a371f7, #7928ca); color: #fff; font-weight: bold; padding: 0 24px; border-radius: 10px; border: none; cursor: pointer;" onclick="heroRunTrace()">Run Trace</button>
-        </div>
       </div>
     </div>
   </div>
@@ -804,26 +789,6 @@
       </div>
       <button class="btn-auto" id="autoBtn" onclick="toggleAuto()">▶ Start Auto-Push</button>
       <div class="auto-progress"><div class="auto-progress-bar" id="autoBar" style="width:0%"></div></div>
-    </div>
-
-    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
-
-    <!-- Code Trace input -->
-    <div class="sidebar-section">
-      <div class="lang-selector-row">
-        <div class="section-label">Algorithm Trace</div>
-        <select class="lang-select" id="langSelect" onchange="updatePlaceholder()" style="width:auto; padding: 2px 6px; font-size: 0.7rem;">
-          <option value="ai">✨ AI (Any Language)</option>
-          <option value="js">JavaScript (Direct)</option>
-          <option value="java">Java (Heuristic)</option>
-        </select>
-      </div>
-      <textarea id="traceInput" placeholder="Paste your algorithm in Python, C++, Java, JS, C# etc.&#10;For example, Python:&#10;s = '{[]}'&#10;for c in s:&#10;    if c == '{': stack.push(c)&#10;    else: stack.pop()" style="height: 110px; font-size: 0.78rem;"></textarea>
-      <div class="btn-row" style="margin-top:4px;">
-        <button class="btn-push" id="traceRunBtn" onclick="runTrace()">▶ Run</button>
-        <button class="btn-peek" id="traceStepBtn" onclick="stepTrace()">⏭ Step</button>
-        <button class="btn-pop" id="traceStopBtn" onclick="stopTrace()" disabled>■ Stop</button>
-      </div>
     </div>
 
     <div style="height:1px; background:var(--border); margin:4px 0;"></div>
@@ -926,12 +891,6 @@
     setTimeout(toggleAuto, 450);
   }
 
-  function heroRunTrace() {
-    document.getElementById('traceInput').value = document.getElementById('heroTraceInput').value;
-    activateWorkspace();
-    runTrace();
-  }
-
   const stack = [];
   let autoTimer = null;
   let autoChars = [];
@@ -994,18 +953,6 @@
       document.body.classList.add('light');
       document.documentElement.setAttribute('data-theme', 'light');
       if (btn) btn.textContent = '🌙 Dark';
-    }
-  }
-
-  function updatePlaceholder() {
-    const lang = document.getElementById('langSelect').value;
-    const ta = document.getElementById('traceInput');
-    if (lang === 'ai') {
-      ta.placeholder = "Paste your algorithm in Python, C++, Java, JS, C# etc.\nFor example, Python:\ns = '{[]}'\nfor c in s:\n    if c == '{': stack.push(c)\n    else: stack.pop()";
-    } else if (lang === 'js') {
-      ta.placeholder = "let s = '{[]}';\nfor(let i=0; i<s.length; i++){\n  if(s[i]=='{') stack.push(s[i]);\n  else stack.pop();\n}";
-    } else if (lang === 'java') {
-      ta.placeholder = "int[] a = {1, 2, 3};\nfor(int i=0; i<a.length; i++){\n  s1.push(a[i]);\n}";
     }
   }
 
@@ -1179,212 +1126,6 @@
   }
 
   let actionQueue = [];
-  let traceIdx = 0;
-  let traceTimer = null;
-  let isTracing = false;
-  let cachedTranslatedJs = null;
-  let lastTracedCode = null;
-
-  async function translateCodeWithAI(code) {
-    const response = await fetch('/api/translate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ code })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      const errMsg = errData.error || response.statusText;
-      throw new Error(errMsg);
-    }
-
-    const data = await response.json();
-    return data.translated;
-  }
-
-  function transpileJava(code) {
-    let js = code;
-    js = js.replace(/\bStack\s*(?:<[^>]*>)?\s+([a-zA-Z_]\w*)\s*=\s*new\s+Stack\s*(?:<[^>]*>)?\s*\(\)\s*;/g, 'var $1 = stack;');
-    js = js.replace(/\b(int|char|boolean|String|float|double|long|short|byte)\s*\[\]\s+([a-zA-Z_]\w*)\s*=\s*\{([^}]*)\}\s*;/g, 'let $2 = [$3];');
-    js = js.replace(/\b(int|char|boolean|String|float|double|long|short|byte)\s+(?!\[)/g, 'let ');
-    js = js.replace(/System\.out\.print(ln)?/g, 'console.log');
-    js = js.replace(/\.length\(\)/g, '.length');
-    return js;
-  }
-
-  function runAlgorithm(jsCode) {
-    actionQueue = [];
-    let mockStackArr = [];
-    const mockStack = {
-      push: (val) => {
-        mockStackArr.push(val);
-        actionQueue.push({ cmd: 'push', arg: val });
-      },
-      pop: () => {
-        if (mockStackArr.length === 0) {
-          actionQueue.push({ cmd: 'error', arg: 'Pop on empty stack' });
-          return null;
-        }
-        let v = mockStackArr.pop();
-        actionQueue.push({ cmd: 'pop' });
-        return v;
-      },
-      peek: () => {
-        actionQueue.push({ cmd: 'peek' });
-        if (mockStackArr.length === 0) return null;
-        return mockStackArr[mockStackArr.length - 1];
-      },
-      size: () => mockStackArr.length,
-      isEmpty: () => mockStackArr.length === 0,
-      clear: () => {
-        mockStackArr = [];
-        actionQueue.push({ cmd: 'clear' });
-      }
-    };
-    Object.defineProperty(mockStack, 'top', {
-      get: function() { return this.peek(); }
-    });
-    
-    try {
-      const header = `
-        var s1 = stack;
-        var cs = stack;
-        var st = stack;
-      `;
-      const fn = new Function('stack', header + jsCode);
-      fn(mockStack);
-    } catch (err) {
-      actionQueue.push({ cmd: 'error', arg: 'Script Error: ' + err.message });
-    }
-  }
-
-  function executeQueueAction(idx) {
-    if (idx >= actionQueue.length) { stopTrace(); return false; }
-    
-    const action = actionQueue[idx];
-    if (action.cmd === 'push') doPush(action.arg, true);
-    else if (action.cmd === 'pop') doPop();
-    else if (action.cmd === 'peek') doPeek();
-    else if (action.cmd === 'clear') doClear();
-    else if (action.cmd === 'error') {
-      setStatus(action.arg, 'err');
-      stopTrace();
-    }
-    return true;
-  }
-
-  async function prepareExecution(sourceCode) {
-    const lang = document.getElementById('langSelect').value;
-    
-    if (sourceCode !== lastTracedCode) {
-      cachedTranslatedJs = null;
-      lastTracedCode = sourceCode;
-      traceIdx = 0;
-    }
-
-    if (traceIdx === 0) {
-      doClear();
-      if (lang === 'ai') {
-        if (cachedTranslatedJs) {
-          runAlgorithm(cachedTranslatedJs);
-        } else {
-          document.getElementById('aiOverlay').classList.add('show');
-          setStatus('AI is translating code...', 'info');
-          try {
-            const js = await translateCodeWithAI(sourceCode);
-            cachedTranslatedJs = js;
-            addLog('AI', 'Translated code successfully', 'log-auto');
-            runAlgorithm(js);
-          } catch (err) {
-            setStatus(err.message, 'err');
-            addLog('AI', 'Translation failed: ' + err.message, 'log-err');
-            document.getElementById('aiOverlay').classList.remove('show');
-            throw err;
-          } finally {
-            document.getElementById('aiOverlay').classList.remove('show');
-          }
-        }
-      } else if (lang === 'java') {
-        runAlgorithm(transpileJava(sourceCode));
-      } else {
-        runAlgorithm(sourceCode);
-      }
-    }
-  }
-
-  async function runTrace() {
-    activateWorkspace();
-    if (isTracing && traceTimer) return;
-    const ta = document.getElementById('traceInput');
-    const sourceCode = ta.value.trim();
-    if (!sourceCode) return setStatus('Enter an algorithm.', 'err');
-    
-    try {
-      await prepareExecution(sourceCode);
-    } catch (e) {
-      return; 
-    }
-    
-    isTracing = true;
-    
-    document.getElementById('traceRunBtn').disabled = true;
-    document.getElementById('traceStepBtn').disabled = true;
-    document.getElementById('traceStopBtn').disabled = false;
-    
-    function nextStep() {
-      if (!isTracing) return;
-      if (traceIdx >= actionQueue.length) { stopTrace(); setStatus('Algorithm finished successfully!', 'ok'); return; }
-      
-      executeQueueAction(traceIdx);
-      traceIdx++;
-      traceTimer = setTimeout(nextStep, autoDelay + 200);
-    }
-    nextStep();
-    scrollCanvas();
-  }
-
-  async function stepTrace() {
-    stopTrace(false);
-    const ta = document.getElementById('traceInput');
-    const sourceCode = ta.value.trim();
-    if (!sourceCode) return setStatus('Enter an algorithm.', 'err');
-    
-    try {
-      await prepareExecution(sourceCode);
-    } catch (e) {
-      return;
-    }
-    
-    if (traceIdx < actionQueue.length) {
-      executeQueueAction(traceIdx);
-      traceIdx++;
-      document.getElementById('traceStopBtn').disabled = false;
-    } else {
-      stopTrace();
-      setStatus('Algorithm finished successfully!', 'ok');
-    }
-  }
-
-  function stopTrace(resetIdx = true) {
-    clearTimeout(traceTimer);
-    traceTimer = null;
-    isTracing = false;
-    if (resetIdx) {
-      traceIdx = 0;
-      actionQueue = [];
-      cachedTranslatedJs = null;
-      lastTracedCode = null;
-    }
-    
-    document.getElementById('traceRunBtn').disabled = false;
-    document.getElementById('traceStepBtn').disabled = false;
-    document.getElementById('traceStopBtn').disabled = true;
-    
-    if (resetIdx) addLog('TRACE', 'Execution stopped', 'log-clear');
-    else addLog('TRACE', 'Execution paused', 'log-clear');
-  }
 
   // Horizontal splitter dragging logic
   const visualFlex = document.getElementById('visualFlex');
