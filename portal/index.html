@@ -1031,13 +1031,13 @@
         Browse Visualizers
       </span>
       <span class="filter-count" id="visible-count">
-        Showing 5 tools
+        Showing 7 tools
       </span>
     </div>
     <div class="filter-pills">
       <button class="filter-pill active" data-filter="all" onclick="filterCards('all')">
         All
-        <span class="pill-count">5</span>
+        <span class="pill-count">7</span>
       </button>
       <button class="filter-pill" data-filter="graphs" onclick="filterCards('graphs')">
         🕸️ Graphs
@@ -1061,6 +1061,10 @@
       </button>
       <button class="filter-pill" data-filter="dp" onclick="filterCards('dp')">
         ⚡ Dynamic Programming
+        <span class="pill-count">1</span>
+      </button>
+      <button class="filter-pill" data-filter="binary-search" onclick="filterCards('binary-search')">
+        🔍 Binary Search
         <span class="pill-count">1</span>
       </button>
     </div>
@@ -1309,6 +1313,47 @@
         </ul>
         <a href="/dp" class="btn-launch">
           Launch DP Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Binary Search Card -->
+      <div class="portal-card" data-category="binary-search">
+        <span class="card-category-tag">
+          Binary Search
+        </span>
+        <div class="card-header">
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <h2>Binary Search</h2>
+        </div>
+        <p class="card-desc">
+          Visualize binary search on answers and index values step-by-step, featuring Koko Eating Bananas.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Search on Answer & Index Search strategies
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            SVG number line search space visualizer
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Feasibility checks & per-pile hour breakdowns
+          </li>
+        </ul>
+        <a href="/binary-search" class="btn-launch">
+          Launch Binary Search
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>

@@ -984,7 +984,7 @@
   <!-- STATS DASHBOARD ROW -->
   <div class="dashboard-row">
     <div class="dashboard-card">
-      <span class="dashboard-number">5</span>
+      <span class="dashboard-number">6</span>
       <span class="dashboard-label">
         Visualizers
       </span>
@@ -994,7 +994,7 @@
     </div>
 
     <div class="dashboard-card">
-      <span class="dashboard-number">20+</span>
+      <span class="dashboard-number">35+</span>
       <span class="dashboard-label">
         Algorithms
       </span>
@@ -1014,12 +1014,12 @@
     </div>
 
     <div class="dashboard-card">
-      <span class="dashboard-number">4+</span>
+      <span class="dashboard-number">3</span>
       <span class="dashboard-label">
         Coming Soon
       </span>
       <span class="dashboard-sublabel">
-        Queue · LL · DP · Heap
+        Queue · Linked List · Heap
       </span>
     </div>
   </div>
@@ -1031,13 +1031,13 @@
         Browse Visualizers
       </span>
       <span class="filter-count" id="visible-count">
-        Showing 5 tools
+        Showing 7 tools
       </span>
     </div>
     <div class="filter-pills">
       <button class="filter-pill active" data-filter="all" onclick="filterCards('all')">
         All
-        <span class="pill-count">5</span>
+        <span class="pill-count">7</span>
       </button>
       <button class="filter-pill" data-filter="graphs" onclick="filterCards('graphs')">
         🕸️ Graphs
@@ -1063,6 +1063,10 @@
         ⚡ Dynamic Programming
         <span class="pill-count">1</span>
       </button>
+      <button class="filter-pill" data-filter="binary-search" onclick="filterCards('binary-search')">
+        🔍 Binary Search
+        <span class="pill-count">1</span>
+      </button>
     </div>
   </div>
 
@@ -1076,7 +1080,7 @@
           Stack
         </span>
         <div class="card-header">
-          <div class="card-icon">🥞</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg></div>
           <h2>Stack Visualizer</h2>
         </div>
         <p class="card-desc">
@@ -1117,7 +1121,7 @@
           Strings
         </span>
         <div class="card-header">
-          <div class="card-icon">🔍</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9 7 11l2 2"/><path d="M13 13l2-2-2-2"/><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div>
           <h2>Pattern Matching</h2>
         </div>
         <p class="card-desc">
@@ -1158,7 +1162,7 @@
           Trees
         </span>
         <div class="card-header">
-          <div class="card-icon">🌳</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div>
           <h2>Tree Visualizer</h2>
         </div>
         <p class="card-desc">
@@ -1199,7 +1203,7 @@
           Graphs
         </span>
         <div class="card-header">
-          <div class="card-icon">🕸️</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg></div>
           <h2>Graph Visualizer</h2>
         </div>
         <p class="card-desc">
@@ -1240,7 +1244,7 @@
           Sorting
         </span>
         <div class="card-header">
-          <div class="card-icon">🔀</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg></div>
           <h2>Sorting Algorithms</h2>
         </div>
         <p class="card-desc">
@@ -1281,34 +1285,75 @@
           Dynamic Programming
         </span>
         <div class="card-header">
-          <div class="card-icon">⚡</div>
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></div>
           <h2>DP Visualizer</h2>
         </div>
         <p class="card-desc">
-          Visualize 1D & 2D Dynamic Programming recurrences step-by-step. Feature model for Climbing Stairs with dependency cell arrows and staircase diagrams.
+          Visualize dynamic programming recurrences step-by-step, from Climbing Stairs to Edit Distance.
         </p>
         <ul class="feature-list">
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Climbing Stairs Recurrence Tracing
+            17 problems across 5 categories
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Interactive 1D DP Memoization Tape
+            1D, 2D grid, and string DP recurrences
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            SVG Dependency Arrows & Staircase Model
+            SVG dependency arrows & step-by-step tracing
           </li>
         </ul>
         <a href="/dp" class="btn-launch">
           Launch DP Visualizer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Binary Search Card -->
+      <div class="portal-card" data-category="binary-search">
+        <span class="card-category-tag">
+          Binary Search
+        </span>
+        <div class="card-header">
+          <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <h2>Binary Search</h2>
+        </div>
+        <p class="card-desc">
+          Visualize binary search on answers and index values step-by-step, featuring Koko Eating Bananas.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Search on Answer & Index Search strategies
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            SVG number line search space visualizer
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Feasibility checks & per-pile hour breakdowns
+          </li>
+        </ul>
+        <a href="/binary-search" class="btn-launch">
+          Launch Binary Search
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>
@@ -1370,30 +1415,7 @@
           <span class="coming-topic">Delete</span>
           <span class="coming-topic">Reverse</span>
         </div>
-      </div>
-
-      <!-- Dynamic Programming -->
-      <div class="coming-soon-card">
-        <span class="coming-badge">
-          🔜 Planned
-        </span>
-        <div class="coming-card-header">
-          <div class="coming-icon">📊</div>
-          <span class="coming-name">
-            Dynamic Programming
-          </span>
-        </div>
-        <p class="coming-desc">
-          DP table visualizations with memoization and tabulation.
-        </p>
-        <div class="coming-topics">
-          <span class="coming-topic">Knapsack</span>
-          <span class="coming-topic">LCS</span>
-          <span class="coming-topic">Fibonacci</span>
-        </div>
-      </div>
-
-      <!-- Heap -->
+      </div><!-- Heap -->
       <div class="coming-soon-card">
         <span class="coming-badge">
           🔜 Planned

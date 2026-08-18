@@ -5,14 +5,15 @@
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
-    "build": "npm run build:pattern && npm run build:tree && npm run build:graph && npm run build:sorting && npm run build:dp && node copy-dist.js",
-    "vercel-build": "npm install --prefix apps/pattern && npm run build --prefix apps/pattern && npm install --prefix apps/tree && npm run build --prefix apps/tree && npm install --prefix apps/graph && npm run build --prefix apps/graph && npm install --prefix apps/sorting && npm run build --prefix apps/sorting && npm install --prefix apps/dp && npm run build --prefix apps/dp && node copy-dist.js",
+    "build": "npm run build:pattern && npm run build:tree && npm run build:graph && npm run build:sorting && npm run build:dp && npm run build:binary-search && node copy-dist.js",
+    "vercel-build": "npm install --prefix apps/pattern && npm run build --prefix apps/pattern && npm install --prefix apps/tree && npm run build --prefix apps/tree && npm install --prefix apps/graph && npm run build --prefix apps/graph && npm install --prefix apps/sorting && npm run build --prefix apps/sorting && npm install --prefix apps/dp && npm run build --prefix apps/dp && npm install --prefix apps/binary-search && npm run build --prefix apps/binary-search && node copy-dist.js",
     "build:graph": "npm install --prefix apps/graph && npm run build --prefix apps/graph",
     "build:sorting": "npm install --prefix apps/sorting && npm run build --prefix apps/sorting",
     "build:tree": "npm install --prefix apps/tree && npm run build --prefix apps/tree",
     "build:pattern": "npm install --prefix apps/pattern && npm run build --prefix apps/pattern",
     "build:dp": "npm install --prefix apps/dp && npm run build --prefix apps/dp",
-    "install:all": "npm install && npm install --prefix apps/graph && npm install --prefix apps/sorting && npm install --prefix apps/tree && npm install --prefix apps/pattern && npm install --prefix apps/dp"
+    "build:binary-search": "npm install --prefix apps/binary-search && npm run build --prefix apps/binary-search",
+    "install:all": "npm install && npm install --prefix apps/graph && npm install --prefix apps/sorting && npm install --prefix apps/tree && npm install --prefix apps/pattern && npm install --prefix apps/dp && npm install --prefix apps/binary-search"
   },
   "keywords": ["dsa", "visualizer", "algorithms"],
   "author": "",

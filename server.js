@@ -44,6 +44,12 @@ app.use('/dp',
 app.get('/dp/*any', (req, res) =>
   res.sendFile(path.join(DIST, 'dp', 'index.html')));
 
+// Binary Search Visualizer
+app.use('/binary-search',
+  express.static(path.join(DIST, 'binary-search')));
+app.get('/binary-search/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'binary-search', 'index.html')));
+
 // Portal root
 app.get('/', (req, res) =>
   res.sendFile(path.join(DIST, 'portal', 'index.html')));
@@ -64,4 +70,5 @@ app.listen(PORT, () => {
   console.log(`   Pattern:  http://localhost:${PORT}/pattern`);
   console.log(`   Stack:    http://localhost:${PORT}/stack`);
   console.log(`   DP:       http://localhost:${PORT}/dp`);
+  console.log(`   Binary Search: http://localhost:${PORT}/binary-search`);
 });
