@@ -49,8 +49,8 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
         rightChildId: null,
         depth,
         isBaseCase,
-        pivotValue: !isBaseCase && high < arr.length ? arr[high] : undefined,
-        pivot: !isBaseCase && high < arr.length ? high : undefined,
+        pivotValue: !isBaseCase && low < arr.length ? arr[low] : undefined,
+        pivot: !isBaseCase && low < arr.length ? low : undefined,
       };
       // Wire up parent
       if (parentId && treeNodes[parentId]) {
@@ -88,8 +88,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
     mergeLeftIndices: [],
     mergeRightIndices: [],
     mergeRange: null,
+    iIndex: null,
+    jIndex: null,
     description: 'Initial array state before sorting.',
     codeLineActive: 1,
+    codeLineActivePseudo: 1,
     recursionTree: makeSnapshot(null),
     ...getStats(),
   });
@@ -111,8 +114,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
       mergeLeftIndices: [],
       mergeRightIndices: [],
       mergeRange: [low, high],
+      iIndex: null,
+      jIndex: null,
       description: `Checking range validity for partition arr[${low}..${high}].`,
-      codeLineActive: 3,
+      codeLineActive: 2,
+      codeLineActivePseudo: 2,
       recursionTree: makeSnapshot(nodeId),
       ...getStats(),
     });
@@ -120,8 +126,31 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
     if (low < high) {
       // Mark partitioning
       treeNodes[nodeId].state = 'partitioning';
-      treeNodes[nodeId].pivotValue = arr[high];
-      treeNodes[nodeId].pivot = high;
+      treeNodes[nodeId].pivotValue = arr[low];
+      treeNodes[nodeId].pivot = low;
+
+      steps.push({
+        id: stepId++,
+        type: 'partition-start',
+        arraySnapshot: [...arr],
+        comparingIndices: [],
+        swappingIndices: [],
+        sortedIndices: [...sortedIndices],
+        pivotIndex: low,
+        minIndex: null,
+        keyIndex: null,
+        shiftingIndices: [],
+        mergeLeftIndices: [],
+        mergeRightIndices: [],
+        mergeRange: [low, high],
+        iIndex: null,
+        jIndex: null,
+        description: `Calling partition(arr, ${low}, ${high})`,
+        codeLineActive: 3,
+        codeLineActivePseudo: 3,
+        recursionTree: makeSnapshot(nodeId),
+        ...getStats(),
+      });
 
       const pIdx = partition(low, high, nodeId);
 
@@ -146,8 +175,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
         mergeLeftIndices: [],
         mergeRightIndices: [],
         mergeRange: [low, pIdx - 1],
-        description: `Recursing on left partition arr[${low}..${pIdx - 1}].`,
-        codeLineActive: 5,
+        iIndex: null,
+        jIndex: null,
+        description: `Recurse left: quickSort(arr, ${low}, ${pIdx - 1})`,
+        codeLineActive: 4,
+        codeLineActivePseudo: 4,
         recursionTree: makeSnapshot(nodeId),
         ...getStats(),
       });
@@ -168,8 +200,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
         mergeLeftIndices: [],
         mergeRightIndices: [],
         mergeRange: [pIdx + 1, high],
-        description: `Recursing on right partition arr[${pIdx + 1}..${high}].`,
-        codeLineActive: 6,
+        iIndex: null,
+        jIndex: null,
+        description: `Recurse right: quickSort(arr, ${pIdx + 1}, ${high})`,
+        codeLineActive: 5,
+        codeLineActivePseudo: 5,
         recursionTree: makeSnapshot(nodeId),
         ...getStats(),
       });
@@ -196,8 +231,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
           mergeLeftIndices: [],
           mergeRightIndices: [],
           mergeRange: [low, high],
+          iIndex: null,
+          jIndex: null,
           description: `Element arr[${low}] = ${arr[low]} is sorted (base case partition).`,
-          codeLineActive: 3,
+          codeLineActive: 2,
+          codeLineActivePseudo: 2,
           recursionTree: makeSnapshot(nodeId),
           ...getStats(),
         });
@@ -206,7 +244,7 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
   };
 
   const partition = (low: number, high: number, nodeId: string): number => {
-    const pivot = arr[high];
+    const pivot = arr[low];
     arrayAccesses++;
 
     steps.push({
@@ -216,20 +254,25 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
       comparingIndices: [],
       swappingIndices: [],
       sortedIndices: [...sortedIndices],
-      pivotIndex: high,
+      pivotIndex: low,
       minIndex: null,
       keyIndex: null,
       shiftingIndices: [],
       mergeLeftIndices: [],
       mergeRightIndices: [],
       mergeRange: [low, high],
-      description: `Choosing pivot = arr[high] = arr[${high}] = ${pivot}.`,
-      codeLineActive: 11,
+      iIndex: low,
+      jIndex: high,
+      description: `Pivot = arr[${low}] = ${pivot} (first element of range [${low}..${high}])`,
+      codeLineActive: 10,
+      codeLineActivePseudo: 8,
       recursionTree: makeSnapshot(nodeId),
       ...getStats(),
     });
 
-    let i = low - 1;
+    let i = low;
+    let j = high;
+
     steps.push({
       id: stepId++,
       type: 'compare',
@@ -237,67 +280,211 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
       comparingIndices: [],
       swappingIndices: [],
       sortedIndices: [...sortedIndices],
-      pivotIndex: high,
+      pivotIndex: low,
       minIndex: null,
       keyIndex: null,
       shiftingIndices: [],
       mergeLeftIndices: [],
       mergeRightIndices: [],
       mergeRange: [low, high],
-      description: `Initialized partition boundary index i = low - 1 = ${i}.`,
-      codeLineActive: 12,
+      iIndex: i,
+      jIndex: j,
+      description: `Initialized pointers i = ${low}, j = ${high}.`,
+      codeLineActive: 11,
+      codeLineActivePseudo: 9,
       recursionTree: makeSnapshot(nodeId),
       ...getStats(),
     });
 
-    for (let j = low; j < high; j++) {
-      comparisons++;
-      arrayAccesses += 2;
-
+    while (i < j) {
       steps.push({
         id: stepId++,
         type: 'compare',
         arraySnapshot: [...arr],
-        comparingIndices: [j],
+        comparingIndices: [],
         swappingIndices: [],
         sortedIndices: [...sortedIndices],
-        pivotIndex: high,
+        pivotIndex: low,
         minIndex: null,
         keyIndex: null,
         shiftingIndices: [],
         mergeLeftIndices: [],
         mergeRightIndices: [],
         mergeRange: [low, high],
-        description: `Comparing arr[${j}] = ${arr[j]} with pivot = ${pivot}.`,
-        codeLineActive: 14,
+        iIndex: i,
+        jIndex: j,
+        description: `Checking while(i < j): i=${i} < j=${j}.`,
+        codeLineActive: 13,
+        codeLineActivePseudo: 10,
         recursionTree: makeSnapshot(nodeId),
         ...getStats(),
       });
 
-      if (arr[j] <= pivot) {
-        i++;
-        steps.push({
-          id: stepId++,
-          type: 'compare',
-          arraySnapshot: [...arr],
-          comparingIndices: [],
-          swappingIndices: [],
-          sortedIndices: [...sortedIndices],
-          pivotIndex: high,
-          minIndex: null,
-          keyIndex: null,
-          shiftingIndices: [],
-          mergeLeftIndices: [],
-          mergeRightIndices: [],
-          mergeRange: [low, high],
-          description: `arr[${j}] = ${arr[j]} ≤ pivot. Incrementing boundary index i to ${i}.`,
-          codeLineActive: 15,
-          recursionTree: makeSnapshot(nodeId),
-          ...getStats(),
-        });
+      // Inner while 1: i-scan
+      while (i <= high - 1) {
+        comparisons++;
+        arrayAccesses += 2;
+        const satisfies = arr[i] <= pivot;
 
-        const temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
-        swaps++; arrayAccesses += 4;
+        if (satisfies) {
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [i],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `i=${i}: arr[${i}]=${arr[i]} ≤ pivot ${pivot} → move i right`,
+            codeLineActive: 14,
+            codeLineActivePseudo: 11,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+          i++;
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `Incremented i to ${i}.`,
+            codeLineActive: 15,
+            codeLineActivePseudo: 11,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+        } else {
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [i],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `i=${i}: arr[${i}]=${arr[i]} > pivot ${pivot} → stop, found element > pivot`,
+            codeLineActive: 14,
+            codeLineActivePseudo: 11,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+          break;
+        }
+      }
+
+      // Inner while 2: j-scan
+      while (j >= low + 1) {
+        comparisons++;
+        arrayAccesses += 2;
+        const satisfies = arr[j] > pivot;
+
+        if (satisfies) {
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [j],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `j=${j}: arr[${j}]=${arr[j]} > pivot ${pivot} → move j left`,
+            codeLineActive: 17,
+            codeLineActivePseudo: 12,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+          j--;
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `Decremented j to ${j}.`,
+            codeLineActive: 18,
+            codeLineActivePseudo: 12,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+        } else {
+          steps.push({
+            id: stepId++,
+            type: 'compare',
+            arraySnapshot: [...arr],
+            comparingIndices: [j],
+            swappingIndices: [],
+            sortedIndices: [...sortedIndices],
+            pivotIndex: low,
+            minIndex: null,
+            keyIndex: null,
+            shiftingIndices: [],
+            mergeLeftIndices: [],
+            mergeRightIndices: [],
+            mergeRange: [low, high],
+            iIndex: i,
+            jIndex: j,
+            description: `j=${j}: arr[${j}]=${arr[j]} ≤ pivot ${pivot} → stop, found element ≤ pivot`,
+            codeLineActive: 17,
+            codeLineActivePseudo: 12,
+            recursionTree: makeSnapshot(nodeId),
+            ...getStats(),
+          });
+          break;
+        }
+      }
+
+      // Check if swap needed
+      if (i < j) {
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+        swaps++;
+        arrayAccesses += 4;
 
         steps.push({
           id: stepId++,
@@ -306,46 +493,57 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
           comparingIndices: [],
           swappingIndices: [i, j],
           sortedIndices: [...sortedIndices],
-          pivotIndex: high,
+          pivotIndex: low,
           minIndex: null,
           keyIndex: null,
           shiftingIndices: [],
           mergeLeftIndices: [],
           mergeRightIndices: [],
           mergeRange: [low, high],
-          description: `Swapping elements at index i = ${i} and j = ${j}.`,
-          codeLineActive: 16,
+          iIndex: i,
+          jIndex: j,
+          description: `i=${i} < j=${j} → swap arr[${i}]=${arr[i]} with arr[${j}]=${arr[j]}`,
+          codeLineActive: 21,
+          codeLineActivePseudo: 13,
           recursionTree: makeSnapshot(nodeId),
           ...getStats(),
         });
       }
     }
 
-    // Place pivot
-    const temp = arr[i + 1]; arr[i + 1] = arr[high]; arr[high] = temp;
-    swaps++; arrayAccesses += 4;
+    // Place pivot in final position
+    const temp = arr[low];
+    arr[low] = arr[j];
+    arr[j] = temp;
+    swaps++;
+    arrayAccesses += 4;
 
     steps.push({
       id: stepId++,
-      type: 'partition-complete',
+      type: 'swap',
       arraySnapshot: [...arr],
       comparingIndices: [],
-      swappingIndices: [i + 1, high],
+      swappingIndices: [low, j],
       sortedIndices: [...sortedIndices],
-      pivotIndex: i + 1,
+      pivotIndex: j,
       minIndex: null,
       keyIndex: null,
       shiftingIndices: [],
       mergeLeftIndices: [],
       mergeRightIndices: [],
       mergeRange: [low, high],
-      description: `Placing pivot = ${pivot} at its correct position. Swapping arr[${i + 1}] and arr[${high}].`,
-      codeLineActive: 21,
+      iIndex: i,
+      jIndex: j,
+      description: `Place pivot in final position: swap arr[${low}]=${pivot} with arr[${j}]=${arr[j]} → pivot settles at index ${j}`,
+      codeLineActive: 27,
+      codeLineActivePseudo: 14,
       recursionTree: makeSnapshot(nodeId),
       ...getStats(),
     });
 
-    sortedIndices.push(i + 1);
+    if (!sortedIndices.includes(j)) {
+      sortedIndices.push(j);
+    }
     steps.push({
       id: stepId++,
       type: 'mark-sorted',
@@ -360,13 +558,16 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
       mergeLeftIndices: [],
       mergeRightIndices: [],
       mergeRange: [low, high],
-      description: `Pivot element ${pivot} is now sorted at index ${i + 1}.`,
-      codeLineActive: 24,
+      iIndex: null,
+      jIndex: null,
+      description: `Index ${j} is now correctly placed (pivot ${pivot})`,
+      codeLineActive: 29,
+      codeLineActivePseudo: 15,
       recursionTree: makeSnapshot(nodeId),
       ...getStats(),
     });
 
-    return i + 1;
+    return j;
   };
 
   runQuickSort(0, arr.length - 1, null, 0);
@@ -386,8 +587,11 @@ export function generateQuickSortSteps(inputArr: number[]): SortStep[] {
     mergeLeftIndices: [],
     mergeRightIndices: [],
     mergeRange: null,
+    iIndex: null,
+    jIndex: null,
     description: `✓ Quick Sort complete! ${comparisons} comparisons, ${swaps} swaps made.`,
     codeLineActive: 1,
+    codeLineActivePseudo: 1,
     recursionTree: makeSnapshot(null),
     ...getStats(),
   });

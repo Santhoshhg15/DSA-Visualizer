@@ -35,10 +35,13 @@ export interface SortStep {
   mergeLeftIndices: number[];     // left subarray in merge
   mergeRightIndices: number[];    // right subarray in merge
   mergeRange: [number, number] | null; // [left, right] current merge range
+  iIndex?: number | null;         // i pointer for Quick Sort
+  jIndex?: number | null;         // j pointer for Quick Sort
 
   // Trace
   description: string;
   codeLineActive: number;
+  codeLineActivePseudo?: number;
 
   // Stats at this step
   comparisons?: number;

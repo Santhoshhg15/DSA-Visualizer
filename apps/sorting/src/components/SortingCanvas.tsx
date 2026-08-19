@@ -20,6 +20,8 @@ export function SortingCanvas() {
   const mergeLeftIndices = currentStep?.mergeLeftIndices || [];
   const mergeRightIndices = currentStep?.mergeRightIndices || [];
   const mergeRange = currentStep?.mergeRange || null;
+  const iIndex = currentStep?.iIndex ?? null;
+  const jIndex = currentStep?.jIndex ?? null;
 
   // Determine bar width
   let barWidth = '32px';
@@ -87,7 +89,7 @@ export function SortingCanvas() {
 
       <div 
         className="w-full flex items-end justify-center relative select-none"
-        style={{ height: 'calc(100% - 60px)', paddingBottom: '48px' }}
+        style={{ height: 'calc(100% - 60px)', paddingBottom: '54px' }}
       >
         <div className="flex items-end justify-center gap-[3px] max-w-full h-full">
           {activeArray.map((value, idx) => {
@@ -120,6 +122,30 @@ export function SortingCanvas() {
                   <span className="absolute -bottom-5 font-mono text-[9px] text-[var(--muted-color)] text-center leading-none">
                     {idx}
                   </span>
+                )}
+
+                {/* Quick Sort dual pointers i and j */}
+                {selectedAlgorithm === 'quick' && (
+                  <div className="absolute -bottom-10 flex items-center justify-center gap-0.5 z-20 pointer-events-none select-none">
+                    {idx === iIndex && idx === jIndex ? (
+                      <span className="px-1 py-0.5 rounded-[4px] text-[9px] font-mono font-bold bg-gradient-to-r from-blue-600 to-orange-600 text-white shadow-sm border border-white/30 animate-bounce">
+                        i,j
+                      </span>
+                    ) : (
+                      <>
+                        {idx === iIndex && (
+                          <span className="px-1 py-0.5 rounded-[4px] text-[9px] font-mono font-bold bg-[#3B82F6] text-white shadow-sm border border-blue-400/40 animate-bounce">
+                            i
+                          </span>
+                        )}
+                        {idx === jIndex && (
+                          <span className="px-1 py-0.5 rounded-[4px] text-[9px] font-mono font-bold bg-[#FF6B00] text-white shadow-sm border border-orange-400/40 animate-bounce">
+                            j
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             );

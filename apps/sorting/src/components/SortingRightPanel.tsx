@@ -57,7 +57,9 @@ export function SortingRightPanel({
   const outerContainerRef = useRef<HTMLDivElement>(null);
 
   const currentStep = cur >= 0 && cur < steps.length ? steps[cur] : null;
-  const activeLine = currentStep?.codeLineActive || 0;
+  const activeLine = isPseudoCode
+    ? (currentStep?.codeLineActivePseudo || currentStep?.codeLineActive || 0)
+    : (currentStep?.codeLineActive || 0);
 
   // Track panel width for narrow threshold wrapping
   useEffect(() => {
