@@ -102,6 +102,12 @@ copyDir(
   'binary-search-visualizer'
 );
 
+copyDir(
+  path.join(__dirname, 'apps', 'sliding-window', 'dist'),
+  path.join(DIST, 'sliding-window'),
+  'sliding-window-visualizer'
+);
+
 console.log('\n✅ All builds copied to dist/');
 console.log('   dist/index.html         → portal landing page');
 console.log('   dist/stack-visualizer.html → stack visualizer');
@@ -111,3 +117,4 @@ console.log('   dist/graph/              → graph app');
 console.log('   dist/sorting/            → sorting app');
 console.log('   dist/dp/                 → dp app');
 console.log('   dist/binary-search/      → binary-search app');
+console.log('   dist/sliding-window/     → sliding-window app');

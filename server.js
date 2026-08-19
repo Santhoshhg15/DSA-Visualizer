@@ -50,6 +50,12 @@ app.use('/binary-search',
 app.get('/binary-search/*any', (req, res) =>
   res.sendFile(path.join(DIST, 'binary-search', 'index.html')));
 
+// Sliding Window Visualizer
+app.use('/sliding-window',
+  express.static(path.join(DIST, 'sliding-window')));
+app.get('/sliding-window/*any', (req, res) =>
+  res.sendFile(path.join(DIST, 'sliding-window', 'index.html')));
+
 // Portal root
 app.get('/', (req, res) =>
   res.sendFile(path.join(DIST, 'portal', 'index.html')));
@@ -71,4 +77,5 @@ app.listen(PORT, () => {
   console.log(`   Stack:    http://localhost:${PORT}/stack`);
   console.log(`   DP:       http://localhost:${PORT}/dp`);
   console.log(`   Binary Search: http://localhost:${PORT}/binary-search`);
+  console.log(`   Sliding Window: http://localhost:${PORT}/sliding-window`);
 });
