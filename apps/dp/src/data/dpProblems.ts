@@ -37,8 +37,8 @@ export const DP_PROBLEMS: DPProblem[] = [
     category: '2D DP',
     badge: '2D DP',
     timeComplexity: 'O(n×K)',
-    spaceComplexity: 'O(n×K)',
-    description: 'Count subsets whose elements sum to K',
+    spaceComplexity: 'O(n×K + n)',
+    description: 'Count subsets whose elements sum to K using top-down memoization',
     status: 'available',
   },
   {

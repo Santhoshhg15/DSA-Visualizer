@@ -23,6 +23,7 @@ import { ComingSoonPlaceholder } from './components/ComingSoonPlaceholder';
 import { StepLog } from './components/StepLog';
 import { Controls } from './components/Controls';
 import { DP_PROBLEMS } from './data/dpProblems';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const LEFT_MIN = 180;
 const LEFT_MAX = 520;
@@ -256,6 +257,7 @@ export default function App() {
             <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
               {/* Visualization area */}
               <div className="flex-1 overflow-hidden relative">
+                <ErrorBoundary>
                 {selectedProblemId === 'climbing-stairs' ? (
                   <ClimbingStairsVisualizer />
                 ) : selectedProblemId === 'house-robber' ? (
@@ -293,6 +295,7 @@ export default function App() {
                 ) : (
                   <ComingSoonPlaceholder name={selectedProblem?.name ?? ''} />
                 )}
+                </ErrorBoundary>
               </div>
 
               {/* Step log strip */}

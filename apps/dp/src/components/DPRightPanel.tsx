@@ -160,27 +160,27 @@ export function DPRightPanel({
   const totalSteps = steps.length;
   const finalAnswer = isDone && currentStep
     ? isKnapsack
-      ? (currentStep.dpTable ? currentStep.dpTable[n][knapsackCapacity] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? currentStep.dpTable[n]?.[knapsackCapacity] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : isMinCoins
       ? (currentStep.dpArray[minCoinsAmount] === 'INF' ? -1 : currentStep.dpArray[minCoinsAmount])
       : isCountSubsets
-      ? (currentStep.dpTable ? currentStep.dpTable[n][subsetTargetK] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? (currentStep.dpTable[n - 1]?.[subsetTargetK] ?? currentStep.returnValue) : currentStep.returnValue)
       : isHouseRobber
       ? currentStep.dpArray[n - 1]
       : isUniquePaths
-      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.gridRows || uniquePathsRows) - 1][(currentStep.gridCols || uniquePathsCols) - 1] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.gridRows || uniquePathsRows) - 1]?.[(currentStep.gridCols || uniquePathsCols) - 1] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : isMinPathSum
-      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.gridRows || minPathRows) - 1][(currentStep.gridCols || minPathCols) - 1] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.gridRows || minPathRows) - 1]?.[(currentStep.gridCols || minPathCols) - 1] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : isPartition
-      ? (currentStep.type === 'odd-sum-exit' ? false : (currentStep.dpTable && currentStep.targetSum !== undefined ? currentStep.dpTable[(currentStep.partitionArr || partitionArray).length][currentStep.targetSum] : currentStep.dpArray[currentStep.dpArray.length - 1]))
+      ? (currentStep.type === 'odd-sum-exit' ? false : (currentStep.dpTable && currentStep.targetSum !== undefined ? currentStep.dpTable[(currentStep.partitionArr || partitionArray).length]?.[currentStep.targetSum] : currentStep.dpArray[currentStep.dpArray.length - 1]))
       : isTargetSum
-      ? (currentStep.type === 'short-circuit' ? 0 : (currentStep.dpTable && currentStep.derivedTarget !== undefined ? currentStep.dpTable[(currentStep.targetSumArr || targetSumArray).length][currentStep.derivedTarget] : currentStep.dpArray[currentStep.dpArray.length - 1]))
+      ? (currentStep.type === 'short-circuit' ? 0 : (currentStep.dpTable && currentStep.derivedTarget !== undefined ? currentStep.dpTable[(currentStep.targetSumArr || targetSumArray).length]?.[currentStep.derivedTarget] : currentStep.dpArray[currentStep.dpArray.length - 1]))
       : isEditDistance
-      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.editDistS1 || editDistString1).length][(currentStep.editDistS2 || editDistString2).length] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.editDistS1 || editDistString1).length]?.[(currentStep.editDistS2 || editDistString2).length] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : isDeleteOp
-      ? (currentStep.deleteOpAnswer !== undefined && currentStep.deleteOpAnswer !== null ? currentStep.deleteOpAnswer : (currentStep.dpTable ? ((currentStep.deleteOpS1 || deleteOpString1).length - (currentStep.dpTable[(currentStep.deleteOpS1 || deleteOpString1).length][(currentStep.deleteOpS2 || deleteOpString2).length] as number)) + ((currentStep.deleteOpS2 || deleteOpString2).length - (currentStep.dpTable[(currentStep.deleteOpS1 || deleteOpString1).length][(currentStep.deleteOpS2 || deleteOpString2).length] as number)) : 0))
+      ? (currentStep.deleteOpAnswer !== undefined && currentStep.deleteOpAnswer !== null ? currentStep.deleteOpAnswer : (currentStep.dpTable ? ((currentStep.deleteOpS1 || deleteOpString1).length - (currentStep.dpTable[(currentStep.deleteOpS1 || deleteOpString1).length]?.[(currentStep.deleteOpS2 || deleteOpString2).length] as number)) + ((currentStep.deleteOpS2 || deleteOpString2).length - (currentStep.dpTable[(currentStep.deleteOpS1 || deleteOpString1).length]?.[(currentStep.deleteOpS2 || deleteOpString2).length] as number)) : 0))
       : isCoinChangeII
-      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.coinChangeIICoins || coinChangeIICoins).length][currentStep.coinChangeIIAmount ?? coinChangeIIAmount] : currentStep.dpArray[currentStep.dpArray.length - 1])
+      ? (currentStep.dpTable ? currentStep.dpTable[(currentStep.coinChangeIICoins || coinChangeIICoins).length]?.[currentStep.coinChangeIIAmount ?? coinChangeIIAmount] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : currentStep.dpArray[n]
     : null;
 
@@ -713,7 +713,7 @@ export function DPRightPanel({
                     : isMinCoins
                     ? `${minCoinsAmount + 1} cells`
                     : isCountSubsets
-                    ? `(${n + 1})×(${subsetTargetK + 1})`
+                    ? `(${n})×(${subsetTargetK + 1})`
                     : `${n + (isHouseRobber ? 0 : 1)} cells`}
                 </span>
               </div>
@@ -857,6 +857,173 @@ export function DPRightPanel({
                 </div>
               )}
 
+              {isCountSubsets && (
+                <>
+                  {/* ── Memoization-specific stat cards ─────────────────────── */}
+                  <div
+                    style={{
+                      gridColumn: '1 / -1',
+                      borderTop: '1px solid var(--border-color)',
+                      paddingTop: '10px',
+                      marginTop: '2px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: 'var(--accent-indigo)',
+                    }}
+                  >
+                    Memoization Stats
+                  </div>
+
+                  {/* Cells Computed */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Cells Computed
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'var(--accent-blue)',
+                      }}
+                    >
+                      {currentStep?.memoStats?.cellsComputed ?? 0}
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 500,
+                          color: 'var(--muted-color)',
+                          marginLeft: '4px',
+                        }}
+                      >
+                        / {n * (subsetTargetK + 1)}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Memo Hits */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      ✦ Memo Hits
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'var(--accent-green)',
+                      }}
+                    >
+                      {currentStep?.memoStats?.memoHits ?? 0}
+                    </span>
+                  </div>
+
+                  {/* Subsets Found */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Subsets Found
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'var(--accent-teal)',
+                      }}
+                    >
+                      {isDone ? finalAnswer : '—'}
+                    </span>
+                  </div>
+
+                  {/* Table Size */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Table Size
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'var(--accent-amber)',
+                      }}
+                    >
+                      {n}×{subsetTargetK + 1}
+                    </span>
+                  </div>
+                </>
+              )}
+
               {isEditDistance && (
                 <div
                   style={{
@@ -935,7 +1102,7 @@ export function DPRightPanel({
                     : isMinCoins
                     ? `dp[${minCoinsAmount}] = ${finalAnswer === -1 ? '-1 (Impossible)' : finalAnswer}`
                     : isCountSubsets
-                    ? `dp[${n}][${subsetTargetK}] = ${finalAnswer}`
+                    ? `dp[${n - 1}][${subsetTargetK}] = ${finalAnswer}`
                     : isHouseRobber
                     ? `dp[${n - 1}] = $${finalAnswer}`
                     : `dp[${n}] = ${finalAnswer}`}
@@ -1013,7 +1180,7 @@ export function DPRightPanel({
                 : isMinCoins
                 ? `dp[${minCoinsAmount}] = ${finalAnswer === -1 ? '-1 (Impossible)' : finalAnswer}`
                 : isCountSubsets
-                ? `dp[${n}][${subsetTargetK}] = ${finalAnswer} subset(s)`
+                ? `dp[${n - 1}][${subsetTargetK}] = ${finalAnswer} subset(s)`
                 : isHouseRobber
                 ? `dp[${n - 1}] = $${finalAnswer}${
                     currentStep?.robbedIndices

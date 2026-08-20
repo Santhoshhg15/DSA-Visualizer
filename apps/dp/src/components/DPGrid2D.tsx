@@ -10,10 +10,11 @@ export interface DPGrid2DProps {
   sourceLabels?: ('skip' | 'reuse')[];
   threeWaySourceCells?: ThreeWaySourceCell[];
   matchType?: 'match' | 'mismatch' | null;
-  getCellState?: (r: number, c: number) => 'unfilled' | 'source' | 'active' | 'filled' | 'invalid' | undefined;
+  getCellState?: (r: number, c: number) => 'unfilled' | 'source' | 'active' | 'filled' | 'invalid' | 'in-progress' | 'memo-hit' | undefined;
   showCostAndDp?: boolean;
   costGrid?: number[][];
   booleanMode?: boolean;
+  showUnfilledDash?: boolean;
 }
 
 interface Arrow2D {
@@ -28,25 +29,26 @@ interface Arrow2D {
 }
 
 export const DPGrid2D: React.FC<DPGrid2DProps> = ({
-  table,
-  rowLabels,
-  colLabels,
-  activeCell,
-  sourceCells,
-  sourceLabels,
-  threeWaySourceCells,
+  table = [],
+  rowLabels = [],
+  colLabels = [],
+  activeCell = null,
+  sourceCells = [],
+  sourceLabels = [],
+  threeWaySourceCells = [],
   matchType = null,
   getCellState,
   showCostAndDp = false,
   costGrid = [],
   booleanMode = false,
+  showUnfilledDash = false,
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const [arrows, setArrows] = useState<Arrow2D[]>([]);
 
-  const rowCount = table.length;
-  const colCount = colLabels.length;
+  const rowCount = Array.isArray(table) ? table.length : 0;
+  const colCount = Array.isArray(colLabels) ? colLabels.length : 0;
 
   // Reset/sync 2D cellRefs array structure when table dimensions change
   if (cellRefs.current.length !== rowCount) {
@@ -56,14 +58,16 @@ export const DPGrid2D: React.FC<DPGrid2DProps> = ({
   }
 
   // Default cell state logic with override
-  const computeCellState = (r: number, c: number): 'unfilled' | 'source' | 'active' | 'filled' | 'invalid' => {
+  const computeCellState = (r: number, c: number): 'unfilled' | 'source' | 'active' | 'filled' | 'invalid' | 'in-progress' | 'memo-hit' => {
     if (getCellState) {
       const customState = getCellState(r, c);
-      if (customState) return customState;
+      if (customState && ['invalid', 'unfilled', 'source', 'active', 'filled', 'in-progress', 'memo-hit'].includes(customState)) {
+        return customState;
+      }
     }
-    const val = table[r]?.[c];
+    const val = table?.[r]?.[c];
     if (activeCell && activeCell[0] === r && activeCell[1] === c) return 'active';
-    if (sourceCells.some(([sr, sc]) => sr === r && sc === c)) return 'source';
+    if (sourceCells && Array.isArray(sourceCells) && sourceCells.some(([sr, sc]) => sr === r && sc === c)) return 'source';
     if (val === null || val === undefined) return 'unfilled';
     return 'filled';
   };
@@ -445,6 +449,7 @@ export const DPGrid2D: React.FC<DPGrid2DProps> = ({
                       fontWeight: 600,
                       fontFamily: 'JetBrains Mono, monospace',
                       transition: 'all 0.15s ease',
+                      position: 'relative',
                       ...(booleanMode && isTrueVal && {
                         boxShadow: 'inset 0 0 0 1px var(--cell-bool-true-glow)',
                       }),
@@ -458,7 +463,7 @@ export const DPGrid2D: React.FC<DPGrid2DProps> = ({
                       ...(state === 'unfilled' && {
                         background: 'var(--cell-unfilled-bg)',
                         border: '1px solid var(--cell-unfilled-border)',
-                        color: showCostAndDp ? 'var(--text-color)' : 'transparent',
+                        color: showCostAndDp ? 'var(--text-color)' : showUnfilledDash ? 'var(--muted-color)' : 'transparent',
                       }),
                       ...(state === 'source' && {
                         background: isGreenMatch ? 'var(--cell-match-bg)' : 'var(--cell-source-bg)',
@@ -475,10 +480,46 @@ export const DPGrid2D: React.FC<DPGrid2DProps> = ({
                         border: booleanMode && isTrueVal ? '1.5px solid var(--cell-bool-filled-border)' : '1.5px solid var(--cell-filled-border)',
                         color: booleanMode && isTrueVal ? 'var(--cell-bool-filled-text)' : 'var(--cell-filled-text)',
                       }),
+                      ...(state === 'in-progress' && {
+                        background: 'var(--cell-active-bg)',
+                        border: '1.5px dashed var(--accent-indigo)',
+                        color: 'var(--accent-indigo)',
+                        animation: 'inProgressPulse 1.2s ease-in-out infinite',
+                      }),
+                      ...(state === 'memo-hit' && {
+                        background: 'var(--accent-green-bg, rgba(34,197,94,0.12))',
+                        border: '1.5px solid var(--accent-green)',
+                        color: 'var(--accent-green)',
+                        animation: 'memoHitFlash 0.35s ease forwards',
+                      }),
                     }}
                   >
                     {booleanMode ? (
                       <>{val === true ? 'T' : val === false ? 'F' : ''}</>
+                    ) : state === 'in-progress' ? (
+                      <span style={{ fontSize: '11px', letterSpacing: '0.1em' }}>...</span>
+                    ) : state === 'memo-hit' ? (
+                      <>
+                        <span style={{ fontSize: '12px' }}>{val !== null ? String(val) : '—'}</span>
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-7px',
+                            right: '-2px',
+                            fontSize: '7px',
+                            fontWeight: 800,
+                            background: 'var(--accent-green)',
+                            color: '#fff',
+                            padding: '1px 3px',
+                            borderRadius: '3px',
+                            letterSpacing: '0.05em',
+                            whiteSpace: 'nowrap',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          ✦MEMO
+                        </span>
+                      </>
                     ) : showCostAndDp ? (
                       <>
                         <span
@@ -510,7 +551,7 @@ export const DPGrid2D: React.FC<DPGrid2DProps> = ({
                         </span>
                       </>
                     ) : (
-                      <>{state === 'invalid' ? '·' : val !== null ? String(val) : ''}</>
+                      <>{state === 'invalid' ? '·' : state === 'unfilled' && showUnfilledDash ? '—' : val !== null ? String(val) : ''}</>
                     )}
                   </div>
                 );

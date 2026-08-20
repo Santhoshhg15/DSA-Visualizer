@@ -1,4 +1,5 @@
-export type StepType = 'init' | 'base' | 'candidate' | 'fill' | 'backtrack' | 'odd-sum-exit' | 'short-circuit' | 'done';
+export type StepType = 'init' | 'base' | 'candidate' | 'fill' | 'backtrack' | 'odd-sum-exit' | 'short-circuit' | 'done'
+  | 'call' | 'base-case' | 'memo-hit' | 'compute-nottake' | 'compute-take' | 'return';
 
 export interface CandidateState {
   coin: number;
@@ -28,6 +29,13 @@ export interface Step {
   sourceCells?: [number, number][];
   subsetArr?: number[];
   subsetK?: number;
+
+  // Memoization-specific fields (Count Subsets with Memoization)
+  callStack?: { index: number; k: number }[];
+  returnValue?: number | null;
+  memoHitCell?: [number, number] | null;
+  inProgressCell?: [number, number] | null;
+  memoStats?: { cellsComputed: number; memoHits: number };
 
   // Knapsack specific fields
   knapsackCapacity?: number;

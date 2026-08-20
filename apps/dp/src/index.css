@@ -249,6 +249,15 @@ body {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+@keyframes inProgressPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+@keyframes memoHitFlash {
+  0%   { box-shadow: 0 0 0 0 var(--accent-green); }
+  40%  { box-shadow: 0 0 8px 4px var(--accent-green-bg, rgba(74,222,128,0.35)); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
 
 .animate-slideInLeft  { animation: slideInLeft  0.2s ease forwards; }
 .animate-slideInRight { animation: slideInRight 0.2s ease forwards; }
