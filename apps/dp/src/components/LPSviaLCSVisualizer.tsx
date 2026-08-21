@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDPStore } from '../store';
 import { DPGrid2D } from './DPGrid2D';
 import { ZoomControls } from './ZoomControls';
-import { LPSReversalInsight } from './LPSReversalInsight';
 
 const ZOOM_MIN = 0.4;
 const ZOOM_MAX = 1.5;
@@ -112,9 +111,31 @@ export const LPSviaLCSVisualizer: React.FC = () => {
         onResetPan={() => setPan({ x: 0, y: 0 })}
       />
 
-      {/* Reversal Insight Card */}
-      <div className="shrink-0 z-10 p-4 pb-0 w-full">
-        <LPSReversalInsight s={s} reversed={reversed} answer={answer} isDone={isDone} />
+      {/* Compact 2-line inline text banner */}
+      <div
+        style={{
+          background: 'var(--input-bg)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '8px',
+          padding: '10px 16px',
+          margin: '12px 16px 0 16px',
+          fontSize: '12.5px',
+          lineHeight: '1.45',
+          color: 'var(--text-color)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        }}
+        className="shrink-0 z-10 select-none animate-fadeIn"
+      >
+        <span style={{ marginRight: '6px' }}>💡</span>
+        <strong>Key Insight:</strong> A palindromic subsequence reads the same both ways, so it must appear in both original and reversed strings. Therefore,{' '}
+        <span style={{ color: 'var(--accent-teal)', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>
+          LPS(s) = LCS(s, reverse(s))
+        </span>
+        {isDone && answer !== null && (
+          <span style={{ marginLeft: '6px', color: 'var(--accent-green)', fontWeight: 700 }}>
+            ➔ LCS("{s}", "{reversed}") = {answer}
+          </span>
+        )}
       </div>
 
       {/* Legend */}

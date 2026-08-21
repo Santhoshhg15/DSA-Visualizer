@@ -67,7 +67,7 @@ export function buildLpsViaLcsTrace(s: string): Step[] {
     sourceCells: [],
     matchType: null,
     lpsString: s,
-    msg: `Reverse "${s}" → "${reversed}". Now find the LCS of these two strings — that IS the longest palindromic subsequence.`,
+    msg: `A palindromic subsequence reads same both ways, so LPS(s) = LCS(s, reverse(s)). Reverse "${s}" → "${reversed}" and find their LCS.`,
   });
 
   // Step 2: base cases
