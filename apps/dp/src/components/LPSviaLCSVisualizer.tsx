@@ -117,7 +117,7 @@ export const LPSviaLCSVisualizer: React.FC = () => {
           background: 'var(--input-bg)',
           border: '1px solid var(--border-color)',
           borderRadius: '8px',
-          padding: '10px 16px',
+          padding: '10px 180px 10px 16px',
           margin: '12px 16px 0 16px',
           fontSize: '12.5px',
           lineHeight: '1.45',
