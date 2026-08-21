@@ -62,6 +62,14 @@ export function DPLeftPanel({ onCollapse }: { onCollapse?: () => void }) {
     setLPSAlphabetSize,
     generateLPSString,
 
+    lpsLcsStringLength,
+    lpsLcsAlphabetSize,
+    lpsLcsString,
+    setLpsLcsStringLength,
+    setLpsLcsAlphabetSize,
+    generateLpsLcsString,
+
+
     stockDayCount,
     stockMaxPrice,
     stockPrices,
@@ -153,7 +161,8 @@ export function DPLeftPanel({ onCollapse }: { onCollapse?: () => void }) {
   const isMinCoins = selectedProblemId === 'minimum-coins';
   const isKnapsack = selectedProblemId === 'knapsack';
   const isLcs = selectedProblemId === 'lcs';
-  const isLps = selectedProblemId === 'lps';
+  const isLps = selectedProblemId === 'lps-interval-dp';
+  const isLpsLcs = selectedProblemId === 'lps-via-lcs';
   const isBuySellStocks = selectedProblemId === 'buy-sell-stocks';
   const isLis = selectedProblemId === 'lis';
   const isUniquePaths = selectedProblemId === 'unique-paths';
@@ -373,7 +382,7 @@ export function DPLeftPanel({ onCollapse }: { onCollapse?: () => void }) {
                   ? 'Input Array'
                   : isBuySellStocks
                   ? 'Input Stock Prices'
-                  : isLps
+                  : isLps || isLpsLcs
                   ? 'Input String (s)'
                   : isLcs
                   ? 'Input Strings (S1 & S2)'
@@ -1915,7 +1924,7 @@ export function DPLeftPanel({ onCollapse }: { onCollapse?: () => void }) {
                 </>
               )}
 
-              {selectedProblemId === 'lps' && (
+              {selectedProblemId === 'lps-interval-dp' && (
                 <>
                   {/* CARD 1 — STRING LENGTH */}
                   <div
@@ -2094,6 +2103,234 @@ export function DPLeftPanel({ onCollapse }: { onCollapse?: () => void }) {
                           {ch}
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {selectedProblemId === 'lps-via-lcs' && (
+                <>
+                  {/* CARD 1 — STRING LENGTH */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      marginBottom: '14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                        display: 'block',
+                      }}
+                    >
+                      STRING LENGTH
+                    </span>
+
+                    <div
+                      style={{
+                        fontSize: '32px',
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        color: 'var(--text-color)',
+                        lineHeight: 1,
+                        marginBottom: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {lpsLcsStringLength}
+                    </div>
+
+                    <input
+                      type="range"
+                      min={4}
+                      max={8}
+                      step={1}
+                      value={lpsLcsStringLength}
+                      onChange={(e) => setLpsLcsStringLength(parseInt(e.target.value, 10))}
+                      style={{
+                        width: '100%',
+                        accentColor: 'var(--accent-blue)',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </div>
+
+                  {/* CARD 2 — ALPHABET SIZE */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      marginBottom: '14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--muted-color)',
+                        marginBottom: '6px',
+                        display: 'block',
+                      }}
+                    >
+                      ALPHABET SIZE
+                    </span>
+
+                    <div
+                      style={{
+                        fontSize: '32px',
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        color: 'var(--text-color)',
+                        lineHeight: 1,
+                        marginBottom: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {lpsLcsAlphabetSize}
+                    </div>
+
+                    <input
+                      type="range"
+                      min={2}
+                      max={4}
+                      step={1}
+                      value={lpsLcsAlphabetSize}
+                      onChange={(e) => setLpsLcsAlphabetSize(parseInt(e.target.value, 10))}
+                      style={{
+                        width: '100%',
+                        accentColor: 'var(--accent-blue)',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </div>
+
+                  {/* REGENERATE BUTTON */}
+                  <button
+                    onClick={generateLpsLcsString}
+                    style={{
+                      width: '100%',
+                      padding: '9px 0',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--input-bg)',
+                      color: 'var(--text-color)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      marginBottom: '16px',
+                      transition: 'all 0.15s ease',
+                    }}
+                    className="hover:border-blue-500/50 hover:bg-blue-500/10"
+                  >
+                    <span>🔀</span>
+                    <span>Regenerate String</span>
+                  </button>
+
+                  {/* STRING PREVIEW DISPLAY — TWO ROWS (ORIGINAL & REVERSED) */}
+                  <div
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                    }}
+                  >
+                    <div>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: 'var(--muted-color)',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                      >
+                        ORIGINAL (s)
+                      </span>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {(lpsLcsString || 'ABCBAB').split('').map((ch, idx) => (
+                          <div
+                            key={`lpslcs-chip-${idx}`}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--accent-blue)',
+                              background: 'var(--accent-blue-bg)',
+                              color: 'var(--cell-filled-text)',
+                              fontFamily: 'JetBrains Mono, monospace',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {ch}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: 'var(--muted-color)',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                      >
+                        REVERSED (reversed)
+                      </span>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {(lpsLcsString || 'ABCBAB').split('').reverse().map((ch, idx) => (
+                          <div
+                            key={`lpslcs-rev-chip-${idx}`}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--accent-teal)',
+                              background: 'var(--accent-teal-bg, rgba(20,184,166,0.12))',
+                              color: 'var(--accent-teal)',
+                              fontFamily: 'JetBrains Mono, monospace',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {ch}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </>

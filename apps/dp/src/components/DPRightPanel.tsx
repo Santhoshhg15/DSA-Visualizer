@@ -7,7 +7,7 @@ export function DPRightPanel({
 }: {
   setRightPanelOpen: (v: boolean) => void;
 }) {
-  const { n, problem, steps, cur, reset, selectedProblemId, subsetTargetK, minCoinsAmount, minCoinsArray, knapsackCapacity, lcsStr1, lcsStr2, lpsString, stockPrices, lisArray, uniquePathsRows, uniquePathsCols, minPathRows, minPathCols, minPathCostGrid, partitionArray, targetSumArray, targetSumTarget, editDistString1, editDistString2, deleteOpString1, deleteOpString2, coinChangeIICoins, coinChangeIIAmount, partitionMaxSumK, partitionMaxSumArr } = useDPStore();
+  const { n, problem, steps, cur, reset, selectedProblemId, subsetTargetK, minCoinsAmount, minCoinsArray, knapsackCapacity, lcsStr1, lcsStr2, lpsString, lpsLcsString, stockPrices, lisArray, uniquePathsRows, uniquePathsCols, minPathRows, minPathCols, minPathCostGrid, partitionArray, targetSumArray, targetSumTarget, editDistString1, editDistString2, deleteOpString1, deleteOpString2, coinChangeIICoins, coinChangeIIAmount, partitionMaxSumK, partitionMaxSumArr } = useDPStore();
   const playing = useDPStore((state) => state.playing);
 
   const [activeTab, setActiveTab] = useState<'code' | 'trace' | 'stats'>('code');
@@ -37,7 +37,8 @@ export function DPRightPanel({
   const isCountSubsets = selectedProblemId === 'count-subsets-sum';
   const isHouseRobber = selectedProblemId === 'house-robber';
   const isLcs = selectedProblemId === 'lcs';
-  const isLps = selectedProblemId === 'lps';
+  const isLps = selectedProblemId === 'lps-interval-dp';
+  const isLpsLcs = selectedProblemId === 'lps-via-lcs';
   const isBuySellStocks = selectedProblemId === 'buy-sell-stocks';
   const isLis = selectedProblemId === 'lis';
   const isUniquePaths = selectedProblemId === 'unique-paths';
@@ -165,6 +166,10 @@ export function DPRightPanel({
       ? (currentStep.dpArray[minCoinsAmount] === 'INF' ? -1 : currentStep.dpArray[minCoinsAmount])
       : isCountSubsets
       ? (currentStep.dpTable ? (currentStep.dpTable[n - 1]?.[subsetTargetK] ?? currentStep.returnValue) : currentStep.returnValue)
+      : isLps
+      ? (currentStep.dpTable ? currentStep.dpTable[0]?.[(currentStep.dpTable.length || n) - 1] : currentStep.dpArray[n - 1])
+      : isLpsLcs
+      ? (currentStep.dpTable ? currentStep.dpTable[currentStep.dpTable.length - 1]?.[currentStep.dpTable[0].length - 1] : currentStep.dpArray[currentStep.dpArray.length - 1])
       : isHouseRobber
       ? currentStep.dpArray[n - 1]
       : isUniquePaths
@@ -706,6 +711,8 @@ export function DPRightPanel({
                     ? `${(currentStep?.stockPrices || stockPrices).length} days`
                     : isLps
                     ? `(${(currentStep?.lpsString || lpsString || '').length})×(${(currentStep?.lpsString || lpsString || '').length})`
+                    : isLpsLcs
+                    ? `(${(currentStep?.lpsString || lpsLcsString || '').length + 1})×(${(currentStep?.lpsString || lpsLcsString || '').length + 1})`
                     : isLcs
                     ? `(${(currentStep?.lcsStr1 || lcsStr1 || '').length + 1})×(${(currentStep?.lcsStr2 || lcsStr2 || '').length + 1})`
                     : isKnapsack
@@ -737,7 +744,7 @@ export function DPRightPanel({
                     marginBottom: '6px',
                   }}
                 >
-                  {isPartitionMaxSum ? 'MAX SUM' : isCoinChangeII ? 'COMBINATIONS FOUND' : isDeleteOp ? 'TOTAL DELETIONS' : isEditDistance ? 'STRING LENGTHS' : isTargetSum ? 'TOTAL SUM' : isPartition ? 'TOTAL SUM' : isMinPathSum ? 'TOTAL GRID COST' : isUniquePaths ? 'GRID SIZE' : isLis ? 'COMPARISONS MADE' : isBuySellStocks ? 'TOTAL DAYS' : isLps ? 'STRING LENGTH' : isLcs ? 'STRING LENGTHS' : isKnapsack ? 'Capacity' : isMinCoins ? 'Coin Types' : isCountSubsets ? 'Target Sum' : 'Base Cases'}
+                  {isPartitionMaxSum ? 'MAX SUM' : isCoinChangeII ? 'COMBINATIONS FOUND' : isDeleteOp ? 'TOTAL DELETIONS' : isEditDistance ? 'STRING LENGTHS' : isTargetSum ? 'TOTAL SUM' : isPartition ? 'TOTAL SUM' : isMinPathSum ? 'TOTAL GRID COST' : isUniquePaths ? 'GRID SIZE' : isLis ? 'COMPARISONS MADE' : isBuySellStocks ? 'TOTAL DAYS' : isLps || isLpsLcs ? 'STRING LENGTH' : isLcs ? 'STRING LENGTHS' : isKnapsack ? 'Capacity' : isMinCoins ? 'Coin Types' : isCountSubsets ? 'Target Sum' : 'Base Cases'}
                 </span>
                 <span
                   style={{
@@ -747,7 +754,7 @@ export function DPRightPanel({
                     color: 'var(--accent-teal)',
                   }}
                 >
-                  {isPartitionMaxSum ? (isDone ? finalAnswer : '—') : isCoinChangeII ? (isDone ? finalAnswer : '—') : isDeleteOp ? (isDone ? finalAnswer : '—') : isEditDistance ? `${(currentStep?.editDistS1 || editDistString1).length} × ${(currentStep?.editDistS2 || editDistString2).length}` : isTargetSum ? `${currentStep?.totalSum ?? targetSumArray.reduce((a, b) => a + b, 0)}` : isPartition ? `${currentStep?.totalSum ?? partitionArray.reduce((a, b) => a + b, 0)} (${(currentStep?.totalSum ?? partitionArray.reduce((a, b) => a + b, 0)) % 2 === 0 ? 'even' : 'odd'})` : isMinPathSum ? `${(currentStep?.costGrid || minPathCostGrid || []).flat().reduce((a, b) => a + (b || 0), 0)}` : isUniquePaths ? `${currentStep?.gridRows || uniquePathsRows || 4} × ${currentStep?.gridCols || uniquePathsCols || 4}` : isLis ? `${cur >= 0 ? steps.slice(0, cur + 1).filter((s) => s.type === 'candidate').length : 0}` : isBuySellStocks ? `${(currentStep?.stockPrices || stockPrices).length}` : isLps ? `${(currentStep?.lpsString || lpsString || '').length}` : isLcs ? `${(currentStep?.lcsStr1 || lcsStr1 || '').length} × ${(currentStep?.lcsStr2 || lcsStr2 || '').length}` : isKnapsack ? `W = ${knapsackCapacity}` : isMinCoins ? minCoinsArray.length : isCountSubsets ? `K = ${subsetTargetK}` : '2'}
+                  {isPartitionMaxSum ? (isDone ? finalAnswer : '—') : isCoinChangeII ? (isDone ? finalAnswer : '—') : isDeleteOp ? (isDone ? finalAnswer : '—') : isEditDistance ? `${(currentStep?.editDistS1 || editDistString1).length} × ${(currentStep?.editDistS2 || editDistString2).length}` : isTargetSum ? `${currentStep?.totalSum ?? targetSumArray.reduce((a, b) => a + b, 0)}` : isPartition ? `${currentStep?.totalSum ?? partitionArray.reduce((a, b) => a + b, 0)} (${(currentStep?.totalSum ?? partitionArray.reduce((a, b) => a + b, 0)) % 2 === 0 ? 'even' : 'odd'})` : isMinPathSum ? `${(currentStep?.costGrid || minPathCostGrid || []).flat().reduce((a, b) => a + (b || 0), 0)}` : isUniquePaths ? `${currentStep?.gridRows || uniquePathsRows || 4} × ${currentStep?.gridCols || uniquePathsCols || 4}` : isLis ? `${cur >= 0 ? steps.slice(0, cur + 1).filter((s) => s.type === 'candidate').length : 0}` : isBuySellStocks ? `${(currentStep?.stockPrices || stockPrices).length}` : isLps ? `${(currentStep?.lpsString || lpsString || '').length}` : isLpsLcs ? `${(currentStep?.lpsString || lpsLcsString || '').length}` : isLcs ? `${(currentStep?.lcsStr1 || lcsStr1 || '').length} × ${(currentStep?.lcsStr2 || lcsStr2 || '').length}` : isKnapsack ? `W = ${knapsackCapacity}` : isMinCoins ? minCoinsArray.length : isCountSubsets ? `K = ${subsetTargetK}` : '2'}
                 </span>
               </div>
 
@@ -770,7 +777,7 @@ export function DPRightPanel({
                     marginBottom: '6px',
                   }}
                 >
-                  {isPartitionMaxSum ? 'ARRAY SIZE' : isCoinChangeII ? 'COIN TYPES' : isDeleteOp ? 'STRING LENGTHS' : isEditDistance ? 'EDIT DISTANCE' : isTargetSum ? 'WAYS FOUND' : isPartition ? 'PARTITIONABLE' : isMinPathSum ? 'MIN PATH COST' : isUniquePaths ? 'TOTAL PATHS' : isLis ? 'LIS LENGTH' : isBuySellStocks ? 'MAX PROFIT' : isLps ? 'LPS LENGTH' : isLcs ? 'LCS LENGTH' : isKnapsack ? 'Max Value' : isMinCoins ? 'Min Coins' : isCountSubsets ? 'Subsets Found' : 'Fill Steps'}
+                  {isPartitionMaxSum ? 'ARRAY SIZE' : isCoinChangeII ? 'COIN TYPES' : isDeleteOp ? 'STRING LENGTHS' : isEditDistance ? 'EDIT DISTANCE' : isTargetSum ? 'WAYS FOUND' : isPartition ? 'PARTITIONABLE' : isMinPathSum ? 'MIN PATH COST' : isUniquePaths ? 'TOTAL PATHS' : isLis ? 'LIS LENGTH' : isBuySellStocks ? 'MAX PROFIT' : isLps || isLpsLcs ? 'LPS LENGTH' : isLcs ? 'LCS LENGTH' : isKnapsack ? 'Max Value' : isMinCoins ? 'Min Coins' : isCountSubsets ? 'Subsets Found' : 'Fill Steps'}
                 </span>
                 <span
                   style={{
@@ -820,7 +827,7 @@ export function DPRightPanel({
                     ? isDone
                       ? `$${currentStep?.stockMaxProfit ?? 0}`
                       : '—'
-                    : isLps
+                    : isLps || isLpsLcs
                     ? isDone
                       ? finalAnswer
                       : '—'

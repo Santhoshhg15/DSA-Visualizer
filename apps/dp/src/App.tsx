@@ -9,6 +9,7 @@ import { MinimumCoinsVisualizer } from './components/MinimumCoinsVisualizer';
 import { KnapsackVisualizer } from './components/KnapsackVisualizer';
 import { LcsVisualizer } from './components/LcsVisualizer';
 import { LPSVisualizer } from './components/LPSVisualizer';
+import { LPSviaLCSVisualizer } from './components/LPSviaLCSVisualizer';
 import { StockVisualizer } from './components/StockVisualizer';
 import { LISVisualizer } from './components/LISVisualizer';
 import { UniquePathsVisualizer } from './components/UniquePathsVisualizer';
@@ -270,8 +271,10 @@ export default function App() {
                   <KnapsackVisualizer />
                 ) : selectedProblemId === 'lcs' ? (
                   <LcsVisualizer />
-                ) : selectedProblemId === 'lps' ? (
+                ) : selectedProblemId === 'lps-interval-dp' ? (
                   <LPSVisualizer />
+                ) : selectedProblemId === 'lps-via-lcs' ? (
+                  <LPSviaLCSVisualizer />
                 ) : selectedProblemId === 'buy-sell-stocks' ? (
                   <StockVisualizer />
                 ) : selectedProblemId === 'lis' ? (

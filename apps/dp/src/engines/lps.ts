@@ -1,10 +1,10 @@
 import type { ProblemMeta, Step } from '../problems/types';
 
 export const LPS_META: ProblemMeta = {
-  id: 'lps',
-  name: 'Longest Palindromic Subsequence',
+  id: 'lps-interval-dp',
+  name: 'Longest Palindromic Subsequence — Interval DP',
   category: 'Subsequence',
-  description: 'Find length of longest subsequence that reads same forwards and backwards',
+  description: 'Expand outward from single characters, comparing s[i] with s[j]',
   javaCode: [
     'public int longestPalinSubseq(String s) {',
     '    int n = s.length();',

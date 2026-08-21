@@ -6,6 +6,7 @@ import { buildMinCoinsTrace, MINIMUM_COINS_META } from './engines/minimumCoins';
 import { buildKnapsackTrace, KNAPSACK_META } from './engines/knapsack';
 import { buildLcsTrace, LCS_META } from './engines/lcs';
 import { buildLpsTrace, LPS_META } from './engines/lps';
+import { buildLpsViaLcsTrace, LPS_VIA_LCS_META } from './engines/lpsViaLCS';
 import { buildBuySellStocksTrace, BUY_SELL_STOCKS_META } from './engines/buySellStocks';
 import { buildLisTrace, LIS_META } from './engines/lis';
 import { buildUniquePathsTrace, UNIQUE_PATHS_META } from './engines/uniquePaths';
@@ -99,6 +100,11 @@ interface DPState {
   lpsStringLength: number;
   lpsAlphabetSize: number;
   lpsString: string;
+
+  // LPS via LCS state
+  lpsLcsStringLength: number;
+  lpsLcsAlphabetSize: number;
+  lpsLcsString: string;
 
   // Buy and Sell Stocks state
   stockDayCount: number;
@@ -196,6 +202,10 @@ interface DPState {
   setLPSAlphabetSize: (size: number) => void;
   generateLPSString: () => void;
 
+  setLpsLcsStringLength: (len: number) => void;
+  setLpsLcsAlphabetSize: (size: number) => void;
+  generateLpsLcsString: () => void;
+
   setStockDayCount: (count: number) => void;
   setStockMaxPrice: (maxPrice: number) => void;
   generateStockPrices: () => void;
@@ -284,6 +294,10 @@ export const useDPStore = create<DPState>((set, get) => {
   const initialLpsAlphabet = 2;
   const initialLpsString = generateRandomString(initialLpsLength, initialLpsAlphabet);
 
+  const initialLpsLcsLength = 6;
+  const initialLpsLcsAlphabet = 2;
+  const initialLpsLcsString = generateRandomString(initialLpsLcsLength, initialLpsLcsAlphabet);
+
   const initialStockDayCount = 7;
   const initialStockMaxPrice = 100;
   const initialStockPrices = [7, 1, 5, 3, 6, 4, 8];
@@ -340,6 +354,10 @@ export const useDPStore = create<DPState>((set, get) => {
     lpsStringLength: initialLpsLength,
     lpsAlphabetSize: initialLpsAlphabet,
     lpsString: initialLpsString,
+
+    lpsLcsStringLength: initialLpsLcsLength,
+    lpsLcsAlphabetSize: initialLpsLcsAlphabet,
+    lpsLcsString: initialLpsLcsString,
 
     stockDayCount: initialStockDayCount,
     stockMaxPrice: initialStockMaxPrice,
@@ -850,6 +868,58 @@ export const useDPStore = create<DPState>((set, get) => {
 
       set({
         lpsString: str,
+        steps: newSteps,
+        cur: 0,
+        playing: false,
+        timerId: null,
+      });
+    },
+
+    setLpsLcsStringLength: (len: number) => {
+      const clamped = Math.max(4, Math.min(8, len));
+      const { lpsLcsAlphabetSize, timerId } = get();
+      if (timerId) clearInterval(timerId);
+
+      const str = generateRandomString(clamped, lpsLcsAlphabetSize);
+      const newSteps = buildLpsViaLcsTrace(str);
+
+      set({
+        lpsLcsStringLength: clamped,
+        lpsLcsString: str,
+        steps: newSteps,
+        cur: 0,
+        playing: false,
+        timerId: null,
+      });
+    },
+
+    setLpsLcsAlphabetSize: (size: number) => {
+      const clamped = Math.max(2, Math.min(4, size));
+      const { lpsLcsStringLength, timerId } = get();
+      if (timerId) clearInterval(timerId);
+
+      const str = generateRandomString(lpsLcsStringLength, clamped);
+      const newSteps = buildLpsViaLcsTrace(str);
+
+      set({
+        lpsLcsAlphabetSize: clamped,
+        lpsLcsString: str,
+        steps: newSteps,
+        cur: 0,
+        playing: false,
+        timerId: null,
+      });
+    },
+
+    generateLpsLcsString: () => {
+      const { lpsLcsStringLength, lpsLcsAlphabetSize, timerId } = get();
+      if (timerId) clearInterval(timerId);
+
+      const str = generateRandomString(lpsLcsStringLength, lpsLcsAlphabetSize);
+      const newSteps = buildLpsViaLcsTrace(str);
+
+      set({
+        lpsLcsString: str,
         steps: newSteps,
         cur: 0,
         playing: false,
@@ -1437,7 +1507,7 @@ export const useDPStore = create<DPState>((set, get) => {
     },
 
     run: () => {
-      const { selectedProblemId, n, houses, subsetArray, subsetTargetK, minCoinsArray, minCoinsAmount, knapsackWeights, knapsackValues, knapsackCapacity, lcsStr1, lcsStr2, lpsString, stockPrices, lisArray, uniquePathsRows, uniquePathsCols, minPathCostGrid, partitionArray, targetSumArray, targetSumTarget, editDistString1, editDistString2, deleteOpString1, deleteOpString2, coinChangeIICoins, coinChangeIIAmount, partitionMaxSumArr, partitionMaxSumK, timerId } = get();
+      const { selectedProblemId, n, houses, subsetArray, subsetTargetK, minCoinsArray, minCoinsAmount, knapsackWeights, knapsackValues, knapsackCapacity, lcsStr1, lcsStr2, lpsString, lpsLcsString, stockPrices, lisArray, uniquePathsRows, uniquePathsCols, minPathCostGrid, partitionArray, targetSumArray, targetSumTarget, editDistString1, editDistString2, deleteOpString1, deleteOpString2, coinChangeIICoins, coinChangeIIAmount, partitionMaxSumArr, partitionMaxSumK, timerId } = get();
       if (timerId) clearInterval(timerId);
 
       let newSteps: Step[];
@@ -1451,8 +1521,10 @@ export const useDPStore = create<DPState>((set, get) => {
         newSteps = buildKnapsackTrace(knapsackWeights, knapsackValues, knapsackCapacity);
       } else if (selectedProblemId === 'lcs') {
         newSteps = buildLcsTrace(lcsStr1, lcsStr2);
-      } else if (selectedProblemId === 'lps') {
+      } else if (selectedProblemId === 'lps-interval-dp') {
         newSteps = buildLpsTrace(lpsString);
+      } else if (selectedProblemId === 'lps-via-lcs') {
+        newSteps = buildLpsViaLcsTrace(lpsLcsString);
       } else if (selectedProblemId === 'buy-sell-stocks') {
         newSteps = buildBuySellStocksTrace(stockPrices);
       } else if (selectedProblemId === 'lis') {
@@ -1626,7 +1698,7 @@ export const useDPStore = create<DPState>((set, get) => {
           playing: false,
           timerId: null,
         });
-      } else if (id === 'lps') {
+      } else if (id === 'lps-interval-dp') {
         const { lpsString } = get();
         const newSteps = buildLpsTrace(lpsString);
         set({
@@ -1634,6 +1706,18 @@ export const useDPStore = create<DPState>((set, get) => {
           problem: LPS_META,
           steps: newSteps,
           n: lpsString.length,
+          cur: 0,
+          playing: false,
+          timerId: null,
+        });
+      } else if (id === 'lps-via-lcs') {
+        const { lpsLcsString } = get();
+        const newSteps = buildLpsViaLcsTrace(lpsLcsString);
+        set({
+          selectedProblemId: id,
+          problem: LPS_VIA_LCS_META,
+          steps: newSteps,
+          n: lpsLcsString.length,
           cur: 0,
           playing: false,
           timerId: null,
